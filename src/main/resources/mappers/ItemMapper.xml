@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+ <mapper namespace="com.Ignis.test.mapper.ItemMapper">
+	<select id="selectItemList" resultType="com.Ignis.test.domain.Item">
+		SELECT
+			`id`
+			,`userId`
+			,`loginId`
+			,`title`
+			,`price`
+			,`status`
+			,`type`
+			,`imageUrl`
+			,`createdAt`
+			,`updatedAt`
+		FROM
+			`item`
+	</select>
+ </mapper>

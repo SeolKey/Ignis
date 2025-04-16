@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Ignis
+  thymeleaf:
+    cache: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ?
+    username: root
+    password: ?
+
+server:
+  port: 80
+
+mybatis:
+  mapper-locations: classpath:mappers/*Mapper.xml
+  type-aliases-package: com.Ignis.test.domain
