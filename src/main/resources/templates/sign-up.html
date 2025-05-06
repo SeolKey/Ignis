@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>회원가입</title></head>
+<body>
+<h2>회원가입</h2>
+<form id="signUpForm" action="/do-sign-up" method="post">
+    아이디: <input type="text" name="userLoginId"><br/>
+    비밀번호: <input type="password" name="password"><br/>
+    이름: <input type="text" name="name"><br/>
+    이메일: <input type="email" name="email"><br/>
+    전화번호: <input type="text" name="phoneNumber"><br/>
+    <input type="submit" value="회원가입">
+</form>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('#signUpForm').on('submit', function(e) {
+        e.preventDefault();
+
+        const formData = {
+            userLoginId: $("input[name=userLoginId]").val().trim(),
+            password: $("input[name=password]").val(),
+            name: $("input[name=name]").val(),
+            email: $("input[name=email]").val(),
+            phoneNumber: $("input[name=phoneNumber]").val()
+        };
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(data) {
+                if (data.result === "회원가입 성공") {
+                    alert("회원가입 성공!");
+                    location.href = "/login";
+                } else {
+                    alert(data.error_message || "회원가입 실패");
+                }
+            }
+        });
+    });
+});
+</script>
+
+</html>

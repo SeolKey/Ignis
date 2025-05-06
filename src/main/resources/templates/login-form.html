@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>로그인</title>
+</head>
+<body>
+<h2>로그인</h2>
+
+<form id="loginForm" action="/do-login" method="post">
+    아이디: <input type="text" name="userLoginId"><br/>
+    비밀번호: <input type="password" name="password"><br/>
+    <input type="submit" value="로그인">
+</form>
+
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+<br/>
+<form th:action="@{/sign-up}" method="get">
+    <input type="submit" value="회원가입 하러가기">
+</form>
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+	$(document).ready(function () {
+	    $('#loginForm').on('submit', function(e) {
+	        e.preventDefault(); // 기본 form 전송 막기
+	
+	        let loginId = $("input[name=userLoginId]").val().trim();
+	        let password = $("input[name=password]").val();
+	
+	        if (!loginId || !password) {
+	            alert("아이디와 비밀번호를 입력해주세요.");
+	            return;
+	        }
+	
+	        let url = $(this).attr('action');
+	        let params = $(this).serialize();
+	
+	        $.post(url, params)
+	            .done(function(data) {
+	                if (data.result === "성공") {
+	                    location.href = "/welcome";
+	                } else if (data.code === 403) {
+	                    alert(data.error_message);
+	                } else {
+	                    alert("서버 오류입니다. 관리자에게 문의하세요.");
+	                }
+	            });
+	    });
+	});
+</script>
+
+</html>
