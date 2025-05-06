@@ -6,7 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.Ignis.user.domain.User;
+import com.Ignis.user.entity.UserEntity;
 import com.Ignis.user.repository.UserRepository;
 
 import jakarta.servlet.http.HttpSession;
@@ -30,7 +30,7 @@ public class UserController {
     @GetMapping("/welcome")
     public String welcome(HttpSession session, Model model) {
         String userName = (String) session.getAttribute("user");
-        List<User> users = userRepository.findByName(userName);
+        List<UserEntity> users = userRepository.findByName(userName);
         if (!users.isEmpty()) {
             model.addAttribute("user", users.get(0).getName());
             model.addAttribute("createdAt", users.get(0).getCreatedAt());

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Ignis.user.bo.UserBO;
-import com.Ignis.user.domain.User;
+import com.Ignis.user.entity.UserEntity;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +38,7 @@ public class UserRestController {
     }
 
     @PostMapping("/do-sign-up")
-    public Map<String, Object> signUp(@RequestBody User user) {
+    public Map<String, Object> signUp(@RequestBody UserEntity user) {
         Map<String, Object> result = new HashMap<>();
 
         if (!userBO.isAvailableLoginId(user.getUserLoginId())) {

@@ -2,13 +2,13 @@ package com.Ignis.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.Ignis.user.domain.User;
+import com.Ignis.user.entity.UserEntity;
 
 import java.util.List;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    User findByUserLoginId(String userLoginId);
-    List<User> findByName(String name);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    UserEntity findByUserLoginId(String userLoginId);
+    List<UserEntity> findByName(String name);
     boolean existsByUserLoginId(String userLoginId);
 }
 

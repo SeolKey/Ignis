@@ -1,4 +1,4 @@
-package com.Ignis.user.domain;
+package com.Ignis.user.entity;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "user")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
