@@ -6,7 +6,7 @@
 <body>
 <h2>로그인</h2>
 
-<form id="loginForm" action="/do-login" method="post">
+<form id="loginForm" action="/user/do-login" method="post">
     아이디: <input type="text" name="userLoginId"><br/>
     비밀번호: <input type="password" name="password"><br/>
     <input type="submit" value="로그인">
@@ -15,7 +15,7 @@
 <p th:if="${error}" th:text="${error}" style="color: red;"></p>
 
 <br/>
-<form th:action="@{/sign-up}" method="get">
+<form th:action="@{/user/sign-up}" method="get">
     <input type="submit" value="회원가입 하러가기">
 </form>
 </body>
@@ -40,7 +40,7 @@
 	        $.post(url, params)
 	            .done(function(data) {
 	                if (data.result === "성공") {
-	                    location.href = "/welcome";
+	                    location.href = "/user/welcome";
 	                } else if (data.code === 403) {
 	                    alert(data.error_message);
 	                } else {

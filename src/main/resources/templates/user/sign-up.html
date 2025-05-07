@@ -3,7 +3,7 @@
 <head><title>회원가입</title></head>
 <body>
 <h2>회원가입</h2>
-<form id="signUpForm" action="/do-sign-up" method="post">
+<form id="signUpForm" action="/user/do-sign-up" method="post">
     아이디: <input type="text" name="userLoginId"><br/>
     비밀번호: <input type="password" name="password"><br/>
     이름: <input type="text" name="name"><br/>
@@ -35,7 +35,7 @@ $(document).ready(function () {
             success: function(data) {
                 if (data.result === "회원가입 성공") {
                     alert("회원가입 성공!");
-                    location.href = "/login";
+                    location.href = "/user/login";
                 } else {
                     alert(data.error_message || "회원가입 실패");
                 }

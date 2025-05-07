@@ -22,7 +22,9 @@ public class UserBO {
     public boolean login(String loginId, String password, HttpSession session) {
         UserEntity user = userRepository.findByUserLoginId(loginId);
         if (user != null && user.isCorrectPassword(password)) {
-            session.setAttribute("user", user.getName());
+            session.setAttribute("userId", user.getUserId());           // 🔹 사용자 식별용
+            session.setAttribute("loginId", user.getUserLoginId());     // 🔹 로그인 ID
+            session.setAttribute("userName", user.getName());           // 🔹 유저 이름 (원래 있던 내용 개선)
             return true;
         }
         return false;

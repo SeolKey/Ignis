@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Ignis.notice.mapper.NoticeMapper">
+
+    <select id="selectNoticeList" resultType="com.Ignis.notice.domain.Notice">
+    	SELECT
+        notice_id AS noticeId,
+        user_id AS userId,
+        title,
+        content,
+        image_path AS imagePath,
+        created_at AS createdAt,
+        updated_at AS updatedAt
+    	FROM notice
+    	ORDER BY created_at DESC
+	</select>
+
+    <select id="selectNoticeById" parameterType="int" resultType="com.Ignis.notice.domain.Notice">
+        SELECT * FROM notice WHERE notice_id = #{id}
+    </select>
+
+    <insert id="insertNotice" parameterType="com.Ignis.notice.domain.Notice">
+        INSERT INTO notice (user_id, title, content, image_path, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{content}, #{imagePath}, NOW(), NOW())
+    </insert>
+
+    <update id="updateNotice" parameterType="com.Ignis.notice.domain.Notice">
+        UPDATE notice
+        SET title = #{title},
+            content = #{content},
+            image_path = #{imagePath},
+            updated_at = NOW()
+        WHERE notice_id = #{noticeId}
+    </update>
+
+</mapper>

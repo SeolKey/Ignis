@@ -5,8 +5,8 @@
 <h2>환영합니다!</h2>
 <p th:text="'안녕하세요, ' + ${user} + '님!'"/>
 <p th:text="'가입일: ' + ${createdAt}"></p>
-<form th:action="@{/login}" method="get">
+<form th:action="@{/user/login}" method="get">
     <button type="submit">로그아웃</button>
-
+</form>
 </body>
 </html>
