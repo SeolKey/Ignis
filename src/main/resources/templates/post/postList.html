@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>자유게시판</title>
+</head>
+<body>
+<h1>자유게시판</h1>
+<a th:href="@{/post/post-create-view}">글 작성</a>
+<table border="1">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post : ${postList}">
+        <td th:text="${post.postId}">1</td>
+        <td>
+            <a th:href="@{'/post/post-detail-view/' + ${post.postId}}" th:text="${post.title}">제목</a>
+        </td>
+        <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

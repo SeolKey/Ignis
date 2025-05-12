@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Ignis.post.mapper.PostMapper">
+
+    <select id = "selectPostList" resultType="com.Ignis.post.domain.Post">
+            SELECT
+                post_id AS postId,
+                user_id AS userId,
+                title,
+                content,
+                image_path AS imagePath,
+                created_at AS createdAt,
+                updated_at AS updatedAt
+            FROM post
+            ORDER BY created_at DESC
+    </select>
+
+    <select id ="selectPostById" parameterType="int" resultType="com.Ignis.post.domain.Post">
+            SELECT
+                post_id AS postId,
+                user_id AS userId,
+                title,
+                content,
+                image_path AS imagePath,
+                created_at AS createdAt,
+                updated_at AS updatedAt
+            FROM post
+            WHERE post_id = #{id}
+    </select>
+
+    <insert id="insertPost" parameterType="com.Ignis.post.domain.Post" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post (user_id, title, content, image_path, created_at, updated_at)
+        VALUES (#{userId}, #{title}, #{content}, #{imagePath}, NOW(), NOW())
+    </insert>
+
+    <update id="updatePost" parameterType="com.Ignis.post.domain.Post">
+        UPDATE post
+        SET
+            title =#{title},
+            content = #{content},
+            image_path = #{imagePath},
+            updated_at = NOW()
+        WHERE post_id = #{postId}
+    </update>
+</mapper>

@@ -5,25 +5,25 @@
     <title>공지사항 상세보기</title>
 </head>
 <body>
-    <h1>공지사항 상세</h1>
-    <div>
-        <strong>제목:</strong>
-        <p th:text="${notice.title}">공지 제목</p>
-    </div>
+<h1>공지사항 상세</h1>
+<div>
+    <strong>제목:</strong>
+    <p th:text="${notice.title}">공지 제목</p>
+</div>
 
-    <div>
-        <strong>작성일:</strong>
-        <p th:text="${notice.createdAt}">2025-05-07</p>
-    </div>
+<div>
+    <strong>작성일:</strong>
+    <p th:text="${notice.createdAt}">2025-05-07</p>
+</div>
 
-    <div>
-        <strong>내용:</strong>
-        <p th:text="${notice.content}">공지 내용</p>
-    </div>
+<div>
+    <strong>내용:</strong>
+    <p th:text="${notice.content}">공지 내용</p>
+</div>
 
-    <div>
-        <a th:href="@{/notice/list}">목록으로</a>
-        <a th:href="@{'/notice/notice-edit-view/' + ${notice.noticeId}}">수정하기</a>
-    </div>
+<div>
+    <a th:href="@{/notice/list}">목록으로</a>
+    <a th:href="@{'/notice/notice-edit-view/' + ${notice.noticeId}}">수정하기</a>
+</div>
 </body>
 </html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>글 작성</title>
+    <script>
+        function submitPost(event) {
+            event.preventDefault();
+
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            fetch("/post/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ title, content })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === "성공") {
+                        alert("글이 등록되었습니다.");
+                        window.location.href = "/post/post-list-view";
+                    } else {
+                        alert("오류: " + data.error);
+                    }
+                })
+                .catch(err => alert("서버 오류"));
+        }
+    </script>
+</head>
+<body>
+<h1>글 작성</h1>
+<form onsubmit="submitPost(event)">
+    <label>제목:</label><br>
+    <input type="text" id="title" name="title"><br><br>
+
+    <label>내용:</label><br>
+    <textarea id="content" name="content" rows="10" cols="50"></textarea><br><br>
+
+    <input type="submit" value="작성">
+</form>
+<a th:href="@{/post/post-list-view}">목록으로</a>
+</body>
+</html>

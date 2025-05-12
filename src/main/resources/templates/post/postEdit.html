@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>글 수정</title>
+    <script>
+        function updatePost(event) {
+            event.preventDefault();
+
+            const id = document.getElementById("postId").value;
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+
+            fetch("/post/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    postId: id,
+                    title: title,
+                    content: content
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === "성공") {
+                        alert("수정 완료");
+                        window.location.href = "/post/post-detail-view/" + id;
+                    } else {
+                        alert("오류 발생");
+                    }
+                })
+                .catch(err => alert("서버 오류"));
+        }
+    </script>
+</head>
+<body>
+<h1>글 수정</h1>
+<form onsubmit="updatePost(event)">
+    <input type="hidden" id="postId" th:value="${post.postId}">
+    <label>제목:</label><br>
+    <input type="text" id="title" th:value="${post.title}"><br><br>
+
+    <label>내용:</label><br>
+    <textarea id="content" rows="10" cols="50" th:text="${post.content}"></textarea><br><br>
+
+    <input type="submit" value="수정">
+</form>
+<a th:href="@{/post/post-list-view}">목록으로</a>
+</body>
+</html>
