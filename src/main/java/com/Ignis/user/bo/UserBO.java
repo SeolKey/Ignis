@@ -33,5 +33,25 @@ public class UserBO {
     public boolean isAvailableLoginId(String loginId) {
         return !userRepository.existsByUserLoginId(loginId);
     }
+
+    public boolean updatePassword(Long userId, String currentPassword, String newPassword){
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        if(user != null && user.isCorrectPassword(currentPassword)){
+            user.setPassword(newPassword);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    public boolean updateEmail(Long userId, String newEmail){
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        if(user != null){
+            user.setEmail(newEmail);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
 }
 
