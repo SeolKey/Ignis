@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기부 목록</title>
+</head>
+<body>
+<h1>기부 목록</h1>
+<a th:href="@{/donation/donation-create-view}">기부 글 작성</a>
+<table border="1">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성일</th>
+        <th>상태</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="donation : ${donationList}">
+        <td th:text="${donation.donationId}">1</td>
+        <td>
+            <a th:href="@{'/donation/donation-detail-view/' + ${donation.donationId}}"
+               th:text="${donation.title}">제목</a>
+        </td>
+        <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
+        <td th:text="${donation.status}">상태</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

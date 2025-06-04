@@ -45,4 +45,7 @@
             updated_at = NOW()
         WHERE post_id = #{postId}
     </update>
+    <delete id="deletePost" parameterType="int">
+        DELETE FROM post WHERE post_id = #{id}
+    </delete>
 </mapper>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 리스트 (관리자용)</title>
+</head>
+<body>
+<h1>전체 회원 목록</h1>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>아이디</th>
+        <th>이름</th>
+        <th>이메일</th>
+        <th>전화번호</th>
+        <th>권한</th>
+        <th>가입일</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user, iterStat : ${userList}">
+        <td th:text="${iterStat.index + 1}">1</td>
+        <td th:text="${user.userLoginId}">test123</td>
+        <td th:text="${user.name}">홍길동</td>
+        <td th:text="${user.email}">test@example.com</td>
+        <td th:text="${user.phoneNumber}">010-1234-5678</td>
+        <td th:text="${user.role}">USER</td>
+        <td th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-01 14:00</td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a href="/admin/post-list-view">게시글 목록으로 이동</a>
+</body>
+</html>

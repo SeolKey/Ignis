@@ -10,13 +10,11 @@
 
             fetch("/mypage/change-password", {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
                 body: new URLSearchParams({ currentPassword, newPassword })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.result || data.error_message);
-                });
+            }).then(res => res.json()).then(data => {
+                alert(data.result || data.error_message);
+            });
         }
 
         function changeEmail() {
@@ -26,11 +24,9 @@
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({ newEmail })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.result || data.error_message);
-                });
+            }).then(res => res.json()).then(data => {
+                alert(data.result || data.error_message);
+            });
         }
     </script>
 </head>
@@ -40,20 +36,12 @@
 <hr>
 
 <h3>비밀번호 변경</h3>
-<label for="currentPassword">현재 비밀번호:</label>
 <input type="password" id="currentPassword" placeholder="현재 비밀번호">
-<br>
-<label for="newPassword">새 비밀번호:</label>
 <input type="password" id="newPassword" placeholder="새 비밀번호">
-<br>
-<button onclick="changePassword()">비밀번호 변경</button>
-
-<hr>
+<button onclick="changePassword()">변경</button>
 
 <h3>이메일 변경</h3>
-<label for="newEmail">새 이메일:</label>
-<input type="email" id="newEmail" placeholder="example@email.com">
-<br>
-<button onclick="changeEmail()">이메일 변경</button>
+<input type="email" id="newEmail" placeholder="새 이메일">
+<button onclick="changeEmail()">변경</button>
 </body>
 </html>

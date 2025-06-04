@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 상세 보기 (관리자용)</title>
+</head>
+<body>
+<h1>게시글 상세</h1>
+
+<div>
+    <strong>제목:</strong>
+    <p th:text="${post.title}">게시글 제목</p>
+</div>
+
+<div>
+    <strong>작성자 ID:</strong>
+    <p th:text="${post.userId}">1</p>
+</div>
+
+<div>
+    <strong>작성일:</strong>
+    <p th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-19 16:00</p>
+</div>
+
+<div>
+    <strong>내용:</strong>
+    <p th:text="${post.content}">게시글 내용입니다.</p>
+</div>
+
+<br>
+<a href="/admin/post-list-view">← 게시글 목록으로</a>
+</body>

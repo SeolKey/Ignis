@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Ignis.donation.mapper.DonationMapper">
+
+    <select id="selectDonationList" resultType="com.Ignis.donation.domain.Donation">
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM donation
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectDonationListByStatus" resultType="com.Ignis.donation.domain.Donation">
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM donation
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectDonationById" parameterType="int" resultType="com.Ignis.donation.domain.Donation">
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM donation
+        WHERE donation_id = #{donationId}
+    </select>
+
+    <insert id="insertDonation" parameterType="com.Ignis.donation.domain.Donation" useGeneratedKeys="true" keyProperty="donationId">
+        INSERT INTO donation
+        (user_id, title, description, account_info, max_price, current_price, status, image_path, created_at, updated_at)
+        VALUES
+            (#{userId}, #{title}, #{description}, #{accountInfo}, #{maxPrice}, #{currentPrice}, #{status}, #{imagePath}, NOW(), NOW())
+    </insert>
+
+    <update id="updateDonationStatus">
+        UPDATE donation
+        SET status = #{status}, updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
+    <delete id="deleteDonation" parameterType="int">
+        DELETE FROM donation WHERE donation_id = #{donationId}
+    </delete>
+</mapper>

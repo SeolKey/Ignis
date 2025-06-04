@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기부글 상세 보기</title>
+</head>
+<body>
+<h1>관리자 - 기부글 상세 정보</h1>
+
+<div>
+    <p><strong>ID:</strong> <span th:text="${donation.donationId}"></span></p>
+    <p><strong>작성자:</strong> <span th:text="${donation.userId}"></span></p>
+    <p><strong>제목:</strong> <span th:text="${donation.title}"></span></p>
+    <p><strong>설명:</strong> <span th:text="${donation.description}"></span></p>
+    <p><strong>계좌정보:</strong> <span th:text="${donation.accountInfo}"></span></p>
+    <p><strong>목표 금액:</strong> <span th:text="${donation.maxPrice}"></span>원</p>
+    <p><strong>현재 금액:</strong> <span th:text="${donation.currentPrice}"></span>원</p>
+    <p><strong>상태:</strong> <span th:text="${donation.status}"></span></p>
+    <p><strong>작성일:</strong> <span th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+</div>
+
+<hr>
+
+<form th:action="@{/admin/donation-status-update}" method="post">
+    <input type="hidden" name="donationId" th:value="${donation.donationId}" />
+    <label for="status">상태 변경:</label>
+    <select name="status" id="status">
+        <option value="PENDING" th:selected="${donation.status == 'PENDING'}">보류</option>
+        <option value="APPROVED" th:selected="${donation.status == 'APPROVED'}">승인</option>
+        <option value="REJECTED" th:selected="${donation.status == 'REJECTED'}">거절</option>
+    </select>
+    <button type="submit">변경</button>
+</form>
+
+<p><a th:href="@{/admin/donation-list-view}">← 목록으로 돌아가기</a></p>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 목록 (관리자용)</title>
+    <script>
+        function deletePost(postId) {
+            if (!confirm("정말로 삭제하시겠습니까?")) return;
+
+            fetch("/admin/delete-post/" + postId, {
+                method: "DELETE"
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.result || data.error);
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error("삭제 실패:", error);
+                    alert("삭제 중 오류 발생");
+                });
+        }
+    </script>
+</head>
+<body>
+<h1>전체 게시글 목록</h1>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성자 ID</th>
+        <th>작성일</th>
+        <th>상세</th>
+        <th>삭제</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="post, iterStat : ${postList}">
+        <td th:text="${iterStat.index + 1}">1</td>
+        <td th:text="${post.title}">샘플 제목</td>
+        <td th:text="${post.userId}">1</td>
+        <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-19</td>
+        <td>
+            <a th:href="@{'/admin/post-detail-view/' + ${post.postId}}">보기</a>
+        </td>
+        <td>
+            <button th:onclick="'deletePost(' + ${post.postId} + ')'">삭제</button>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<a href="/admin/main">← 관리자 메인으로</a>
+</body>
+</html>

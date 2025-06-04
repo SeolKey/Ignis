@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기부 상세 정보</title>
+</head>
+<body>
+<h1 th:text="${donation.title}">기부 제목</h1>
+
+<p><strong>작성일:</strong> <span th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span></p>
+<p><strong>설명:</strong> <span th:text="${donation.description}">내용</span></p>
+<p><strong>계좌 정보:</strong> <span th:text="${donation.accountInfo}">계좌</span></p>
+<p><strong>목표 금액:</strong> <span th:text="${donation.maxPrice}">금액</span>원</p>
+<p><strong>현재 금액:</strong> <span th:text="${donation.currentPrice}">금액</span>원</p>
+<p><strong>상태:</strong> <span th:text="${donation.status}">상태</span></p>
+<div>
+    <img th:if="${donation.imagePath != null and donation.imagePath != ''}"
+         th:src="@{${donation.imagePath}}"
+         alt="기부 이미지"
+         width="300"/>
+</div>
+</body>
+</html>

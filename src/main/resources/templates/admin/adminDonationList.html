@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기부글 목록</title>
+</head>
+<body>
+<h1>관리자 - 기부글 목록</h1>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>상태</th>
+        <th>작성일</th>
+        <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="donation : ${donationList}">
+        <td th:text="${donation.donationId}"></td>
+        <td>
+            <a th:href="@{'/admin/donation-detail-view/' + ${donation.donationId}}"
+               th:text="${donation.title}"></a>
+        </td>
+        <td th:text="${donation.userId}"></td>
+        <td th:text="${donation.status}"></td>
+        <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 날짜 포맷 추가 -->
+        <td>
+            <form th:action="@{'/admin/donation-status-update'}" method="post">
+                <input type="hidden" name="donationId" th:value="${donation.donationId}" />
+                <select name="status">
+                    <option value="PENDING">보류</option>
+                    <option value="APPROVED">승인</option>
+                    <option value="REJECTED">거절</option>
+                </select>
+                <button type="submit">변경</button>
+            </form>
+            <form th:action="@{'/admin/donation-delete/' + ${donation.donationId}}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <input type="hidden" name="_method" value="delete" />
+                <button type="submit">삭제</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
