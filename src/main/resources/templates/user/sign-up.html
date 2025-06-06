@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head><title>회원가입</title></head>
 <body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 <h2>회원가입</h2>
 <form id="signUpForm" action="/user/do-sign-up" method="post">
     아이디: <input type="text" name="userLoginId"><br/>

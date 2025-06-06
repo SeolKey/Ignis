@@ -1,18 +1,20 @@
 package com.Ignis.admin;
 
-import com.Ignis.donation.bo.DonationBO;
-import com.Ignis.donation.domain.Donation;
-import com.Ignis.user.entity.UserEntity;
-import com.Ignis.user.repository.UserRepository;
-import com.Ignis.post.domain.Post;
-import com.Ignis.post.bo.PostBO;
+import java.util.List;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.List;
+import com.Ignis.home.donation.domain.Donation;
+import com.Ignis.post.bo.PostBO;
+import com.Ignis.post.domain.Post;
+import com.Ignis.user.entity.UserEntity;
+import com.Ignis.user.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/admin")
@@ -21,7 +23,7 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final PostBO postBO;
-    private final DonationBO donationBO;
+    private final com.Ignis.home.donation.bo.DonationBO donationBO;
 
     @GetMapping("/main")
     public String adminMainPage() {
@@ -60,7 +62,7 @@ public class AdminController {
     }
 
     @GetMapping("/donation-detail-view/{id}")
-    public String donationDetailView(@PathVariable("id") int id, Model model) {
+    public String donationDetailView(@PathVariable("id") Long id, Model model) {
         Donation donation = donationBO.getDonationById(id);
         model.addAttribute("donation", donation);
         return "admin/adminDonationDetail";

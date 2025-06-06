@@ -1,0 +1,33 @@
+<!-- templates/volunteer/volunteerList.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>봉사 목록</title>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+<h1>봉사 목록</h1>
+<a href="/volunteer/volunteer-create-view">봉사 글 작성</a>
+<table border="1">
+    <thead>
+    <tr>
+        <th>제목</th>
+        <th>장소</th>
+        <th>기간</th>
+        <th>정원</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="volunteer : ${volunteerList}">
+        <td>
+            <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${volunteer.volunteerId})}" th:text="${volunteer.title}">제목</a>
+
+        </td>
+        <td th:text="${volunteer.location}">장소</td>
+        <td th:text="${volunteer.startTime} + ' ~ ' + ${volunteer.endTime}">기간</td>
+        <td th:text="${volunteer.currentPeople} + ' / ' + ${volunteer.maxParticipants}">정원</td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

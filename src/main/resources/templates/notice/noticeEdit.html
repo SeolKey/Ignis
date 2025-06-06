@@ -5,6 +5,7 @@
     <title>공지사항 수정</title>
 </head>
 <body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
     <h1>공지사항 수정</h1>
     <form th:action="@{'/notice/notice-edit-view/' + ${notice.id}}" method="post" th:object="${notice}">
         <label for="title">제목:</label><br>

@@ -28,8 +28,10 @@ public class UserRestController {
                                      HttpSession session) {
         Map<String, Object> result = new HashMap<>();
 
-        boolean success = userBO.login(userLoginId, password, session);
-        if (success) {
+        UserEntity user = userBO.getUserByLoginIdAndPassword(userLoginId, password);
+        if (user != null) {
+            session.setAttribute("userId", user.getUserId()); // ✅ 핵심
+            session.setAttribute("userName", user.getName());
             result.put("result", "성공");
         } else {
             result.put("code", 403);
@@ -38,6 +40,7 @@ public class UserRestController {
 
         return result;
     }
+
 
     @PostMapping("/do-sign-up")
     public Map<String, Object> signUp(@RequestBody UserEntity user) {

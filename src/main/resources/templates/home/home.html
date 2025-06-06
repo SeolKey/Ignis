@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>IGNIS 메인</title>
+    <style>
+        .section { margin: 40px 0; }
+        .card-container { display: flex; gap: 20px; }
+        .card { width: 200px; border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <main>
+        <!-- 배너 -->
+        <section>
+            <div style="background-color:#4285f4; color:white; padding:40px; border-radius:12px;">
+                <h2>여름, 시원한 바람을 느끼려면?</h2>
+                <p>새로 입고된 딥 부채 확인해보세요!</p>
+                <button onclick="location.href='#'">자세히 보기</button>
+            </div>
+        </section>
+
+        <!-- 기부 -->
+        <section class="section">
+            <div class="top-bar">
+                <h2>기부</h2>
+                <a href="/donation/donation-list-view">더 보러가기 →</a>
+            </div>
+            <div class="card-container">
+                <div class="card" th:each="item : ${donationList}">
+                    <a th:href="@{/donation/donation-detail-view(donationId=${item.donationId})}">
+                        <img th:src="@{${item.imagePath}}" alt="기부 이미지" style="width:100%; height:120px; object-fit:cover;">
+                        <p th:text="${item.title}">제목</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 봉사 -->
+        <section class="section">
+            <div class="top-bar">
+                <h2>봉사</h2>
+                <a href="/volunteer/volunteer-list-view">더 보러가기 →</a>
+            </div>
+            <div class="card-container">
+                <div class="card" th:each="item : ${volunteerList}">
+                    <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${item.volunteerId})}">
+                        <p th:text="${item.title}">제목</p>
+                        <p th:text="${item.location}">장소</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 펀딩 -->
+        <section class="section">
+            <div class="top-bar">
+                <h2>펀딩</h2>
+                <a href="/funding/funding-list-view">더 보러가기 →</a>
+            </div>
+            <div class="card-container">
+                <div class="card" th:each="item : ${fundingList}">
+                    <a th:href="@{/funding/funding-detail-view(fundingId=${item.fundingId})}">
+                        <p th:text="${item.title}">제목</p>
+                        <p th:text="'목표 금액: ' + ${item.maxPrice} + '원'">금액</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="margin-top:60px; text-align:center;">
+        <p>© 2025 IGNIS. 포트폴리오용 사이트입니다.</p>
+    </footer>
+</body>
+</html>

@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head><title>환영합니다</title></head>
 <body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 <h2>환영합니다!</h2>
 <p th:text="'안녕하세요, ' + ${user} + '님!'"/>
 <p th:text="'가입일: ' + ${createdAt}"></p>

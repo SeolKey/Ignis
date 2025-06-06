@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>펀딩 목록</title>
+    <style>
+        .funding-box {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+        }
+        .funding-title-link {
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+        }
+        .funding-title-link:hover {
+            color: #2a7ae2;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 공통 헤더 -->
+   <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <h1>펀딩 목록</h1>
+
+    <button onclick="location.href='/funding/funding-create-view'">펀딩 작성하기</button>
+
+    <div th:if="${fundingList != null}">
+        <div th:each="f : ${fundingList}" class="funding-box">
+            <a th:href="@{'/funding/detail/' + ${f.fundingId}}" class="funding-title-link" th:text="${f.title}">제목</a>
+            <p th:text="'목표 금액: ' + ${f.maxPrice} + '원'"></p>
+            <p th:text="'현재 금액: ' + ${f.currentPrice} + '원'"></p>
+            <p th:text="${f.description}">설명</p>
+        </div>
+    </div>
+
+</body>
+</html>

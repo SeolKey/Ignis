@@ -53,5 +53,9 @@ public class UserBO {
         }
         return false;
     }
+    
+    public UserEntity getUserByLoginIdAndPassword(String loginId, String password) {
+        return userRepository.findByUserLoginIdAndPassword(loginId, password); // 또는 너가 쓰는 방식
+    }
 }
 

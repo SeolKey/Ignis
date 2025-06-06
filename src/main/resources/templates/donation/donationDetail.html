@@ -1,23 +1,170 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>기부 상세 정보</title>
+    <title>기부 상세</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        .left-section {
+            flex: 2;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .left-section img {
+            width: 100%;
+            border-radius: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-top: 16px;
+            gap: 24px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .tabs .active {
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+        }
+
+        .right-section {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .right-section h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-bg {
+            background: #e9ecef;
+            border-radius: 8px;
+            height: 10px;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .progress-bar-fill {
+            background: #0d6efd;
+            height: 100%;
+            width: 60%; /* 동적으로 조정 가능 */
+            border-radius: 8px;
+        }
+
+        .stats {
+            margin: 20px 0;
+        }
+
+        .stats p {
+            margin: 4px 0;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            background-color: #0d6efd;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .share-box {
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .share-box button {
+            padding: 8px 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+
+        .project-description {
+            height: 200px;
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+    </style>
 </head>
 <body>
-<h1 th:text="${donation.title}">기부 제목</h1>
 
-<p><strong>작성일:</strong> <span th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</span></p>
-<p><strong>설명:</strong> <span th:text="${donation.description}">내용</span></p>
-<p><strong>계좌 정보:</strong> <span th:text="${donation.accountInfo}">계좌</span></p>
-<p><strong>목표 금액:</strong> <span th:text="${donation.maxPrice}">금액</span>원</p>
-<p><strong>현재 금액:</strong> <span th:text="${donation.currentPrice}">금액</span>원</p>
-<p><strong>상태:</strong> <span th:text="${donation.status}">상태</span></p>
-<div>
-    <img th:if="${donation.imagePath != null and donation.imagePath != ''}"
-         th:src="@{${donation.imagePath}}"
-         alt="기부 이미지"
-         width="300"/>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container">
+    <!-- 왼쪽 -->
+    <div class="left-section">
+        <img th:src="@{${donation.imagePath}}" alt="기부 이미지">
+        <div class="tabs">
+            <div class="active">상세내용</div>
+            <div>안내사항</div>
+            <div>댓글</div>
+        </div>
+
+        <div class="section-title">프로젝트 소개</div>
+        <div class="project-description" th:text="${donation.description}">기부 설명</div>
+
+        <div class="section-title">계좌 정보</div>
+        <p th:text="${donation.accountInfo}">은행 계좌</p>
+    </div>
+
+    <!-- 오른쪽 -->
+    <div class="right-section">
+        <h2 th:text="${donation.title}">기부 제목</h2>
+
+        <p th:text="'📅 ' + ${#temporals.format(donation.createdAt, 'yyyy.MM.dd')} + ' ~ ' + ${#temporals.format(donation.createdAt.plusDays(60), 'yyyy.MM.dd')} + ' (60일)'">기간</p>
+
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" th:style="'width:' + (${donation.currentPrice} * 100 / ${donation.maxPrice}) + '%'"></div>
+        </div>
+        <div style="color: #0d6efd; font-weight: bold;">
+            <span th:text="(${donation.currentPrice} * 100 / ${donation.maxPrice}) + '%'">60%</span> 달성
+        </div>
+
+        <div class="stats">
+            <p><strong>현재 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 0)} + '원'"></span></p>
+			<p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
+		</div>
+
+        <a href="#" class="btn">기부하기</a>
+
+        <div class="share-box">
+            <button onclick="navigator.share ? navigator.share({ title: '기부 공유', url: window.location.href }) : alert('공유 기능을 지원하지 않는 브라우저입니다.')">공유하기</button>
+        </div>
+    </div>
 </div>
+
 </body>
 </html>

@@ -34,6 +34,7 @@
     </script>
 </head>
 <body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 <h1>글 수정</h1>
 <form onsubmit="updatePost(event)">
     <input type="hidden" id="postId" th:value="${post.postId}">

@@ -1,32 +1,44 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>기부 목록</title>
+    <style>
+        .donation-box {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+        }
+        .donation-title-link {
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+        }
+        .donation-title-link:hover {
+            color: #2a7ae2;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<h1>기부 목록</h1>
-<a th:href="@{/donation/donation-create-view}">기부 글 작성</a>
-<table border="1">
-    <thead>
-    <tr>
-        <th>번호</th>
-        <th>제목</th>
-        <th>작성일</th>
-        <th>상태</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="donation : ${donationList}">
-        <td th:text="${donation.donationId}">1</td>
-        <td>
-            <a th:href="@{'/donation/donation-detail-view/' + ${donation.donationId}}"
-               th:text="${donation.title}">제목</a>
-        </td>
-        <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">날짜</td>
-        <td th:text="${donation.status}">상태</td>
-    </tr>
-    </tbody>
-</table>
+
+    <!-- ✅ 공통 헤더 추가 -->
+    <div th:replace="~{fragments/header :: commonHeader}"></div>
+
+    <h1>기부 프로젝트 목록</h1>
+
+    <button onclick="location.href='/donation/donation-create-view'">글 작성하기</button>
+
+    <div th:if="${donationList != null}">
+        <div th:each="d : ${donationList}" class="donation-box">
+            <a th:href="@{'/donation/detail/' + ${d.donationId}}" class="donation-title-link" th:text="${d.title}">제목</a>
+            <p th:text="'목표 금액: ' + ${d.maxPrice} + '원'"></p>
+            <p th:text="'현재 금액: ' + ${d.currentPrice} + '원'"></p>
+            <p th:text="${d.description}">설명</p>
+        </div>
+    </div>
+
 </body>
 </html>

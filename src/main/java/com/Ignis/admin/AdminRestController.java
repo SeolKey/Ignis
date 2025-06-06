@@ -1,13 +1,20 @@
 package com.Ignis.admin;
 
-import com.Ignis.common.enums.Status;
-import com.Ignis.donation.bo.DonationBO;
-import com.Ignis.post.bo.PostBO;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.Ignis.common.enums.Status;
+import com.Ignis.home.donation.bo.DonationBO;
+import com.Ignis.post.bo.PostBO;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/admin")
@@ -28,7 +35,7 @@ public class AdminRestController {
     }
 
     @PostMapping("/donation-status-update")
-    public String updateDonationStatus(@RequestParam("donationId") int donationId,
+    public String updateDonationStatus(@RequestParam("donationId") Long donationId,
                                        @RequestParam("status") Status status) {
         donationBO.updateDonationStatus(donationId, status);
         return "상태 변경 완료";

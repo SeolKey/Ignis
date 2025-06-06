@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>봉사 등록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        form label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        form input[type="text"],
+        form input[type="number"],
+        form input[type="datetime-local"],
+        form input[type="file"],
+        form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        form textarea {
+            height: 100px;
+        }
+
+        .btn-submit {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #337ab7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background-color: #23527c;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container">
+    <h1>봉사 등록</h1>
+
+    <form id="volunteerForm" enctype="multipart/form-data">
+        <input type="hidden" name="userId" value="1" /> <!-- 실제 로그인 유저로 교체 -->
+
+        <label for="title">제목</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="description">내용</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <label for="location">장소</label>
+        <input type="text" id="location" name="location" required>
+
+        <label for="startTime">시작 시간</label>
+        <input type="datetime-local" id="startTime" name="startTime" required>
+
+        <label for="endTime">종료 시간</label>
+        <input type="datetime-local" id="endTime" name="endTime" required>
+
+        <label for="maxParticipants">최대 인원</label>
+        <input type="number" id="maxParticipants" name="maxParticipants" required>
+
+        <label for="image">사진 업로드</label>
+        <input type="file" id="image" name="image">
+
+        <button type="submit" class="btn-submit">등록</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById("volunteerForm");
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        fetch("/volunteer/create", {
+            method: "POST",
+            body: formData
+        }).then(res => res.json())
+          .then(data => {
+              if (data.code === 1) {
+                  alert("등록 성공!");
+                  window.location.href = "/volunteer/volunteer-list-view";
+              } else {
+                  alert("실패: " + data.errorMessage);
+              }
+          });
+    });
+</script>
+
+</body>
+</html>
