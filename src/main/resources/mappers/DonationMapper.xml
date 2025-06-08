@@ -23,6 +23,26 @@
 	    WHERE status = 'APPROVED'
 	    ORDER BY created_at DESC
     </select>
+    
+    <!-- 전체 리스트 -->
+    <select id="selectPendingDonationList" resultType="com.Ignis.home.donation.domain.Donation">
+	     SELECT 
+	        donation_id AS donationId,
+	        user_id AS userId,
+	        title,
+	        description,
+	        account_info AS accountInfo,
+	        max_price AS maxPrice,
+	        current_price AS currentPrice,
+	        status,
+	        reject_reason AS rejectReason,
+	        image_path AS imagePath,
+	        created_at AS createdAt,
+	        updated_at AS updatedAt
+	    FROM donation
+	    WHERE status = 'PENDING'
+	    ORDER BY created_at DESC
+    </select>
 
     <!-- 최신순 n개 -->
     <select id="selectLatestDonation" resultType="com.Ignis.home.donation.domain.Donation">
@@ -50,7 +70,7 @@
 	    WHERE donation_id = #{donationId}
     </select>
     
-    <insert id="insertDonation" parameterType="com.Ignis.home.donation.domain.Donation">
+   <insert id="insertDonation" parameterType="com.Ignis.home.donation.domain.Donation">
 	    INSERT INTO donation (
 	        user_id,
 	        title,
@@ -77,6 +97,7 @@
 	        NOW()
 	    )
 	</insert>
+
 	
 	<select id="selectRecentDonationList" resultType="com.Ignis.home.donation.domain.Donation">
 	    SELECT

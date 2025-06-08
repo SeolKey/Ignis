@@ -13,6 +13,9 @@ public interface DonationMapper {
     // 전체 리스트
     List<Donation> selectDonationList();
 
+    // admin 전용
+    List<Donation> selectPendingDonationList();
+    
     // 최신순 n개
     List<Donation> selectLatestDonation(int limit);
 
@@ -20,7 +23,7 @@ public interface DonationMapper {
     Donation selectDonationById(Long donationId);
 
     // (선택) 등록, 수정, 삭제도 여기에 추가 가능
-    void insertDonation(Donation donation);
+    int insertDonation(Donation donation);
     
     List<Donation> selectRecentDonationList(int limit);
     

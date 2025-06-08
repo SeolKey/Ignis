@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.Ignis.home.donation.bo.DonationBO;
 import com.Ignis.home.donation.domain.Donation;
 import com.Ignis.post.bo.PostBO;
 import com.Ignis.post.domain.Post;
@@ -23,7 +24,7 @@ public class AdminController {
 
     private final UserRepository userRepository;
     private final PostBO postBO;
-    private final com.Ignis.home.donation.bo.DonationBO donationBO;
+    private final DonationBO donationBO;
 
     @GetMapping("/main")
     public String adminMainPage() {
@@ -56,7 +57,7 @@ public class AdminController {
 
     @GetMapping("/donation-list-view")
     public String donationListView(Model model) {
-        List<Donation> donationList = donationBO.getDonationList();
+        List<Donation> donationList = donationBO.getPendingDonationList();
         model.addAttribute("donationList", donationList);
         return "admin/adminDonationList";
     }
