@@ -18,7 +18,7 @@
         .bottom-section h3 { border-bottom: 1px solid #ccc; padding-bottom: 8px; }
         .related-projects { margin-top: 40px; }
         .related-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .related-item .thumb { width: 48px; height: 48px; background: #ddd; border-radius: 4px; }
+        .related-item .thumb { width: 48px; heigvht: 48px; background: #ddd; border-radius: 4px; }
         .related-item .text { font-size: 14px; }
     </style>
 </head>
@@ -41,7 +41,7 @@
                 목표 금액: <span th:text="${#numbers.formatDecimal(funding.maxPrice, 0, 'COMMA', 0, 'POINT') + '원'}"></span><br>
                 참여자: <span>328명</span>
             </div>
-            <button class="button">프로젝트 참여하기</button>
+            <button class="button" th:onclick="|location.href='@{/funding/participate/{id}(id=${funding.fundingId})}'|">프로젝트 참여하기</button>
             <div style="margin-top: 8px;">
                 <button class="button" style="background:#f3f3f3; color:#333;">공유하기</button>
             </div>

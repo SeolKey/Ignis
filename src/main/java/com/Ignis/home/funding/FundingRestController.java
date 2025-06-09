@@ -3,7 +3,9 @@ package com.Ignis.home.funding;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.Ignis.home.funding.bo.FundingPriceBO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +24,9 @@ public class FundingRestController {
 
     @Autowired
     private FundingBO fundingBO;
+
+    @Autowired
+    private FundingPriceBO fundingPriceBO;
 
     @PostMapping("/create")
     public Map<String, Object> createFunding(
@@ -57,4 +62,26 @@ public class FundingRestController {
 
         return result;
     }
+
+    @PostMapping("/participate")
+    public String participateFunding(
+            @RequestParam Long fundingId,
+            @RequestParam Integer givePrice,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/sign-in-view";
+        }
+
+        fundingPriceBO.participateFunding(userId, fundingId, givePrice);
+
+        session.setAttribute("participationUserId", userId);
+        session.setAttribute("participationFundingId", fundingId);
+        session.setAttribute("participationGivePrice", givePrice);
+
+        return "redirect:/funding/participate-complete";
+    }
+
+
 }

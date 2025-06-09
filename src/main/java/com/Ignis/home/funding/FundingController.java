@@ -2,6 +2,8 @@ package com.Ignis.home.funding;
 
 import java.util.List;
 
+import com.Ignis.home.funding.bo.FundingPriceBO;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,5 +38,32 @@ public class FundingController {
         Funding funding = fundingBO.getFundingById(fundingId);
         model.addAttribute("funding", funding);
         return "funding/fundingDetail";
+    }
+
+
+    @GetMapping("/participate/{fundingId}")
+    public String showParticipatePage(
+            @PathVariable Long fundingId,
+            Model model,
+            HttpSession session) {
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/sign-in-view";
+        }
+
+        model.addAttribute("funding", fundingBO.getFundingById(fundingId));
+        return "funding/fundingParticipate";
+    }
+
+    @GetMapping("/participate-complete")
+    public String participateCompletePage(
+            HttpSession session,
+            Model model) {
+
+        model.addAttribute("userId", session.getAttribute("participationUserId"));
+        model.addAttribute("fundingId", session.getAttribute("participationFundingId"));
+        model.addAttribute("givePrice", session.getAttribute("participationGivePrice"));
+        return "funding/fundingParticipateComplete";
     }
 }
