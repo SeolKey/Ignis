@@ -1,19 +1,185 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><title>회원가입</title></head>
-<body>
-<div th:replace="~{fragments/header :: commonHeader}"></div>
-<h2>회원가입</h2>
-<form id="signUpForm" action="/user/do-sign-up" method="post">
-    아이디: <input type="text" name="userLoginId"><br/>
-    비밀번호: <input type="password" name="password"><br/>
-    이름: <input type="text" name="name"><br/>
-    이메일: <input type="email" name="email"><br/>
-    전화번호: <input type="text" name="phoneNumber"><br/>
-    <input type="submit" value="회원가입">
-</form>
-</body>
+<head>
+<th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <title>회원가입</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f6fa;
+        }
 
+        .signup-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+            height: calc(100vh - 80px);
+        }
+
+        .signup-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 420px;
+        }
+
+        .signup-container h2 {
+            margin-bottom: 12px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .signup-container p.subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .form-check {
+		  display: flex;
+		  justify-content: space-between;
+		  align-items: center;
+		  margin-top: 12px;
+		  font-size: 14px;
+		}
+		
+        .signup-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #2979ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .signup-btn:hover {
+            background-color: #1565c0;
+        }
+
+        .bottom-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .bottom-link a {
+            color: #2979ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .required {
+            color: red;
+            font-size: 13px;
+            margin-left: 4px;
+        }
+        
+		.form-check {
+		  display: flex;
+		  justify-content: space-between;
+		  align-items: center;
+		  margin-top: 12px;
+		  font-size: 14px;
+		}
+		
+		.consent-text {
+		  flex-grow: 1;
+		  margin-right: 12px;
+		  white-space: nowrap;
+		}
+    </style>
+</head>
+<body>
+
+<!-- 헤더 포함 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<!-- 회원가입 UI -->
+<div class="signup-wrapper">
+    <div class="signup-container">
+        <h2>회원가입</h2>
+        <p class="subtitle">필수 정보를 입력하여 회원가입을 완료해 주세요.</p>
+
+        <form id="signUpForm" action="/user/do-sign-up" method="post">
+            <div class="form-group">
+                <label for="userLoginId">아이디 <span class="required">*</span></label>
+                <input type="text" id="userLoginId" name="userLoginId" placeholder="영문, 숫자 5-20자">
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호 <span class="required">*</span></label>
+                <input type="password" id="password" name="password" placeholder="영문, 숫자, 특수문자 조합 8-20자">
+            </div>
+
+            <div class="form-group">
+                <label for="passwordCheck">비밀번호 확인</label>
+                <input type="password" id="passwordCheck" placeholder="비밀번호를 다시 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" name="name" placeholder="이름을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">전화번호</label>
+                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="'-' 없이 숫자만 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" name="email" placeholder="example@email.com">
+            </div>
+
+		<!-- HTML 일부 (수정된 form-check 부분) -->
+		<div class="form-group">
+		    <label for="privacy">개인정보 수집 및 이용 동의</label>
+		    <textarea id="privacy" rows="4" placeholder="본인은 개인정보 수집 및 이용에 동의합니다."></textarea>
+		
+		    <div class="form-check">
+			    <span class="consent-text">개인정보 수집 및 이용에 동의합니다. (필수)</span>
+  				<input type="checkbox" required>
+			</div>
+		</div>
+
+
+
+            <button type="submit" class="signup-btn">회원가입</button>
+        </form>
+
+        <div class="bottom-link">
+            이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인</a>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery + Ajax 처리 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function () {
@@ -21,12 +187,18 @@ $(document).ready(function () {
         e.preventDefault();
 
         const formData = {
-            userLoginId: $("input[name=userLoginId]").val().trim(),
-            password: $("input[name=password]").val(),
-            name: $("input[name=name]").val(),
-            email: $("input[name=email]").val(),
-            phoneNumber: $("input[name=phoneNumber]").val()
+            userLoginId: $("#userLoginId").val().trim(),
+            password: $("#password").val(),
+            name: $("#name").val(),
+            email: $("#email").val(),
+            phoneNumber: $("#phoneNumber").val()
         };
+
+        const passwordCheck = $("#passwordCheck").val();
+        if (formData.password !== passwordCheck) {
+            alert("비밀번호가 일치하지 않습니다.");
+            return;
+        }
 
         $.ajax({
             url: $(this).attr('action'),
@@ -46,4 +218,5 @@ $(document).ready(function () {
 });
 </script>
 
+</body>
 </html>

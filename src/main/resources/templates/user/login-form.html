@@ -1,55 +1,163 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+	<th:block th:replace="fragments/headerStyle :: headerStyle" />
     <title>로그인</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Noto Sans KR", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f6fa;
+        }
+
+        .login-wrapper {
+		    display: flex;
+		    justify-content: center;
+		    align-items: center;
+		    height: calc(100vh - 80px);
+		    margin-top: -40px; /* 중앙 기준에서 위로 살짝 당김 */
+		}
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 360px;
+        }
+
+        .login-container h2 {
+            margin-bottom: 24px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .form-check {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #2979ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .login-btn:hover {
+            background-color: #1565c0;
+        }
+
+        .bottom-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .bottom-link a {
+            color: #2979ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .error-msg {
+            color: red;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+
+<!-- 헤더 영역 -->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-<h2>로그인</h2>
 
-<form id="loginForm" action="/user/do-login" method="post">
-    아이디: <input type="text" name="userLoginId"><br/>
-    비밀번호: <input type="password" name="password"><br/>
-    <input type="submit" value="로그인">
-</form>
+<!-- 로그인 UI -->
+<div class="login-wrapper">
+    <div class="login-container">
+        <h2>로그인</h2>
 
-<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+        <p th:if="${error}" th:text="${error}" class="error-msg"></p>
 
-<br/>
-<form th:action="@{/user/sign-up}" method="get">
-    <input type="submit" value="회원가입 하러가기">
-</form>
-</body>
+        <form id="loginForm" action="/user/do-login" method="post">
+            <div class="form-group">
+                <label for="userLoginId">아이디</label>
+                <input type="text" id="userLoginId" name="userLoginId" placeholder="아이디를 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요">
+            </div>
+            <div class="form-check">
+                <label><input type="checkbox" name="rememberMe"> 로그인 상태 유지</label>
+                <a href="#" style="color: #2979ff;">비밀번호 찾기</a>
+            </div>
+            <button type="submit" class="login-btn">로그인</button>
+        </form>
 
+        <div class="bottom-link">
+            아직 회원이 아니신가요? <a th:href="@{/user/sign-up}">회원가입</a>
+        </div>
+    </div>
+</div>
+
+<!-- 스크립트 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-	$(document).ready(function () {
-	    $('#loginForm').on('submit', function(e) {
-	        e.preventDefault(); // 기본 form 전송 막기
-	
-	        let loginId = $("input[name=userLoginId]").val().trim();
-	        let password = $("input[name=password]").val();
-	
-	        if (!loginId || !password) {
-	            alert("아이디와 비밀번호를 입력해주세요.");
-	            return;
-	        }
-	
-	        let url = $(this).attr('action');
-	        let params = $(this).serialize();
-	
-	        $.post(url, params)
-	            .done(function(data) {
-	                if (data.result === "성공") {
-	                    location.href = "/user/welcome";
-	                } else if (data.code === 403) {
-	                    alert(data.error_message);
-	                } else {
-	                    alert("서버 오류입니다. 관리자에게 문의하세요.");
-	                }
-	            });
-	    });
-	});
-</script>
+    $(document).ready(function () {
+        $('#loginForm').on('submit', function(e) {
+            e.preventDefault();
 
+            let loginId = $("#userLoginId").val().trim();
+            let password = $("#password").val();
+
+            if (!loginId || !password) {
+                alert("아이디와 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            let url = $(this).attr('action');
+            let params = $(this).serialize();
+
+            $.post(url, params)
+                .done(function(data) {
+                    if (data.result === "성공") {
+                        location.href = "/user/welcome";
+                    } else if (data.code === 403) {
+                    	alert(data.error_message);
+                    } else {
+                        alert("서버 오류입니다. 관리자에게 문의하세요.");
+                    }
+                });
+        });
+    });
+</script>
+</body>
 </html>

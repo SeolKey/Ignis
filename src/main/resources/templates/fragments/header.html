@@ -1,22 +1,16 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-</head>
-<body>
-    <div th:fragment="commonHeader">
-        <header style="background: #eee; padding: 16px;">
-            <h2>🧡 이그니스</h2>
-            <nav>
-                <a href="/">메인</a> |
-                <a href="/notice/notice-list-view">공지사항</a> |
-                <a href="/donation/donation-list-view">기부</a> |
-                <a href="/volunteer/volunteer-list-view">봉사</a> |
-                <a href="/funding/funding-list-view">펀딩</a> |
-                <a href="/post/post-list-view">자유게시판</a>
-            </nav>
-        </header>
-        <hr>
-    </div>
-</body>
-</html>
+<!-- fragments/header.html -->
+<div th:fragment="commonHeader">
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon"></span>
+            IGNIS
+        </div>
+        <nav class="nav-links">
+            <a href="/">홈</a>
+            <a href="/donation/donation-list-view">기부</a>
+            <a href="/volunteer/volunteer-list-view">봉사</a>
+            <a href="/funding/funding-list-view">펀딩</a>
+            <a href="/user/mypage">마이페이지</a>
+        </nav>
+    </header>
+</div>

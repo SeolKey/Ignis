@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+<th:block th:replace="fragments/headerStyle :: headerStyle" />
     <meta charset="UTF-8">
     <title>IGNIS 메인</title>
     <style>
@@ -39,37 +40,39 @@
             </div>
         </section>
 
-        <!-- 봉사 -->
-        <section class="section">
-            <div class="top-bar">
-                <h2>봉사</h2>
-                <a href="/volunteer/volunteer-list-view">더 보러가기 →</a>
-            </div>
-            <div class="card-container">
-                <div class="card" th:each="item : ${volunteerList}">
-                    <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${item.volunteerId})}">
-                        <p th:text="${item.title}">제목</p>
-                        <p th:text="${item.location}">장소</p>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <!-- 펀딩 -->
-        <section class="section">
-            <div class="top-bar">
-                <h2>펀딩</h2>
-                <a href="/funding/funding-list-view">더 보러가기 →</a>
-            </div>
-            <div class="card-container">
-                <div class="card" th:each="item : ${fundingList}">
-                    <a th:href="@{/funding/funding-detail-view(fundingId=${item.fundingId})}">
-                        <p th:text="${item.title}">제목</p>
-                        <p th:text="'목표 금액: ' + ${item.maxPrice} + '원'">금액</p>
-                    </a>
-                </div>
-            </div>
-        </section>
+       <!-- 봉사 -->
+			<section class="section">
+			    <div class="top-bar">
+			        <h2>봉사</h2>
+			        <a href="/volunteer/volunteer-list-view">더 보러가기 →</a>
+			    </div>
+			    <div class="card-container">
+			        <div class="card" th:each="item : ${volunteerList}">
+			            <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${item.volunteerId})}">
+			                <img th:src="@{${item.imagePath}}" alt="봉사 이미지" style="width:100%; height:120px; object-fit:cover;">
+			                <p th:text="${item.title}">제목</p>
+			                <p th:text="${item.location}">장소</p>
+			            </a>
+			        </div>
+			    </div>
+			</section>
+			
+			<!-- 펀딩 -->
+			<section class="section">
+			    <div class="top-bar">
+			        <h2>펀딩</h2>
+			        <a href="/funding/funding-list-view">더 보러가기 →</a>
+			    </div>
+			    <div class="card-container">
+			        <div class="card" th:each="item : ${fundingList}">
+			            <a th:href="@{/funding/funding-detail-view(fundingId=${item.fundingId})}">
+			                <img th:src="@{${item.imagePath}}" alt="펀딩 이미지" style="width:100%; height:120px; object-fit:cover;">
+			                <p th:text="${item.title}">제목</p>
+			                <p th:text="'목표 금액: ' + ${item.maxPrice} + '원'">금액</p>
+			            </a>
+			        </div>
+			    </div>
+			</section>
     </main>
 
     <footer style="margin-top:60px; text-align:center;">
