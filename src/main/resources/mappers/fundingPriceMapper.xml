@@ -22,11 +22,4 @@
                  )
     </insert>
 
-    <update id="updateCurrentPrice">
-        UPDATE funding
-        SET current_price = current_price + #{amount},
-            updated_at = NOW()
-        WHERE funding_id = #{fundingId}
-    </update>
-
 </mapper>

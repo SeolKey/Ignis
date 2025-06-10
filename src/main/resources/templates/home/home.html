@@ -65,9 +65,8 @@
 			    </div>
 			    <div class="card-container">
 			        <div class="card" th:each="item : ${fundingList}">
-			            <a th:href="@{/funding/funding-detail-view(fundingId=${item.fundingId})}">
 			                <img th:src="@{${item.imagePath}}" alt="펀딩 이미지" style="width:100%; height:120px; object-fit:cover;">
-			                <p th:text="${item.title}">제목</p>
+			                			            <a th:href="@{'/funding/funding-detail-view/' + ${item.fundingId}}" class="funding-title-link" th:text="${item.title}"></a>
 			                <p th:text="'목표 금액: ' + ${item.maxPrice} + '원'">금액</p>
 			            </a>
 			        </div>

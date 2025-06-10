@@ -33,7 +33,7 @@ public class FundingController {
         return "funding/fundingCreate";
     }
 
-    @GetMapping("/detail/{fundingId}")
+    @GetMapping("/funding-detail-view/{fundingId}")
     public String fundingDetailPage(@PathVariable("fundingId") Long fundingId, Model model) {
         Funding funding = fundingBO.getFundingById(fundingId);
         model.addAttribute("funding", funding);
@@ -43,7 +43,7 @@ public class FundingController {
 
     @GetMapping("/participate/{fundingId}")
     public String showParticipatePage(
-            @PathVariable Long fundingId,
+    		@PathVariable("fundingId") Long fundingId,
             Model model,
             HttpSession session) {
 

@@ -7,6 +7,4 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface FundingPriceMapper {
     void insertFundingPrice(FundingPrice fundingPrice);
-    void updateCurrentPrice(@Param("fundingId") Long fundingId, @Param("amount") Integer amount
-    );
 }

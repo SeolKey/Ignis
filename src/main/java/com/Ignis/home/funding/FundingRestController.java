@@ -65,8 +65,8 @@ public class FundingRestController {
 
     @PostMapping("/participate")
     public String participateFunding(
-            @RequestParam Long fundingId,
-            @RequestParam Integer givePrice,
+            @RequestParam("fundingId") Long fundingId,
+            @RequestParam("givePrice") Integer givePrice,
             HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
