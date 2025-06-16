@@ -34,7 +34,7 @@
 
     <div th:if="${donationList != null}">
         <div th:each="d : ${donationList}" class="donation-box">
-            <a th:href="@{'/donation/detail/' + ${d.donationId}}" class="donation-title-link" th:text="${d.title}">제목</a>
+            <a th:href="@{/donation/donation-detail-view(donationId=${d.donationId})}" class="donation-title-link" th:text="${d.title}">제목</a>
             <p th:text="'목표 금액: ' + ${d.maxPrice} + '원'"></p>
             <p th:text="'현재 금액: ' + ${d.currentPrice} + '원'"></p>
             <p th:text="${d.description}">설명</p>

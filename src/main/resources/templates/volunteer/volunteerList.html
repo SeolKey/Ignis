@@ -1,34 +1,47 @@
-<!-- templates/volunteer/volunteerList.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
 <th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <meta charset="UTF-8">
     <title>봉사 목록</title>
+    <style>
+        .volunteer-box {
+            border: 1px solid #ccc;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-radius: 6px;
+        }
+        .volunteer-title-link {
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+        }
+        .volunteer-title-link:hover {
+            color: #2a7ae2;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-<div th:replace="~{fragments/header :: commonHeader}"></div>
-<h1>봉사 목록</h1>
-<a href="/volunteer/volunteer-create-view">봉사 글 작성</a>
-<table border="1">
-    <thead>
-    <tr>
-        <th>제목</th>
-        <th>장소</th>
-        <th>기간</th>
-        <th>정원</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="volunteer : ${volunteerList}">
-        <td>
-            <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${volunteer.volunteerId})}" th:text="${volunteer.title}">제목</a>
 
-        </td>
-        <td th:text="${volunteer.location}">장소</td>
-        <td th:text="${volunteer.startTime} + ' ~ ' + ${volunteer.endTime}">기간</td>
-        <td th:text="${volunteer.currentPeople} + ' / ' + ${volunteer.maxParticipants}">정원</td>
-    </tr>
-    </tbody>
-</table>
+<!-- 공통 헤더 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<h1>봉사 목록</h1>
+
+<button onclick="location.href='/volunteer/volunteer-create-view'">봉사 글 작성</button>
+
+<div th:if="${volunteerList != null}">
+    <div th:each="v : ${volunteerList}" class="volunteer-box">
+        <a th:href="@{/volunteer/volunteer-detail-view(volunteerId=${v.volunteerId})}" 
+           class="volunteer-title-link" 
+           th:text="${v.title}">제목</a>
+        <p th:text="'장소: ' + ${v.location}">장소</p>
+        <p th:text="'기간: ' + ${#temporals.format(v.startTime, 'yyyy-MM-dd HH:mm')} + ' ~ ' + ${#temporals.format(v.endTime, 'yyyy-MM-dd HH:mm')}">기간</p>
+        <p th:text="'정원: ' + ${v.currentPeople} + ' / ' + ${v.maxParticipants}">정원</p>
+    </div>
+</div>
+
 </body>
 </html>

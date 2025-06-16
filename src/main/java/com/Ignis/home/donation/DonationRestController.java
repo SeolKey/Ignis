@@ -5,14 +5,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.Ignis.common.enums.Status;
 import com.Ignis.home.donation.bo.DonationBO;
 import com.Ignis.home.donation.domain.Donation;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/donation")
@@ -29,7 +35,13 @@ public class DonationRestController {
 
     @PostMapping("/create")
     public Map<String, Object> createDonation(
-            @RequestBody Donation donation,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(value = "accountInfo", required = false) String accountInfo,
+            @RequestParam("maxPrice") Integer maxPrice,
+            @RequestParam(value = "currentPrice", required = false, defaultValue = "0") Integer currentPrice,
+            @RequestParam(value = "rejectReason", required = false, defaultValue = "") String rejectReason,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             HttpSession session,
             HttpServletResponse response) {
 
@@ -37,26 +49,24 @@ public class DonationRestController {
 
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 🔥 실제 HTTP 401로 응답
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             result.put("error_message", "로그인이 필요합니다.");
             return result;
         }
 
+        // ✅ Donation 객체 생성 및 필드 설정
+        Donation donation = new Donation();
         donation.setUserId(userId);
+        donation.setTitle(title);
+        donation.setDescription(description);
+        donation.setAccountInfo(accountInfo);
+        donation.setMaxPrice(maxPrice);
+        donation.setCurrentPrice(currentPrice);
+        donation.setRejectReason(rejectReason);
         donation.setStatus("PENDING");
 
-        if (donation.getCurrentPrice() == null) {
-            donation.setCurrentPrice(0);
-        }
-        if (donation.getRejectReason() == null) {
-            donation.setRejectReason("");
-        }
-
-        System.out.println("✅ 최종 insert할 donation 객체: " + donation);
-
         try {
-            int rows = donationBO.insertDonation(donation);
-            System.out.println("✅ insert된 row 수: " + rows);
+            donationBO.insertDonation(donation, file); // ✅ 이미지 포함 처리
             result.put("result", "success");
         } catch (Exception e) {
             e.printStackTrace();
@@ -66,6 +76,8 @@ public class DonationRestController {
 
         return result;
     }
+
+
 
     @PostMapping("/update-status")
     public Map<String, Object> updateDonationStatus(
