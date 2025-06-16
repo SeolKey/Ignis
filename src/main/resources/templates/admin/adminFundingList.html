@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <meta charset="UTF-8">
+    <title>펀딩글 목록</title>
+</head>
+<body>
+<h1>관리자 - 기부글 목록</h1>
+<table border="1">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>상태</th>
+        <th>작성일</th>
+        <th>관리</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="funding : ${fundingList}">
+        <td th:text="${funding.fundingId}"></td>
+        <td>
+            <a th:href="@{'/admin/funding-detail-view/' + ${funding.fundingId}}"
+               th:text="${funding.title}"></a>
+        </td>
+        <td th:text="${funding.userId}"></td>
+        <td th:text="${funding.status}"></td>
+        <td th:text="${#temporals.format(funding.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 날짜 포맷 추가 -->
+        <td>
+            <form th:action="@{'/admin/funding-status-update'}" method="post">
+                <input type="hidden" name="fundingId" th:value="${funding.donationId}" />
+                <select name="status">
+                    <option value="PENDING">보류</option>
+                    <option value="APPROVED">승인</option>
+                    <option value="REJECTED">거절</option>
+                </select>
+                <button type="submit">변경</button>
+            </form>
+            <form th:action="@{'/admin/Funding-delete/' + ${funding.fundingId}}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                <input type="hidden" name="_method" value="delete" />
+                <button type="submit">삭제</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

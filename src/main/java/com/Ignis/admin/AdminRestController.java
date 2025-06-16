@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.Ignis.common.enums.Status;
 import com.Ignis.home.donation.bo.DonationBO;
 import com.Ignis.post.bo.PostBO;
+import com.Ignis.home.funding.bo.FundingBO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +24,7 @@ public class AdminRestController {
 
     private final PostBO postBO;
     private final DonationBO donationBO;
+    private final FundingBO fundingBO;
 
     @DeleteMapping("/delete-post/{id}")
     public Map<String, Object> deletePost(@PathVariable int id) {
@@ -48,5 +50,11 @@ public class AdminRestController {
         donationBO.deletedonation(donationId);
         result.put("result", "삭제 성공");
         return result;
+    }
+
+    @PostMapping("/funding-status-update")
+    public String updateFundingStatus(@RequestParam("fundingId") Long fundingId, @RequestParam("status") Status status) {
+        fundingBO.updateFundingStatus(fundingId, status);
+        return "상태 변경 완료";
     }
 }

@@ -2,6 +2,8 @@ package com.Ignis.home.funding.bo;
 
 import java.util.List;
 
+import com.Ignis.common.enums.Status;
+import com.Ignis.home.donation.domain.Donation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +20,7 @@ public class FundingBO {
 
     @Autowired
     private FundingMapper fundingMapper;
-    
+
     @Autowired
     private FileManagerService fileManagerService;
 
@@ -35,8 +37,18 @@ public class FundingBO {
         funding.setImagePath(imagePath);
         fundingMapper.insertFunding(funding);
     }
-    
+
     public List<Funding> getRecentFundingList(int limit) {
         return fundingMapper.selectRecentFundingList(limit);
+    }
+
+    public List<Funding> getPendingFundingList() {
+        return fundingMapper.selectPendingFundingList();
+    }
+
+    public void updateFundingStatus(Long fundingId, Status status) {
+        fundingMapper.updateFundingStatus(fundingId, status.name());
+    }
+    public void deleteFunding (int fundingId){fundingMapper.deleteFunding(fundingId);
     }
 }

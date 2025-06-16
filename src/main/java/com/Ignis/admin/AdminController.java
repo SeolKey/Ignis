@@ -2,6 +2,8 @@ package com.Ignis.admin;
 
 import java.util.List;
 
+import com.Ignis.home.funding.bo.FundingBO;
+import com.Ignis.home.funding.domain.Funding;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ public class AdminController {
     private final UserRepository userRepository;
     private final PostBO postBO;
     private final DonationBO donationBO;
+    private final FundingBO fundingBO;
 
     @GetMapping("/main")
     public String adminMainPage() {
@@ -69,4 +72,17 @@ public class AdminController {
         return "admin/adminDonationDetail";
     }
 
+    @GetMapping("/funding-list-view")
+    public String fundingListView(Model model) {
+        List<Funding> fundingList = fundingBO.getPendingFundingList();
+        model.addAttribute("fundingList", fundingList);
+        return "admin/adminFundingList";
+    }
+
+    @GetMapping("/funding-detail-view/{id}")
+    public String fundingDetailView(@PathVariable("id") Long id, Model model) {
+        Funding funding = fundingBO.getFundingById(id);
+        model.addAttribute("funding", funding);
+        return "admin/adminFundingDetail";
+    }
 }

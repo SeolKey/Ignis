@@ -93,4 +93,33 @@
         WHERE funding_id = #{fundingId}
     </update>
 
+    <select id="selectPendingFundingList" resultType="com.Ignis.home.funding.domain.Funding">
+        SELECT
+            funding_id AS fundingId,
+            user_id AS userId,
+            title,
+            description,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            image_path AS imagePath,
+            status,
+            reject_reason AS rejectReason,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM funding
+        WHERE status = 'PENDING'
+        ORDER BY created_at DESC
+    </select>
+
+    <update id="updateFundingStatus">
+        UPDATE funding
+        SET status = #{status},
+            reject_reason = #{rejectReason},
+            updated_at = NOW()
+        WHERE funding_id = #{fundingId}
+    </update>
+    <delete id="deleteFunding" parameterType="Long">
+        DELETE FROM funding WHERE funding_id = #{fundingId}
+    </delete>
+
 </mapper>

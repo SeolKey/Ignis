@@ -3,13 +3,11 @@ package com.Ignis.home.funding;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.Ignis.common.enums.Status;
 import com.Ignis.home.funding.bo.FundingPriceBO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.Ignis.common.FileManagerService;
@@ -82,6 +80,18 @@ public class FundingRestController {
 
         return "redirect:/funding/participate-complete";
     }
+
+    @PostMapping("/update-status")
+    public Map<String,Object> updateStatus(
+            @RequestParam("fundingId") Long fundingId,
+            @RequestParam("status") Status status
+    ) {
+        fundingBO.updateFundingStatus(fundingId, status);
+        Map<String,Object> r = new HashMap<>();
+        r.put("result", "success");
+        return r;
+    }
+
 
 
 }
