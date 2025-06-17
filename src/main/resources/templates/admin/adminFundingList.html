@@ -6,7 +6,7 @@
     <title>펀딩글 목록</title>
 </head>
 <body>
-<h1>관리자 - 기부글 목록</h1>
+<h1>관리자 - 펀딩글 목록</h1>
 <table border="1">
     <thead>
     <tr>
@@ -29,15 +29,19 @@
         <td th:text="${funding.status}"></td>
         <td th:text="${#temporals.format(funding.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 날짜 포맷 추가 -->
         <td>
-            <form th:action="@{'/admin/funding-status-update'}" method="post">
-                <input type="hidden" name="fundingId" th:value="${funding.donationId}" />
-                <select name="status">
-                    <option value="PENDING">보류</option>
-                    <option value="APPROVED">승인</option>
-                    <option value="REJECTED">거절</option>
-                </select>
-                <button type="submit">변경</button>
-            </form>
+       <form th:action="@{'/admin/funding-status-update'}" method="post">
+		    <input type="hidden" name="fundingId" th:value="${funding.fundingId}" />
+		    <select name="status" onchange="toggleRejectReason(this, [[${funding.fundingId}]])">
+		        <option value="PENDING">보류</option>
+		        <option value="APPROVED">승인</option>
+		        <option value="REJECTED">거절</option>
+		    </select>
+		    <div th:id="'reject-reason-' + ${funding.fundingId}" style="display: none;">
+		        <input type="text" name="rejectReason" placeholder="거절 사유 입력" />
+		    </div>
+		    <button type="submit">변경</button>
+		</form>
+
             <form th:action="@{'/admin/Funding-delete/' + ${funding.fundingId}}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
                 <input type="hidden" name="_method" value="delete" />
                 <button type="submit">삭제</button>
@@ -46,5 +50,15 @@
     </tr>
     </tbody>
 </table>
+<script>
+    function toggleRejectReason(selectElement, fundingId) {
+        const targetDiv = document.getElementById("reject-reason-" + fundingId);
+        if (selectElement.value === "REJECTED") {
+            targetDiv.style.display = "block";
+        } else {
+            targetDiv.style.display = "none";
+        }
+    }
+</script>
 </body>
 </html>

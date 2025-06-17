@@ -22,7 +22,11 @@ public interface FundingMapper {
     void updateCurrentPrice(@Param("fundingId") Long fundingId, @Param("amount") Integer amount);
     //관리자 기능
     List<Funding> selectPendingFundingList();
-    void updateFundingStatus(@Param("fundingId") Long fundingId, @Param("status") String status);
+    
+    void updateFundingStatus(@Param("fundingId") Long fundingId,
+            @Param("status") String status,
+            @Param("rejectReason") String rejectReason);
+    
     void deleteFunding(int fundingId);
 }
 

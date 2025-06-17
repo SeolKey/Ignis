@@ -83,13 +83,13 @@ public class FundingRestController {
 
     @PostMapping("/update-status")
     public Map<String,Object> updateStatus(
-            @RequestParam("fundingId") Long fundingId,
-            @RequestParam("status") Status status
-    ) {
-        fundingBO.updateFundingStatus(fundingId, status);
-        Map<String,Object> r = new HashMap<>();
-        r.put("result", "success");
-        return r;
+    		@RequestParam("fundingId") Long fundingId,
+            @RequestParam("status") Status status,
+            @RequestParam(value = "rejectReason", required = false) String rejectReason){
+    	fundingBO.updateFundingStatus(fundingId, status, rejectReason);
+        Map<String, Object> result = new HashMap<>();
+        result.put("result", "success");
+        return result;
     }
 
 

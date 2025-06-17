@@ -118,6 +118,7 @@
             updated_at = NOW()
         WHERE funding_id = #{fundingId}
     </update>
+    
     <delete id="deleteFunding" parameterType="Long">
         DELETE FROM funding WHERE funding_id = #{fundingId}
     </delete>

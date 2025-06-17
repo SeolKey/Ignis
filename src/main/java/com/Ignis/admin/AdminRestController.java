@@ -53,8 +53,8 @@ public class AdminRestController {
     }
 
     @PostMapping("/funding-status-update")
-    public String updateFundingStatus(@RequestParam("fundingId") Long fundingId, @RequestParam("status") Status status) {
-        fundingBO.updateFundingStatus(fundingId, status);
+    public String updateFundingStatus(@RequestParam("fundingId") Long fundingId, @RequestParam("status") Status status, @RequestParam(value = "rejectReason", required = false) String rejectReason) {
+        fundingBO.updateFundingStatus(fundingId, status, rejectReason);
         return "상태 변경 완료";
     }
 }

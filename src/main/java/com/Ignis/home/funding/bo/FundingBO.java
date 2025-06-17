@@ -46,9 +46,10 @@ public class FundingBO {
         return fundingMapper.selectPendingFundingList();
     }
 
-    public void updateFundingStatus(Long fundingId, Status status) {
-        fundingMapper.updateFundingStatus(fundingId, status.name());
+    public void updateFundingStatus(Long fundingId, Status status, String rejectReason) {
+        fundingMapper.updateFundingStatus(fundingId, status.name(), rejectReason);
     }
+    
     public void deleteFunding (int fundingId){fundingMapper.deleteFunding(fundingId);
     }
 }
