@@ -1,5 +1,6 @@
 package com.Ignis.user.bo;
 
+import com.Ignis.common.util.SecurityUtil;
 import org.springframework.stereotype.Component;
 
 import com.Ignis.user.entity.UserEntity;
@@ -15,7 +16,8 @@ public class UserBO {
     private final UserRepository userRepository;
 
     public void signUp(UserEntity user) {
-        user.assignDefaultRole(); // 도메인 로직 호출
+        user.assignDefaultRole();// 도메인 로직 호출
+        user.setPassword(SecurityUtil.sha256(user.getPassword()));
         userRepository.save(user);
     }
 
@@ -55,7 +57,11 @@ public class UserBO {
     }
     
     public UserEntity getUserByLoginIdAndPassword(String loginId, String password) {
-        return userRepository.findByUserLoginIdAndPassword(loginId, password); // 또는 너가 쓰는 방식
+        UserEntity user = userRepository.findByUserLoginId(loginId);
+        if(user != null && user.isCorrectPassword(password)){
+            return user;
+        }
+        return null;
     }
 }
 

@@ -2,6 +2,7 @@ package com.Ignis.user.entity;
 
 import java.time.LocalDateTime;
 
+import com.Ignis.common.util.SecurityUtil;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
@@ -53,6 +54,7 @@ public class UserEntity {
     }
 
     public boolean isCorrectPassword(String rawPassword) {
-        return this.password.equals(rawPassword);
+        String hashedInput = SecurityUtil.sha256(rawPassword);
+        return this.password.equals(hashedInput);
     }
 }
