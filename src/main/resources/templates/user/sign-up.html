@@ -60,13 +60,13 @@
         }
 
         .form-check {
-		  display: flex;
-		  justify-content: space-between;
-		  align-items: center;
-		  margin-top: 12px;
-		  font-size: 14px;
-		}
-		
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
         .signup-btn {
             width: 100%;
             padding: 12px;
@@ -99,33 +99,20 @@
             font-size: 13px;
             margin-left: 4px;
         }
-        
-		.form-check {
-		  display: flex;
-		  justify-content: space-between;
-		  align-items: center;
-		  margin-top: 12px;
-		  font-size: 14px;
-		}
-		
-		.consent-text {
-		  flex-grow: 1;
-		  margin-right: 12px;
-		  white-space: nowrap;
-		}
+
+        .consent-text {
+            flex-grow: 1;
+            margin-right: 12px;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
-
-<!-- 헤더 포함 -->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
-
-<!-- 회원가입 UI -->
 <div class="signup-wrapper">
     <div class="signup-container">
         <h2>회원가입</h2>
         <p class="subtitle">필수 정보를 입력하여 회원가입을 완료해 주세요.</p>
-
         <form id="signUpForm" action="/user/do-sign-up" method="post">
             <div class="form-group">
                 <label for="userLoginId">아이디 <span class="required">*</span></label>
@@ -149,42 +136,87 @@
 
             <div class="form-group">
                 <label for="phoneNumber">전화번호</label>
-                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="'-' 없이 숫자만 입력하세요">
+                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="'-'없이 숫자만 입력하세요">
             </div>
 
             <div class="form-group">
                 <label for="email">이메일</label>
-                <input type="email" id="email" name="email" placeholder="example@email.com">
+                <div style="display: flex; gap: 8px;">
+                    <input type="email" id="email" name="email" placeholder="example@email.com" style="flex: 1;">
+                    <button type="button" id="sendCodeBtn" style="width: 120px;"> 인증요청 </button>
+                </div>
             </div>
 
-		<!-- HTML 일부 (수정된 form-check 부분) -->
-		<div class="form-group">
-		    <label for="privacy">개인정보 수집 및 이용 동의</label>
-		    <textarea id="privacy" rows="4" placeholder="본인은 개인정보 수집 및 이용에 동의합니다."></textarea>
-		
-		    <div class="form-check">
-			    <span class="consent-text">개인정보 수집 및 이용에 동의합니다. (필수)</span>
-  				<input type="checkbox" required>
-			</div>
-		</div>
+            <div class="form-group" id="emailCodeArea" style="display: none;">
+                <label for="emailCode">인증 코드</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="emailCode" placeholder="인증코드를 입력하세요" style="flex: 1;">
+                    <button type="button" id="verifyCodeBtn" style="width: 120px;"> 인증확인 </button>
+                </div>
+            </div>
 
-
+            <div class="form-group">
+                <label for="privacy">개인정보 수집 베트</label>
+                <textarea id="privacy" rows="4" placeholder="본인은 개인정보 수집 베트에 동의합니다."></textarea>
+                <div class="form-check">
+                    <span class="consent-text">개인정보 수집 베트에 동의합니다. (필수)</span>
+                    <input type="checkbox" required>
+                </div>
+            </div>
 
             <button type="submit" class="signup-btn">회원가입</button>
         </form>
 
         <div class="bottom-link">
-            이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인</a>
+            이미 계정이 있으시는가요? <a th:href="@{/user/login}">로그인</a>
         </div>
     </div>
 </div>
 
-<!-- jQuery + Ajax 처리 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function () {
+    let emailVerified = false;
+
+    $("#sendCodeBtn").click(function () {
+        const email = $("#email").val().trim();
+        if (!email) {
+            alert("이메일을 입력해주세요.");
+            return;
+        }
+
+        $.post("/user/email-auth/send", { email: email }, function () {
+            alert("인증코드가 이메일로 전송되었습니다. 3분 내에 입력해주세요.");
+            $("#emailCodeArea").show();
+        });
+    });
+
+    $("#verifyCodeBtn").click(function () {
+        const email = $("#email").val().trim();
+        const code = $("#emailCode").val().trim();
+
+        if (!code) {
+            alert("인증코드를 입력해주세요.");
+            return;
+        }
+
+        $.post("/user/email-auth/verify", { email: email, code: code }, function (res) {
+            if (res.result === "인증 성공") {
+                emailVerified = true;
+                alert("이메일 인증이 완료되었습니다.");
+            } else {
+                alert(res.error_message || "인증 실패");
+            }
+        });
+    });
+
     $('#signUpForm').on('submit', function(e) {
         e.preventDefault();
+
+        if (!emailVerified) {
+            alert("이메일 인증을 완료해주세요.");
+            return;
+        }
 
         const formData = {
             userLoginId: $("#userLoginId").val().trim(),
@@ -217,6 +249,5 @@ $(document).ready(function () {
     });
 });
 </script>
-
 </body>
 </html>

@@ -30,7 +30,7 @@ public class UserRestController {
 
         UserEntity user = userBO.getUserByLoginIdAndPassword(userLoginId, password);
         if (user != null) {
-            session.setAttribute("userId", user.getUserId()); // ✅ 핵심
+            session.setAttribute("userId", user.getUserId());
             session.setAttribute("userName", user.getName());
             result.put("result", "성공");
         } else {
@@ -40,7 +40,6 @@ public class UserRestController {
 
         return result;
     }
-
 
     @PostMapping("/do-sign-up")
     public Map<String, Object> signUp(@RequestBody UserEntity user) {
@@ -56,6 +55,28 @@ public class UserRestController {
         result.put("result", "회원가입 성공");
         return result;
     }
+
+    @PostMapping("/email-auth/send")
+    public Map<String, Object> sendEmailCode(@RequestParam("email") String email) {
+        Map<String, Object> result = new HashMap<>();
+        userBO.generateAndSendVerificationCode(email);
+        result.put("result", "인증코드 발송 완료");
+        return result;
+    }
+
+    @PostMapping("/email-auth/verify")
+    public Map<String, Object> verifyEmailCode(@RequestParam("email") String email,
+                                               @RequestParam("code") String code) {
+        Map<String, Object> result = new HashMap<>();
+        boolean isCorrect = userBO.verifyCode(email, code);
+
+        if (isCorrect) {
+            userBO.markEmailAsVerified(email);
+            result.put("result", "인증 성공");
+        } else {
+            result.put("code", 400);
+            result.put("error_message", "인증코드가 올바르지 않거나 만료되었습니다.");
+        }
+        return result;
+    }
 }
-
-

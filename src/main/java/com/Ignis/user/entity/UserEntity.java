@@ -42,6 +42,12 @@ public class UserEntity {
     @Column(nullable = false)
     private String role;
 
+    @Column(nullable = false)
+    private boolean emailVerified = false; // ✅ 이메일 인증 여부
+
+    @Column(name = "email_sent")
+    private LocalDateTime emailSent; // ✅ 메일 보낸 시간
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
