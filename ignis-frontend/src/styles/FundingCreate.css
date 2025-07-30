@@ -1,0 +1,59 @@
+.funding-layout {
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.funding-content {
+  max-width: 1000px;
+  margin: 80px auto;
+  padding: 0 24px;
+}
+
+.form-card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  padding: 24px;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.form-actions > button {
+  margin-left: 8px;
+}
+
+.sub-card {
+  margin-top: 24px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  padding: 16px;
+}
+
+.donation-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  height: 64px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 20px;
+  color: #1890ff;
+}
+
+.donation-footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 13px;
+  color: #888;
+  border-top: 1px solid #f0f0f0;
+  background-color: #fff;
+}

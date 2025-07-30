@@ -1,0 +1,58 @@
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0;
+  background-color: #f7f9fc;
+  min-height: calc(100vh - 128px); /* 헤더+푸터 높이 제외 */
+}
+
+.signup-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 480px;
+  text-align: left;
+}
+
+.signup-form .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.signup-text,
+.login-text {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.signup-text a,
+.login-text a {
+  color: #1890ff;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.signup-form .ant-btn {
+  height: 44px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.signup-form .username-row {
+  display: flex;
+  gap: 8px;
+}
+
+.signup-form .username-row .ant-input {
+  flex: 1;
+}
+
+.signup-form .username-row .ant-btn {
+  white-space: nowrap;
+  padding: 0 12px;
+  height: 40px;
+  font-size: 14px;
+}

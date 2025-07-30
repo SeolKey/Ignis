@@ -1,0 +1,45 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f7f9fc;
+}
+
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
+}
+
+.login-form .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.find-password {
+  font-size: 13px;
+  color: #1890ff;
+}
+
+.signup-text {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.signup-text a {
+  color: #1890ff;
+  font-weight: 500;
+  margin-left: 4px;
+}

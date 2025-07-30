@@ -1,0 +1,37 @@
+.payment-layout {
+  min-height: 100vh;
+  background-color: #f8f9fb;
+}
+
+.payment-content {
+  max-width: 1000px;
+  margin: 80px auto;
+  padding: 0 24px;
+}
+
+.payment-card {
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-amount {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.payment-option {
+  padding: 12px;
+  background-color: #fafafa;
+  cursor: pointer;
+}
