@@ -38,11 +38,16 @@
             gap: 24px;
             font-weight: bold;
             color: #888;
+            cursor: pointer;
         }
 
         .tabs .active {
             color: #0d6efd;
             border-bottom: 2px solid #0d6efd;
+        }
+
+        .tab-content {
+            margin-top: 20px;
         }
 
         .right-section {
@@ -116,8 +121,8 @@
             height: 200px;
             background: #e9ecef;
             border-radius: 10px;
+            padding: 10px;
         }
-
     </style>
 </head>
 <body>
@@ -128,17 +133,51 @@
     <!-- 왼쪽 -->
     <div class="left-section">
         <img th:src="@{${donation.imagePath}}" alt="기부 이미지">
+
+        <!-- 탭 버튼 -->
         <div class="tabs">
-            <div class="active">상세내용</div>
-            <div>안내사항</div>
-            <div>댓글</div>
+            <div class="tab active" data-tab="detail">상세내용</div>
+            <div class="tab" data-tab="notice">안내사항</div>
+            <div class="tab" data-tab="comment">댓글</div>
         </div>
 
-        <div class="section-title">프로젝트 소개</div>
-        <div class="project-description" th:text="${donation.description}">기부 설명</div>
+        <!-- 탭별 컨텐츠 -->
+        <div class="tab-content" id="tab-detail">
+            <div class="section-title">프로젝트 소개</div>
+            <div class="project-description" th:text="${donation.description}">기부 설명</div>
 
-        <div class="section-title">계좌 정보</div>
-        <p th:text="${donation.accountInfo}">은행 계좌</p>
+            <div class="section-title">계좌 정보</div>
+            <p th:text="${donation.accountInfo}">은행 계좌</p>
+        </div>
+
+        <div class="tab-content" id="tab-notice" style="display: none;">
+            <div class="section-title">안내사항</div>
+            <div class="project-description">여기에 안내사항 내용을 넣으세요.</div>
+        </div>
+
+        <div class="tab-content" id="tab-comment" style="display: none;">
+            <!-- 댓글 탭 영역 -->
+<div class="tab-content" id="tab-comment" style="display: none;">
+    <div class="section-title">댓글</div>
+
+    <!-- 댓글 작성 폼 -->
+    <!-- 댓글 작성 폼 -->
+		<div class="comment-form card p-3 mt-3">
+		    <div class="comment-user fw-bold mb-2">[사용자 이름]</div>
+		
+		    <textarea class="comment-input form-control mb-3" placeholder="댓글을 입력하세요" rows="3"></textarea>
+		
+		    <div class="comment-actions d-flex justify-content-between align-items-center">
+		        <label for="comment-image" class="btn btn-outline-secondary btn-sm">
+		            이미지 첨부
+		        </label>
+		        <input type="file" id="comment-image" style="display: none;">
+		        <button class="submit-comment-btn btn btn-primary btn-sm">댓글 등록</button>
+		    </div>
+		</div>
+	</div>
+
+        </div>
     </div>
 
     <!-- 오른쪽 -->
@@ -156,8 +195,8 @@
 
         <div class="stats">
             <p><strong>현재 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 0)} + '원'"></span></p>
-			<p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
-		</div>
+            <p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
+        </div>
 
         <a href="#" class="btn">기부하기</a>
 
@@ -166,6 +205,29 @@
         </div>
     </div>
 </div>
+
+<!-- JS 탭 전환 기능 -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetId = 'tab-' + tab.dataset.tab;
+
+            // 탭 활성화 처리
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // 컨텐츠 전환
+            contents.forEach(c => {
+                c.style.display = (c.id === targetId) ? 'block' : 'none';
+            });
+        });
+    });
+});
+</script>
 
 </body>
 </html>
