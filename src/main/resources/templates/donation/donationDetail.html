@@ -2,150 +2,138 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
 <th:block th:replace="fragments/headerStyle :: headerStyle" />
-    <meta charset="UTF-8">
-    <title>기부 상세</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f8f9fa;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-            display: flex;
-            gap: 30px;
-        }
-
-        .left-section {
-            flex: 2;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .left-section img {
-            width: 100%;
-            border-radius: 12px;
-        }
-
-        .tabs {
-            display: flex;
-            margin-top: 16px;
-            gap: 24px;
-            font-weight: bold;
-            color: #888;
-            cursor: pointer;
-        }
-
-        .tabs .active {
-            color: #0d6efd;
-            border-bottom: 2px solid #0d6efd;
-        }
-
-        .tab-content {
-            margin-top: 20px;
-        }
-
-        .right-section {
-            flex: 1;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        .right-section h2 {
-            font-size: 20px;
-            margin-bottom: 16px;
-        }
-
-        .progress-bar-bg {
-            background: #e9ecef;
-            border-radius: 8px;
-            height: 10px;
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        .progress-bar-fill {
-            background: #0d6efd;
-            height: 100%;
-            width: 60%; /* 동적으로 조정 가능 */
-            border-radius: 8px;
-        }
-
-        .stats {
-            margin: 20px 0;
-        }
-
-        .stats p {
-            margin: 4px 0;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background-color: #0d6efd;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .share-box {
-            margin-top: 12px;
-            text-align: center;
-        }
-
-        .share-box button {
-            padding: 8px 16px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            background: white;
-            cursor: pointer;
-        }
-
-        .section-title {
-            font-weight: bold;
-            font-size: 18px;
-            margin-top: 30px;
-            margin-bottom: 12px;
-        }
-
-        .project-description {
-            height: 200px;
-            background: #e9ecef;
-            border-radius: 10px;
-            padding: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>기부 상세</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f8f9fa;
+    }
+    .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 20px;
+        display: flex;
+        gap: 30px;
+    }
+    .left-section {
+        flex: 2;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .left-section img {
+        width: 100%;
+        border-radius: 12px;
+    }
+    .tabs {
+        display: flex;
+        margin-top: 16px;
+        gap: 24px;
+        font-weight: bold;
+        color: #888;
+        cursor: pointer;
+    }
+    .tabs .active {
+        color: #0d6efd;
+        border-bottom: 2px solid #0d6efd;
+    }
+    .tab-content {
+        margin-top: 20px;
+    }
+    .right-section {
+        flex: 1;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .right-section h2 {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    .progress-bar-bg {
+        background: #e9ecef;
+        border-radius: 8px;
+        height: 10px;
+        width: 100%;
+        margin: 10px 0;
+    }
+    .progress-bar-fill {
+        background: #0d6efd;
+        height: 100%;
+        width: 60%;
+        border-radius: 8px;
+    }
+    .stats {
+        margin: 20px 0;
+    }
+    .stats p {
+        margin: 4px 0;
+    }
+    .btn {
+        text-align: center;
+        background-color: #0d6efd;
+        color: white;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+    .share-box {
+        margin-top: 12px;
+        text-align: center;
+    }
+    .share-box button {
+        padding: 8px 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+    }
+    .section-title {
+        font-weight: bold;
+        font-size: 18px;
+        margin-top: 30px;
+        margin-bottom: 12px;
+    }
+    .project-description {
+        height: 200px;
+        background: #e9ecef;
+        border-radius: 10px;
+        padding: 10px;
+    }
+    .comment-form .btn {
+        width: auto !important;
+        min-width: 80px;
+    }
+    .comment-form .form-text {
+        font-size: 0.85rem;
+    }
+    .comment-textarea {
+        width: 80%;
+        min-height: 100px;
+        resize: vertical;
+    }
+</style>
 </head>
 <body>
 
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
 <div class="container">
-    <!-- 왼쪽 -->
     <div class="left-section">
         <img th:src="@{${donation.imagePath}}" alt="기부 이미지">
-
-        <!-- 탭 버튼 -->
         <div class="tabs">
             <div class="tab active" data-tab="detail">상세내용</div>
             <div class="tab" data-tab="notice">안내사항</div>
             <div class="tab" data-tab="comment">댓글</div>
         </div>
 
-        <!-- 탭별 컨텐츠 -->
         <div class="tab-content" id="tab-detail">
             <div class="section-title">프로젝트 소개</div>
             <div class="project-description" th:text="${donation.description}">기부 설명</div>
-
             <div class="section-title">계좌 정보</div>
             <p th:text="${donation.accountInfo}">은행 계좌</p>
         </div>
@@ -156,75 +144,118 @@
         </div>
 
         <div class="tab-content" id="tab-comment" style="display: none;">
-            <!-- 댓글 탭 영역 -->
-<div class="tab-content" id="tab-comment" style="display: none;">
-    <div class="section-title">댓글</div>
-
-    <!-- 댓글 작성 폼 -->
-    <!-- 댓글 작성 폼 -->
-		<div class="comment-form card p-3 mt-3">
-		    <div class="comment-user fw-bold mb-2">[사용자 이름]</div>
-		
-		    <textarea class="comment-input form-control mb-3" placeholder="댓글을 입력하세요" rows="3"></textarea>
-		
-		    <div class="comment-actions d-flex justify-content-between align-items-center">
-		        <label for="comment-image" class="btn btn-outline-secondary btn-sm">
-		            이미지 첨부
-		        </label>
-		        <input type="file" id="comment-image" style="display: none;">
-		        <button class="submit-comment-btn btn btn-primary btn-sm">댓글 등록</button>
-		    </div>
-		</div>
-	</div>
-
+            <div class="section-title">댓글</div>
+            <div id="comment-list" class="mb-4"></div>
+            <div class="comment-form card shadow-sm p-3 mb-4">
+                <div class="d-flex align-items-start">
+                    <img src="/static/images/default_profile.png" class="rounded-circle me-3 mt-1" width="40" height="40">
+                    <div class="flex-grow-1">
+                        <div class="d-flex w-100 mb-2">
+                            <textarea id="comment-content" class="form-control comment-textarea me-2 w-100" placeholder="댓글을 입력하세요"></textarea>
+                            <button id="comment-submit" class="btn btn-primary align-self-start">발송</button>
+                        </div>
+                        <div class="ms-1">
+                            <label for="comment-image" class="form-text text-muted" style="cursor: pointer;">📎 이미지 첨부</label>
+                            <input type="file" id="comment-image" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 오른쪽 -->
     <div class="right-section">
         <h2 th:text="${donation.title}">기부 제목</h2>
-
-        <p th:text="'📅 ' + ${#temporals.format(donation.createdAt, 'yyyy.MM.dd')} + ' ~ ' + ${#temporals.format(donation.createdAt.plusDays(60), 'yyyy.MM.dd')} + ' (60일)'">기간</p>
-
+        <p th:text="'📅 ' + ${#temporals.format(donation.createdAt, 'yyyy.MM.dd')} + ' ~ ' + ${#temporals.format(donation.createdAt.plusDays(60), 'yyyy.MM.dd')} + ' (60일)'"></p>
         <div class="progress-bar-bg">
-            <div class="progress-bar-fill" th:style="'width:' + (${donation.currentPrice} * 100 / ${donation.maxPrice}) + '%'"></div>
+            <div class="progress-bar-fill" th:style="'width:' + (${donation.currentPrice} * 100 / ${donation.maxPrice}) + '%'" ></div>
         </div>
         <div style="color: #0d6efd; font-weight: bold;">
             <span th:text="(${donation.currentPrice} * 100 / ${donation.maxPrice}) + '%'">60%</span> 달성
         </div>
-
         <div class="stats">
             <p><strong>현재 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 0)} + '원'"></span></p>
             <p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
         </div>
-
         <a href="#" class="btn">기부하기</a>
-
         <div class="share-box">
             <button onclick="navigator.share ? navigator.share({ title: '기부 공유', url: window.location.href }) : alert('공유 기능을 지원하지 않는 브라우저입니다.')">공유하기</button>
         </div>
     </div>
 </div>
 
-<!-- JS 탭 전환 기능 -->
-<script>
+<script th:inline="javascript">
 document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.tab');
     const contents = document.querySelectorAll('.tab-content');
+    const contentId = /*[[${donation.donationId}]]*/ 0;
+    const contentType = "donation";
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const targetId = 'tab-' + tab.dataset.tab;
-
-            // 탭 활성화 처리
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-
-            // 컨텐츠 전환
             contents.forEach(c => {
                 c.style.display = (c.id === targetId) ? 'block' : 'none';
             });
+            if (tab.dataset.tab === 'comment') {
+                loadComments();
+            }
         });
+    });
+
+    function loadComments() {
+        fetch(`/comment/list?contentType=${contentType}&contentId=${contentId}`)
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('comment-list');
+                container.innerHTML = "";
+                if (!data || data.length === 0) {
+                    container.innerHTML = "<p class='text-muted'>아직 댓글이 없습니다.</p>";
+                    return;
+                }
+                data.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'mb-3 border-bottom pb-2';
+                    div.innerHTML = `
+                    	<div class="fw-bold mb-1">${c.userName || '익명 사용자'}</div>
+                        <div>${c.content}</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">${c.createdAt.replace("T", " ").substring(0, 16)}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            })
+            .catch(err => {
+                console.error("댓글 불러오기 실패:", err);
+                document.getElementById('comment-list').innerHTML = "<p class='text-danger'>댓글을 불러오는 데 실패했습니다.</p>";
+            });
+    }
+
+    document.getElementById("comment-submit").addEventListener("click", () => {
+        const content = document.getElementById("comment-content").value.trim();
+        if (!content) {
+            alert("댓글 내용을 입력해주세요.");
+            return;
+        }
+        fetch("/comment/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                contentType: contentType,
+                contentId: contentId,
+                content: content,
+                parentId: null
+            })
+        }).then(res => res.json())
+          .then(result => {
+              if (result.result === "success") {
+                  document.getElementById("comment-content").value = "";
+                  loadComments();
+              } else {
+                  alert(result.errorMessage || "댓글 등록에 실패했습니다.");
+              }
+          });
     });
 });
 </script>
