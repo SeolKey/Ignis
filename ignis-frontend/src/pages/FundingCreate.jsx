@@ -2,21 +2,16 @@ import React from 'react';
 import { Layout, Form, Input, Select, DatePicker, Button, Upload, Checkbox, Card, Typography, Space, Row, Col } from 'antd';
 import { InboxOutlined, PlusOutlined, MinusCircleOutlined, CalendarOutlined, ShareAltOutlined, HomeOutlined, HeartOutlined, SmileOutlined, FundOutlined, UserOutlined } from '@ant-design/icons';
 import '../styles/FundingCreate.css';
+import CommonLayout from '../components/Layout'; // Layout을 공통 컴포넌트로 가져옴
 
-
-const { Header, Footer, Content } = Layout;
+const { Content } = Layout;
 const { TextArea } = Input;
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 const FundingCreate = () => {
   return (
-    <Layout className="funding-layout">
-      {/* 헤더 */}
-      <Header className="donation-header">
-        <div className="logo">IGNIS</div>
-      </Header>
-
+    <CommonLayout> {/* CommonLayout을 감싸는 중괄호 */}
       {/* 본문 */}
       <Content className="funding-content">
         <Card className="form-card">
@@ -142,12 +137,7 @@ const FundingCreate = () => {
           </Form>
         </Card>
       </Content>
-
-      {/* 푸터 */}
-      <Footer className="donation-footer">
-        © 2025 IGNIS. 포트폴리오용 테스트 페이지입니다.
-      </Footer>
-    </Layout>
+    </CommonLayout>
   );
 };
 

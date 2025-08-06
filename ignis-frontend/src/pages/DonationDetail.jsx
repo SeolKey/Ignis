@@ -4,7 +4,6 @@ import { CalendarOutlined, ShareAltOutlined, HomeOutlined, HeartOutlined, SmileO
 import '../styles/DonationDetail.css';
 import { useNavigate } from 'react-router-dom';
 
-
 const { Header, Footer, Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -12,10 +11,12 @@ const { TabPane } = Tabs;
 const DonationDetail = () => {
   const navigate = useNavigate();
 
-  const handleParticipate = () => {
-    navigate('/test3');
-  };
+  // localStorage에서 데이터 가져오기
+  const fundingData = JSON.parse(localStorage.getItem('fundingData'));
 
+  const handleParticipate = () => {
+    navigate('/payment'); // 결제 페이지로 이동 (예시)
+  };
 
   return (
     <Layout className="donation-layout">
@@ -53,10 +54,7 @@ const DonationDetail = () => {
                 <Title level={4}>프로젝트 소개</Title>
                 <Card className="content-card" bordered={false}>
                   <Paragraph>
-                    2023년 여름, 기록적인 집중호우가 전국을 강타하며 수많은 이웃들이 주거지를 잃고 고립되는 재난을 겪었습니다.
-                    <br /><br />
-                    <Text strong>IGNIS는 ‘그린 커뮤니티 조성 프로젝트’를 통해</Text> 피해 지역에 지속 가능한 환경과 커뮤니티 복구를 지원합니다.
-                    단순한 재해 복구를 넘어, 피해 주민들이 다시 일상으로 돌아갈 수 있도록 돕는 것이 목표입니다.
+                    {fundingData ? fundingData.description : "기부 상세 정보가 없습니다."}
                   </Paragraph>
                 </Card>
                 <Paragraph style={{ marginTop: 24 }}>기부금 사용 계획</Paragraph>
@@ -79,7 +77,7 @@ const DonationDetail = () => {
                 <Title level={5}>기부 안내사항</Title>
                 <Paragraph>
                   - 본 프로젝트는 <Text strong>긴급 재난 지원</Text>을 위한 목적으로 진행됩니다.<br />
-                  - 기부하신 금액은 <Text strong>전액 피해 지역 지원</Text>에 사용되며, 일부 행정 비용이 포함될 수 있습니다.<br />
+                  - 기부하신 금액은 <Text strong>전액 피해 지역 지원</Text>에 사용됩니다.<br />
                   - 기부금은 <Text strong>세액공제 대상</Text>이 아니며, 기부 영수증 발급은 제공되지 않습니다.<br />
                   - 기부 후에는 <Text type="danger">환불이 불가능</Text>하오니 신중히 참여해 주세요.
                 </Paragraph>
@@ -101,15 +99,13 @@ const DonationDetail = () => {
                   IGNIS는 모두의 참여로 따뜻한 변화를 만들어갑니다. 감사합니다!
                 </Paragraph>
               </TabPane>
-
-
             </Tabs>
           </Col>
 
           {/* 우측 */}
           <Col xs={24} md={8}>
             <Card className="info-card" variant="borderless">
-              <Title level={5}>지역 사회 환경 개선 프로젝트: 그린 커뮤니티 조성</Title>
+              <Title level={5}>{fundingData ? fundingData.title : "프로젝트 제목"}</Title>
               <div className="project-period">
                 <CalendarOutlined style={{ marginRight: 8 }} />
                 <Text>2023.10.01 ~ 2023.11.30 (60일)</Text>

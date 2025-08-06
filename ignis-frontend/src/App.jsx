@@ -11,9 +11,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/test" element={<DonationDetail />} />
-        <Route path="/test2" element={<FundingCreate />} />
-        <Route path="/test3" element={<PaymentPage />} />
+        <Route path="/donation-detail" element={<DonationDetail />} />  {/* 기부 상세 페이지 경로 수정 */}
+        <Route path="/funding-create" element={<FundingCreate />} />   {/* 펀딩 생성 페이지 경로 수정 */}
+        <Route path="/payment" element={<PaymentPage />} />            {/* 결제 페이지 경로 수정 */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
       </Routes>

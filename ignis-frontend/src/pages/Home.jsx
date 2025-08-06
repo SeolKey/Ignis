@@ -45,7 +45,12 @@ export default function MainPage() {
           <Button>자세히 보기</Button>
         </Card>
 
+        {/* 기부 섹션 추가 */}
         {renderItems('기부', '#f0f0f0')}
+        <Button type="primary" style={{ marginTop: 16 }} href="/funding-create">
+          기부 생성하기
+        </Button>
+
         {renderItems('봉사', '#e6f7ff')}
         {renderItems('펀딩', '#f6ffed')}
       </div>
