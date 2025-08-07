@@ -24,15 +24,18 @@ public class UserRestController {
 
     @PostMapping("/do-login")
     public Map<String, Object> login(@RequestParam("userLoginId") String userLoginId,
-                                     @RequestParam("password") String password,
-                                     HttpSession session) {
+            @RequestParam("password") String password,
+            HttpSession session) {
         Map<String, Object> result = new HashMap<>();
 
         UserEntity user = userBO.getUserByLoginIdAndPassword(userLoginId, password);
         if (user != null) {
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("userName", user.getName());
+
             result.put("result", "성공");
+            result.put("userId", user.getUserId());
+            result.put("username", user.getName()); // ✅ 여기가 중요
         } else {
             result.put("code", 403);
             result.put("error_message", "아이디 또는 비밀번호가 잘못되었습니다.");
@@ -66,7 +69,7 @@ public class UserRestController {
 
     @PostMapping("/email-auth/verify")
     public Map<String, Object> verifyEmailCode(@RequestParam("email") String email,
-                                               @RequestParam("code") String code) {
+            @RequestParam("code") String code) {
         Map<String, Object> result = new HashMap<>();
         boolean isCorrect = userBO.verifyCode(email, code);
 

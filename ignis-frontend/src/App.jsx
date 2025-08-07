@@ -16,6 +16,7 @@ function App() {
         <Route path="/payment" element={<PaymentPage />} />            {/* 결제 페이지 경로 수정 */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/funding/:id" element={<DonationDetail />} />
       </Routes>
     </Router>
   );

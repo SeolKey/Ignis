@@ -1,68 +1,121 @@
-import React from 'react';
-import { Layout, Form, Input, Select, DatePicker, Button, Upload, Checkbox, Card, Typography, Space, Row, Col } from 'antd';
-import { InboxOutlined, PlusOutlined, MinusCircleOutlined, CalendarOutlined, ShareAltOutlined, HomeOutlined, HeartOutlined, SmileOutlined, FundOutlined, UserOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import {
+  Form, Input, Select, DatePicker, Button,
+  Upload, Card, Typography, Space, Row, Col
+} from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import '../styles/FundingCreate.css';
-import CommonLayout from '../components/Layout'; // Layout을 공통 컴포넌트로 가져옴
+import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
-const { Content } = Layout;
 const { TextArea } = Input;
 const { Title } = Typography;
 const { Dragger } = Upload;
 
 const FundingCreate = () => {
+
+  const [form] = Form.useForm();
+  const [imageName, setImageName] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const navigate = useNavigate();
+
+  const handleImageChange = (info) => {
+    const file = info.file.originFileObj || info.file;
+
+    if (!file || !(file instanceof File)) {
+      console.warn('⚠️ 이미지 파일이 없습니다.', info);
+      return;
+    }
+
+    setImageName(file.name);
+    setImageFile(file);
+  };
+
+  const handleSubmit = async (values) => {
+    const formData = new FormData();
+    formData.append('title', values.title);
+    formData.append('description', values.description);
+    formData.append('accountInfo', values.accountInfo || '');
+    formData.append('maxPrice', parseInt(values.goalAmount));
+    formData.append('currentPrice', 0);
+    formData.append('rejectReason', '');
+
+    if (imageFile) {
+      formData.append('file', imageFile); // ✅ 백엔드 필드명에 맞춤
+    }
+
+    try {
+      const response = await fetch('http://localhost/donation/create', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include' // ✅ 세션 쿠키 전송
+      });
+
+      if (!response.ok) throw new Error('서버 오류');
+      const result = await response.json();
+      console.log('DB 저장 완료:', result);
+      navigate(`/funding/${result.donation_id}`);
+    } catch (err) {
+      console.error('업로드 실패:', err);
+    }
+  };
+
   return (
-    <CommonLayout> {/* CommonLayout을 감싸는 중괄호 */}
-      {/* 본문 */}
-      <Content className="funding-content">
+    <Layout>
+      <div className="funding-content">
         <Card className="form-card">
-          {/* 타이틀 + 상단 버튼 */}
           <div className="form-header">
-            <Title level={3} style={{ margin: 0 }}>새 펀딩 프로젝트 등록</Title>
-            <div className="form-actions">
-              <Button>취소</Button>
-              <Button>임시저장</Button>
-              <Button type="primary">펀딩 시작</Button>
-            </div>
+            <Title level={3}>새 펀딩 프로젝트 등록</Title>
           </div>
 
-          <Form layout="vertical">
-            {/* 카테고리 */}
-            <Form.Item label="카테고리">
-              <Select placeholder="카테고리를 선택하세요">
-                <Select.Option value="env">환경보호</Select.Option>
-                <Select.Option value="education">교육지원</Select.Option>
+          <Form layout="vertical" form={form} onFinish={handleSubmit}>
+            <Form.Item
+              name="category"
+              label="카테고리"
+              rules={[{ required: true, message: '카테고리를 선택하세요' }]}
+            >
+              <Select defaultValue="donation">
+                <Select.Option value="donation">기부</Select.Option>
+                <Select.Option value="volunteer">봉사</Select.Option>
+                <Select.Option value="funding">펀딩</Select.Option>
               </Select>
             </Form.Item>
 
-            {/* 제목 / 소개 */}
-            <Form.Item label="프로젝트 제목">
+            <Form.Item name="title" label="프로젝트 제목" rules={[{ required: true }]}>
               <Input placeholder="펀딩 제목을 입력하세요" />
             </Form.Item>
 
-            <Form.Item label="한줄 소개">
-              <Input placeholder="간단한 소개를 입력하세요" />
+            <Form.Item name="description" label="프로젝트 상세 내용" rules={[{ required: true }]}>
+              <TextArea rows={6} />
             </Form.Item>
 
-            {/* 펀딩 정보 */}
+            <Form.Item name="accountInfo" label="계좌 정보">
+              <Input placeholder="기부금을 받을 계좌 정보를 입력하세요" />
+            </Form.Item>
+
+            <Form.Item name="usagePlan" label="기부금 사용 계획">
+              <TextArea rows={4} placeholder="예: 주택 복구, 생필품 지원 등" />
+            </Form.Item>
+
             <Card className="sub-card" title="펀딩 정보">
               <Row gutter={16}>
                 <Col xs={24} md={12}>
-                  <Form.Item label="목표 금액">
+                  <Form.Item name="goalAmount" label="목표 금액" rules={[{ required: true }]}>
                     <Input addonAfter="원" />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item label="펀딩 기간">
+                  <Form.Item name="period" label="펀딩 기간" rules={[{ required: true }]}>
                     <DatePicker.RangePicker style={{ width: '100%' }} />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item label="최소 기부 금액">
+                  <Form.Item name="minAmount" label="최소 기부 금액">
                     <Input addonAfter="원" />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={12}>
-                  <Form.Item label="펀딩 방식">
+                  <Form.Item name="fundingType" label="펀딩 방식">
                     <Select defaultValue="all">
                       <Select.Option value="all">All or Nothing</Select.Option>
                       <Select.Option value="keep">Keep it All</Select.Option>
@@ -72,72 +125,32 @@ const FundingCreate = () => {
               </Row>
             </Card>
 
-            {/* 리워드 */}
-            <Card
-              className="sub-card"
-              title="후원 리워드"
-              extra={<Button icon={<PlusOutlined />}>리워드 추가</Button>}
-            >
-              <Form.Item label="감사 메시지">
-                <Row gutter={12}>
-                  <Col xs={24} md={6}>
-                    <Input addonAfter="원" defaultValue="10,000" />
-                  </Col>
-                  <Col xs={24} md={16}>
-                    <Input defaultValue="감사 편지 + 스티커" />
-                  </Col>
-                  <Col xs={24} md={2}>
-                    <Button danger icon={<MinusCircleOutlined />} />
-                  </Col>
-                </Row>
-              </Form.Item>
-            </Card>
-
-            {/* 상세 내용 */}
-            <Form.Item label="프로젝트 상세 내용">
-              <TextArea rows={6} placeholder="목적, 필요성, 기대효과 등을 자유롭게 서술하세요" />
-            </Form.Item>
-
-            {/* 대표 이미지 업로드 */}
-            <Form.Item label="대표 이미지 업로드">
-              <Dragger>
+            <Form.Item name="image" label="대표 이미지 업로드">
+              <Dragger
+                showUploadList={false}
+                beforeUpload={() => false}
+                onChange={handleImageChange}
+              >
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
                 <p className="ant-upload-text">대표 이미지 업로드 (권장: 1200x600px)</p>
+                {imageName && (
+                  <p style={{ color: '#1890ff', fontWeight: 'bold' }}>
+                    업로드된 파일: {imageName}
+                  </p>
+                )}
               </Dragger>
             </Form.Item>
 
-            {/* 단체/개인 정보 */}
-            <Card className="sub-card" title="단체/개인 정보">
-              <Form.Item label="단체/이름">
-                <Input />
-              </Form.Item>
-              <Form.Item label="연락처">
-                <Input type="email" />
-              </Form.Item>
-              <Form.Item>
-                <Checkbox>단체 인증서 제출 (신뢰도 향상)</Checkbox>
-              </Form.Item>
-              <Form.Item label="추가 자료">
-                <Dragger multiple>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">관련 문서, 이미지 등을 드래그하거나 클릭하여 업로드하세요</p>
-                </Dragger>
-              </Form.Item>
-            </Card>
-
-            {/* 하단 버튼 */}
             <Space style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between' }}>
-              <Button>취소</Button>
-              <Button type="primary">펀딩 시작하기</Button>
+              <Button htmlType="reset">취소</Button>
+              <Button type="primary" htmlType="submit">펀딩 시작하기</Button>
             </Space>
           </Form>
         </Card>
-      </Content>
-    </CommonLayout>
+      </div>
+    </Layout>
   );
 };
 

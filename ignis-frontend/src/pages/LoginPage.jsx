@@ -8,35 +8,34 @@ const { Title, Text } = Typography;
 
 const LoginPage = () => {
   const onFinish = async (values) => {
-    try {
-      const form = new URLSearchParams();
-      form.append('userLoginId', values.username);
-      form.append('password', values.password);
-      form.append('rememberMe', values.remember || false);
+  try {
+    const form = new URLSearchParams();
+    form.append('userLoginId', values.username);
+    form.append('password', values.password);
+    form.append('rememberMe', values.remember || false);
 
-      const res = await fetch('/user/do-login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: form.toString(),
-      });
+    const res = await fetch('/user/do-login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: form.toString(),
+      credentials: 'include' // ✅ 이거 추가로 세션 쿠키 유지됨
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (data.result === '성공') {
-        window.location.href = '/user/welcome'; // 로그인 성공 시 이동할 페이지
-      } else if (data.code === 403) {
-        alert(data.error_message);
-      } else {
-        alert('서버 오류입니다. 관리자에게 문의하세요.');
-      }
-    } catch (err) {
-      console.error('로그인 오류:', err);
-      alert('네트워크 오류가 발생했습니다.');
+    if (data.result === '성공') {
+      console.log('로그인 응답:', data);
+      localStorage.setItem('username', data.username);
+      window.location.href = '/';
     }
+  } catch (err) {
+    console.error('로그인 오류:', err);
+    alert('네트워크 오류가 발생했습니다.');
+  }
+};
 
-  };
 
 
   return (
