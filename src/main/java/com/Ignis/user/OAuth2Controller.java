@@ -19,6 +19,10 @@ import com.Ignis.user.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.HashMap;
+
+
 @Controller
 @RequiredArgsConstructor
 public class OAuth2Controller {
@@ -37,6 +41,7 @@ public class OAuth2Controller {
             String email = null;
             String name = null;
             String uniqueId = null; // provider별 고유 식별자
+            
 
             if ("google".equals(registrationId)) {
                 // 구글 로그인 데이터
@@ -78,11 +83,24 @@ public class OAuth2Controller {
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("loginId", user.getUserLoginId());
             session.setAttribute("userName", user.getName());
+
+            System.out.println("세션에 저장된 userName: " + user.getName());
         }
 
-        return "redirect:/user/welcome";
+        // 리액트 애플리케이션의 홈 페이지로 리디렉션
+        return "redirect:http://localhost:5173/";  // 리액트 앱의 홈으로 리디렉션
     }
-    
+
+    @GetMapping("/api/user")
+    @ResponseBody
+    public Map<String, Object> getUserInfo(HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        String userName = (String) session.getAttribute("userName");
+
+        response.put("userName", userName);  // 세션에서 userName을 반환
+        return response;
+    }
+
     @GetMapping("/logout/kakao")
     public String kakaoLogout(HttpSession session) {
         session.invalidate(); // 내 서비스 세션 끊기

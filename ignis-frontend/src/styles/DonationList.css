@@ -1,0 +1,16 @@
+.donation-box {
+  border: 1px solid #ccc;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
+.donation-title-link {
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: none;
+  color: black;
+}
+.donation-title-link:hover {
+  color: #2a7ae2;
+  text-decoration: underline;
+}

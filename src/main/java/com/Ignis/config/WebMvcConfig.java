@@ -22,9 +22,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:5173") // 정확히 명시해야 함
-                .allowedMethods("*")
+                .allowedOrigins("http://localhost:5173") // 리액트 앱의 URL만 허용
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
-                .allowCredentials(true); // 🔥 세션 유지 필수
+                .allowCredentials(true); // 쿠키를 포함한 요청 허용
     }
 }

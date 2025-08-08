@@ -5,6 +5,7 @@ import DonationCreate from './pages/DonationCreate';
 import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import DonationList from './pages/DonationList';  
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/donation/:id" element={<DonationDetail />} />
+        <Route path='/donation-list' element={<DonationList />} />
       </Routes>
     </Router>
   );

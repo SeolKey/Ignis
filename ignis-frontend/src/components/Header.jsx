@@ -17,16 +17,17 @@ const DonationHeader = () => {
   const [username, setUsername] = useState(null);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username');
+    // 세션에서 사용자 이름 가져오기
+    const storedUsername = sessionStorage.getItem('userName');
     if (storedUsername) {
-      setUsername(storedUsername);
+      setUsername(storedUsername);  // 상태에 사용자 이름 저장
     }
-  }, []);
+  }, []);  // 빈 배열을 넣어 한 번만 실행되도록 설정
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
-    setUsername(null);
-    navigate('/login');
+    sessionStorage.removeItem('userName'); // 로그아웃 시 사용자 정보 삭제
+    setUsername(null); // 상태 초기화
+    navigate('/login'); // 로그인 페이지로 리디렉션
   };
 
   return (
@@ -41,18 +42,10 @@ const DonationHeader = () => {
         defaultSelectedKeys={['donation']}
         className="donation-menu"
       >
-        <Menu.Item key="home" icon={<HomeOutlined />}>
-          <Link to="/">홈</Link>
-        </Menu.Item>
-        <Menu.Item key="donation" icon={<HeartOutlined />}>
-          <Link to="/donation/donation-list-view">기부</Link>
-        </Menu.Item>
-        <Menu.Item key="volunteer" icon={<SmileOutlined />}>
-          <Link to="/volunteer/volunteer-list-view">봉사</Link>
-        </Menu.Item>
-        <Menu.Item key="funding" icon={<FundOutlined />}>
-          <Link to="/funding/funding-list-view">펀딩</Link>
-        </Menu.Item>
+        <Menu.Item key="home" icon={<HomeOutlined />}><Link to="/">홈</Link></Menu.Item>
+        <Menu.Item key="donation" icon={<HeartOutlined />}><Link to="/donation/donation-list-view">기부</Link></Menu.Item>
+        <Menu.Item key="volunteer" icon={<SmileOutlined />}><Link to="/volunteer/volunteer-list-view">봉사</Link></Menu.Item>
+        <Menu.Item key="funding" icon={<FundOutlined />}><Link to="/funding/funding-list-view">펀딩</Link></Menu.Item>
 
         {username ? (
           <>
@@ -64,9 +57,7 @@ const DonationHeader = () => {
             </Menu.Item>
           </>
         ) : (
-          <Menu.Item key="login" icon={<UserOutlined />}>
-            <Link to="/login">로그인</Link>
-          </Menu.Item>
+          <Menu.Item key="login" icon={<UserOutlined />}><Link to="/login">로그인</Link></Menu.Item>
         )}
       </Menu>
     </Header>

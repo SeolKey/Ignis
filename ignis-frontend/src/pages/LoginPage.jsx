@@ -1,12 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form, Input, Button, Checkbox, Typography } from 'antd';
-import { Link } from 'react-router-dom';
-import Layout from '../components/Layout'; // Layout 컴포넌트 불러오기
-import '../styles/LoginPage.css';  // 스타일 불러오기
+import { Link, useNavigate } from 'react-router-dom';  // useNavigate import
+import Layout from '../components/Layout'; 
+import '../styles/LoginPage.css';
 
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
+  const navigate = useNavigate();  // navigate 사용
+
+  useEffect(() => {
+    // 카카오 SDK 로드
+    const script = document.createElement('script');
+    script.src = 'https://developers.kakao.com/sdk/js/kakao.min.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      // 카카오 SDK 초기화
+      window.Kakao.init('YOUR_KAKAO_APP_KEY');
+    };
+  }, []);
+
   const onFinish = async (values) => {
     try {
       const form = new URLSearchParams();
@@ -27,7 +42,7 @@ const LoginPage = () => {
 
       if (data.result === '성공') {
         localStorage.setItem('username', data.username);
-        window.location.href = '/';
+        navigate('/');  // 로그인 성공 후 홈으로 리디렉션
       } else {
         alert("로그인 실패: " + data.error_message);
       }
@@ -38,8 +53,38 @@ const LoginPage = () => {
   };
 
   const handleGoogleLogin = () => {
-    // 구글 로그인 버튼 클릭 시, Spring Security의 구글 로그인 경로로 리디렉션
-    window.location.href = '/oauth2/authorization/google';
+    window.location.href = 'http://localhost:80/oauth2/authorization/google';  // 구글 로그인 리디렉션
+  };
+
+  const handleKakaoLogin = () => {
+    window.Kakao.Auth.login({
+      success: (authObj) => {
+        console.log(authObj);
+        fetch('/user/kakao-login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            accessToken: authObj.access_token,
+          }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.result === '성공') {
+              navigate('/');  // 카카오 로그인 후 홈으로 리디렉션
+            } else {
+              alert('로그인 실패');
+            }
+          })
+          .catch(error => {
+            console.error('로그인 오류:', error);
+          });
+      },
+      fail: (err) => {
+        console.error(err);
+      },
+    });
   };
 
   return (
@@ -54,16 +99,14 @@ const LoginPage = () => {
             <Form.Item
               label="아이디"
               name="username"
-              rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}
-            >
+              rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}>
               <Input placeholder="아이디를 입력하세요" />
             </Form.Item>
 
             <Form.Item
               label="비밀번호"
               name="password"
-              rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]}
-            >
+              rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]}>
               <Input.Password placeholder="비밀번호를 입력하세요" />
             </Form.Item>
 
@@ -92,6 +135,13 @@ const LoginPage = () => {
           <div className="google-login-btn">
             <button onClick={handleGoogleLogin} className="google-btn">
               구글 로그인
+            </button>
+          </div>
+
+          {/* 카카오 로그인 버튼 */}
+          <div className="kakao-login-btn">
+            <button onClick={handleKakaoLogin} className="kakao-btn">
+              카카오 로그인
             </button>
           </div>
         </div>
