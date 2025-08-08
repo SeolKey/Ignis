@@ -40,4 +40,9 @@ public class UserController {
         }
         return "user/welcome";
     }
+    
+    @GetMapping("/logout-success")
+    public String logoutSuccess() {
+        return "redirect:/user/login"; // 로그인 페이지로 리다이렉트
+    }
 }
