@@ -17,17 +17,29 @@ const DonationHeader = () => {
   const [username, setUsername] = useState(null);
 
   useEffect(() => {
-    // 세션에서 사용자 이름 가져오기
-    const storedUsername = sessionStorage.getItem('userName');
-    if (storedUsername) {
-      setUsername(storedUsername);  // 상태에 사용자 이름 저장
-    }
-  }, []);  // 빈 배열을 넣어 한 번만 실행되도록 설정
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch('http://localhost:80/api/user', {
+          method: 'GET',
+          credentials: 'include',  // 세션 쿠키를 포함하여 요청
+        });
+        const data = await response.json();
+
+        if (data.userName) {
+          setUsername(data.userName);  // 세션에서 받아온 userName 상태에 저장
+        }
+      } catch (error) {
+        console.error('세션 정보 가져오기 실패:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('userName'); // 로그아웃 시 사용자 정보 삭제
-    setUsername(null); // 상태 초기화
-    navigate('/login'); // 로그인 페이지로 리디렉션
+    sessionStorage.removeItem('username');
+    setUsername(null);
+    navigate('/login');
   };
 
   return (
@@ -57,7 +69,9 @@ const DonationHeader = () => {
             </Menu.Item>
           </>
         ) : (
-          <Menu.Item key="login" icon={<UserOutlined />}><Link to="/login">로그인</Link></Menu.Item>
+          <Menu.Item key="login" icon={<UserOutlined />}>
+            <Link to="/login">로그인</Link>
+          </Menu.Item>
         )}
       </Menu>
     </Header>

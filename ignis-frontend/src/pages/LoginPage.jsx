@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Form, Input, Button, Checkbox, Typography } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';  // useNavigate import
-import Layout from '../components/Layout'; 
+import Layout from '../components/Layout';
 import '../styles/LoginPage.css';
 
 const { Title, Text } = Typography;
@@ -18,7 +18,7 @@ const LoginPage = () => {
 
     script.onload = () => {
       // 카카오 SDK 초기화
-      window.Kakao.init('YOUR_KAKAO_APP_KEY');
+      window.Kakao.init('YOUR_KAKAO_APP_KEY'); // 카카오 앱 키를 여기 넣어주세요
     };
   }, []);
 
@@ -59,7 +59,8 @@ const LoginPage = () => {
   const handleKakaoLogin = () => {
     window.Kakao.Auth.login({
       success: (authObj) => {
-        console.log(authObj);
+        console.log('카카오 로그인 성공:', authObj);
+        // 백엔드에 토큰을 전달
         fetch('/user/kakao-login', {
           method: 'POST',
           headers: {
@@ -82,10 +83,11 @@ const LoginPage = () => {
           });
       },
       fail: (err) => {
-        console.error(err);
+        console.error('카카오 로그인 실패:', err);
       },
     });
   };
+
 
   return (
     <Layout>
@@ -99,14 +101,14 @@ const LoginPage = () => {
             <Form.Item
               label="아이디"
               name="username"
-              rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}>
+              rules={[{ required: true, message: '아이디를 입력해 주세요.' }]} >
               <Input placeholder="아이디를 입력하세요" />
             </Form.Item>
 
             <Form.Item
               label="비밀번호"
               name="password"
-              rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]}>
+              rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]} >
               <Input.Password placeholder="비밀번호를 입력하세요" />
             </Form.Item>
 
