@@ -1,45 +1,19 @@
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f7f9fc;
+.google-login-btn {
+  display: block;
+  margin-top: 16px; /* 구글 로그인 버튼과 로그인 폼 간의 간격 */
 }
 
-.login-box {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+.google-btn {
   width: 100%;
-  max-width: 400px;
-  text-align: left;
+  padding: 12px;
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-.login-form .ant-form-item {
-  margin-bottom: 20px;
-}
-
-.login-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.find-password {
-  font-size: 13px;
-  color: #1890ff;
-}
-
-.signup-text {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 14px;
-}
-
-.signup-text a {
-  color: #1890ff;
-  font-weight: 500;
-  margin-left: 4px;
+.google-btn:hover {
+  background-color: #357ae8;
 }

@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/home';
 import DonationDetail from './pages/DonationDetail';
-import FundingCreate from './pages/FundingCreate';
+import DonationCreate from './pages/DonationCreate';
 import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -12,11 +12,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/donation-detail" element={<DonationDetail />} />  {/* 기부 상세 페이지 경로 수정 */}
-        <Route path="/funding-create" element={<FundingCreate />} />   {/* 펀딩 생성 페이지 경로 수정 */}
+        <Route path="/donation-create" element={<DonationCreate />} />   {/* 기부 생성 페이지 경로 수정 */}
         <Route path="/payment" element={<PaymentPage />} />            {/* 결제 페이지 경로 수정 */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/funding/:id" element={<DonationDetail />} />
+        <Route path="/donation/:id" element={<DonationDetail />} />
       </Routes>
     </Router>
   );

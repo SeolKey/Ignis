@@ -1,9 +1,9 @@
-.funding-layout {
+.donation-layout {
   min-height: 100vh;
   background-color: #ffffff;
 }
 
-.funding-content {
+.donation-content {
   max-width: 1000px;
   margin: 80px auto;
   padding: 0 24px;
