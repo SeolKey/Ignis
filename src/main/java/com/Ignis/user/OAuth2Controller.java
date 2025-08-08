@@ -91,6 +91,7 @@ public class OAuth2Controller {
         return "redirect:http://localhost:5173/";  // 리액트 앱의 홈으로 리디렉션
     }
 
+    // 유저 정보를 가져오는 API
     @GetMapping("/api/user")
     @ResponseBody
     public Map<String, Object> getUserInfo(HttpSession session) {
