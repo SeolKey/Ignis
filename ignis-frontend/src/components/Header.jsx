@@ -8,64 +8,60 @@ import {
   UserOutlined,
   LogoutOutlined,
 } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const { Header } = Layout;
 
 const DonationHeader = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [username, setUsername] = useState(null);
 
+  // 현재 경로에 맞춰 메뉴 기본 선택키 추정 (선택 사항)
+  const selectedKey =
+    location.pathname.startsWith('/donation') ? 'donation' :
+    location.pathname.startsWith('/volunteer') ? 'volunteer' :
+    location.pathname.startsWith('/funding') ? 'funding' : 'home';
+
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    let cancelled = false;
+
+    (async () => {
       try {
-        // Vite proxy 사용 시 상대경로 호출
+        // 서버 세션 기준으로만 판단 (credentials 필수)
         const res = await fetch('/api/user', { credentials: 'include' });
 
-        // 401/404 등은 로컬 저장값으로 폴백
         if (!res.ok) {
-          const local = localStorage.getItem('username');
-          if (local) setUsername(local);
+          if (!cancelled) setUsername(null); // 비로그인 UI
           return;
         }
 
-        // JSON이 아닐 수도 있으니 컨텐트 타입 확인
         const ct = res.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
-          const text = await res.text();
-          console.warn('Non-JSON from /api/user:', ct, text.slice(0, 180));
-          const local = localStorage.getItem('username');
-          if (local) setUsername(local);
+          if (!cancelled) setUsername(null);
           return;
         }
 
         const data = await res.json();
-        if (data?.userName) {
-          setUsername(data.userName);
-        } else {
-          const local = localStorage.getItem('username');
-          if (local) setUsername(local);
-        }
+        // 백엔드 필드명 호환(userName | username)
+        const name = data?.userName ?? data?.username ?? null;
+        if (!cancelled) setUsername(name || null);
       } catch (e) {
-        console.error('세션 정보 가져오기 실패:', e);
-        const local = localStorage.getItem('username');
-        if (local) setUsername(local);
+        console.warn('세션 조회 실패:', e);
+        if (!cancelled) setUsername(null);
       }
-    };
+    })();
 
-    fetchUserInfo();
+    return () => { cancelled = true; };
   }, []);
 
   const handleLogout = async () => {
     try {
-      // 스프링 로그아웃 먼저 호출 (기본 POST)
       await fetch('/logout', { method: 'POST', credentials: 'include' });
     } catch (e) {
-      console.warn('서버 로그아웃 실패, 클라이언트만 정리 진행', e);
+      console.warn('서버 로그아웃 실패:', e);
     } finally {
-      // 스토리지는 localStorage로 통일
-      localStorage.removeItem('username');
-      setUsername(null);
+      setUsername(null); // 서버 기준이므로 스토리지 사용 안 함
       navigate('/login');
     }
   };
@@ -79,13 +75,21 @@ const DonationHeader = () => {
       <Menu
         mode="horizontal"
         theme="light"
-        defaultSelectedKeys={['home']}
+        selectedKeys={[selectedKey]}
         className="donation-menu"
       >
-        <Menu.Item key="home" icon={<HomeOutlined />}><Link to="/">홈</Link></Menu.Item>
-        <Menu.Item key="donation" icon={<HeartOutlined />}><Link to="/donation/donation-list-view">기부</Link></Menu.Item>
-        <Menu.Item key="volunteer" icon={<SmileOutlined />}><Link to="/volunteer/volunteer-list-view">봉사</Link></Menu.Item>
-        <Menu.Item key="funding" icon={<FundOutlined />}><Link to="/funding/funding-list-view">펀딩</Link></Menu.Item>
+        <Menu.Item key="home" icon={<HomeOutlined />}>
+          <Link to="/">홈</Link>
+        </Menu.Item>
+        <Menu.Item key="donation" icon={<HeartOutlined />}>
+          <Link to="/donation/donation-list-view">기부</Link>
+        </Menu.Item>
+        <Menu.Item key="volunteer" icon={<SmileOutlined />}>
+          <Link to="/volunteer/volunteer-list-view">봉사</Link>
+        </Menu.Item>
+        <Menu.Item key="funding" icon={<FundOutlined />}>
+          <Link to="/funding/funding-list-view">펀딩</Link>
+        </Menu.Item>
 
         {username ? (
           <>

@@ -30,13 +30,15 @@ const DonationCreate = () => {
     formData.append('title', values.title);
     formData.append('description', values.description);
     formData.append('accountInfo', values.accountInfo || '');
-    formData.append('maxPrice', parseInt(values.goalAmount));
+    // (2) NaN 방지
+    formData.append('maxPrice', parseInt(values.goalAmount || 0, 10));
     formData.append('currentPrice', 0);
     formData.append('rejectReason', '');
-    if (imageFile) formData.append('file', imageFile);
+    // (1) 파일 키 이름 통일
+    if (imageFile) formData.append('image', imageFile);
 
     try {
-      // 🔴 절대경로 금지! 상대경로로 프록시를 타게 해야 쿠키가 정상 첨부됨
+      // 상대경로(프록시 전제) + 세션 쿠키 포함
       const response = await fetch('/donation/create', {
         method: 'POST',
         body: formData,
@@ -44,7 +46,8 @@ const DonationCreate = () => {
       });
 
       if (response.status === 401) {
-        message.warn('로그인이 필요합니다.');
+        // (3) message.warning 사용
+        message.warning('로그인이 필요합니다.');
         navigate('/login');
         return;
       }

@@ -6,6 +6,7 @@ import PaymentPage from './pages/PaymentPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DonationList from './pages/DonationList';  
+import MyPage from './pages/MyPage';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/donation/:id" element={<DonationDetail />} />
         <Route path='/donation-list' element={<DonationList />} />
+        <Route path="/mypage" element={<MyPage />} />
       </Routes>
     </Router>
   );

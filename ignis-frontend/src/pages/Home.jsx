@@ -14,12 +14,25 @@ export default function MainPage() {
     <div style={sectionStyle}>
       <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
         <Title level={4}>{category}</Title>
-        <Button type="link">더 보러가기 &gt;</Button>
+        <Button
+          type="link"
+          onClick={() => {
+            if (category === '기부') navigate('/donation-list');
+            else if (category === '봉사') navigate('/volunteer-list');
+            else if (category === '펀딩') navigate('/funding-list');
+          }}
+        >
+          더 보러가기 &gt;
+        </Button>
       </Row>
       <Row gutter={[16, 16]}>
         {[1, 2, 3, 4].map((i) => (
           <Col xs={12} sm={12} md={6} key={i}>
-            <Card style={{ ...cardStyle, backgroundColor: color }} bodyStyle={{ minHeight: 100 }} hoverable>
+            <Card
+              style={{ ...cardStyle, backgroundColor: color }}
+              bodyStyle={{ minHeight: 100 }}
+              hoverable
+            >
               <Text strong>{category} ITEM{i}</Text>
               {category === '펀딩' && <div style={{ marginTop: 8 }}>목표금액 10,000원</div>}
             </Card>
@@ -40,8 +53,11 @@ export default function MainPage() {
 
         {renderItems('기부', '#f0f0f0')}
 
-        {/* ✅ 전체 페이지 이동(href) 말고, SPA 라우팅으로 이동 */}
-        <Button type="primary" style={{ marginTop: 16 }} onClick={() => navigate('/donation-create')}>
+        <Button
+          type="primary"
+          style={{ marginTop: 16 }}
+          onClick={() => navigate('/donation-create')}
+        >
           기부 생성하기
         </Button>
 
