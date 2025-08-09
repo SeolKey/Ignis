@@ -1,10 +1,12 @@
 import React from 'react';
 import { Card, Button, Typography, Row, Col } from 'antd';
-import Layout from '../components/Layout'; // 경로 수정됨
+import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const { Title, Text } = Typography;
 
 export default function MainPage() {
+  const navigate = useNavigate();
   const sectionStyle = { marginBottom: 48 };
   const cardStyle = { borderRadius: 12 };
 
@@ -17,15 +19,9 @@ export default function MainPage() {
       <Row gutter={[16, 16]}>
         {[1, 2, 3, 4].map((i) => (
           <Col xs={12} sm={12} md={6} key={i}>
-            <Card
-              style={{ ...cardStyle, backgroundColor: color }}
-              bodyStyle={{ minHeight: 100 }}
-              hoverable
-            >
+            <Card style={{ ...cardStyle, backgroundColor: color }} bodyStyle={{ minHeight: 100 }} hoverable>
               <Text strong>{category} ITEM{i}</Text>
-              {category === '펀딩' && (
-                <div style={{ marginTop: 8 }}>목표금액 10,000원</div>
-              )}
+              {category === '펀딩' && <div style={{ marginTop: 8 }}>목표금액 10,000원</div>}
             </Card>
           </Col>
         ))}
@@ -36,18 +32,16 @@ export default function MainPage() {
   return (
     <Layout>
       <div style={{ padding: '48px 24px' }}>
-        <Card
-          style={{ backgroundColor: '#338AFF', borderRadius: 16, marginBottom: 64 }}
-          bodyStyle={{ padding: 48 }}
-        >
+        <Card style={{ backgroundColor: '#338AFF', borderRadius: 16, marginBottom: 64 }} bodyStyle={{ padding: 48 }}>
           <Title level={3} style={{ color: 'white' }}>여름, 시원한 바람을 느끼려면?</Title>
           <Text style={{ color: 'white', display: 'block', marginBottom: 16 }}>새로 입고된 텐 부채 확인해보세요!</Text>
           <Button>자세히 보기</Button>
         </Card>
 
-        {/* 기부 섹션 추가 */}
         {renderItems('기부', '#f0f0f0')}
-        <Button type="primary" style={{ marginTop: 16 }} href="/donation-create">
+
+        {/* ✅ 전체 페이지 이동(href) 말고, SPA 라우팅으로 이동 */}
+        <Button type="primary" style={{ marginTop: 16 }} onClick={() => navigate('/donation-create')}>
           기부 생성하기
         </Button>
 

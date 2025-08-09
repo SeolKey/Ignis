@@ -9,7 +9,8 @@ export default defineConfig({
       '/api': 'http://localhost:80',
       '/oauth2': 'http://localhost:80',
       '/logout': 'http://localhost:80',
-      '/user': 'http://localhost:80', // 폼로그인 등 사용하는 경로면 추가
+      '/user': 'http://localhost:80',
+      '/donation': 'http://localhost:80',
     },
   },
 })
