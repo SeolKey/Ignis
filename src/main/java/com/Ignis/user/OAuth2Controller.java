@@ -5,6 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.Ignis.user.bo.UserBO;
+import com.Ignis.user.entity.UserEntity;
+import com.Ignis.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,6 +16,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -32,14 +36,42 @@ import org.springframework.util.LinkedMultiValueMap;
 public class OAuth2Controller {
 
     private final OAuth2AuthorizedClientService authorizedClientService;
+    private final UserRepository userRepository;
+    private final UserBO userBO;
 
     @GetMapping("/login/oauth2/success")
-    public String oauth2LoginSuccess(HttpSession session, Authentication authentication) {
+    public String oauth2LoginSuccess(HttpSession session) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2User oauth2User = oauthToken.getPrincipal();
-            session.setAttribute("username", oauth2User.getAttribute("name"));
+
+            String email = oauth2User.getAttribute("email");
+            String name  = oauth2User.getAttribute("name");
+            String sub   = oauth2User.getAttribute("sub"); // Google 고유 ID
+
+            // 1) 이미 회원이면: 바로 로그인 세션 세팅 후 Welcome
+            UserEntity exists = userRepository.findByEmail(email);
+            if (exists != null) {
+                session.setAttribute("userId",   exists.getUserId());
+                session.setAttribute("loginId",  exists.getUserLoginId());
+                session.setAttribute("userName", exists.getName());
+                return "redirect:/user/welcome";
+            }
+
+            // 2) 처음 온 사용자면: 회원가입 폼으로 보내되, 구글 정보 미리 채우기
+            Map<String, Object> prefill = new HashMap<>();
+            prefill.put("oauth", true);
+            prefill.put("prefillEmail", email);
+            prefill.put("prefillName", name);
+            prefill.put("prefillLoginId", "google_" + sub); // 추천 로그인ID
+            session.setAttribute("oauthPrefill", prefill);
+
+            return "redirect:/user/sign-up";
         }
-        return "redirect:/";
+
+        // 혹시 인증 정보가 없으면 로그인 화면으로
+        return "redirect:/user/login";
     }
 
     @GetMapping("/logout/kakao")

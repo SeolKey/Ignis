@@ -1,6 +1,7 @@
 package com.Ignis.user;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +26,31 @@ public class UserController {
     }
 
     @GetMapping("/sign-up")
-    public String signUpForm() {
+    public String signUpForm(HttpSession session, Model model) {
+        Object obj = session.getAttribute("oauthPrefill");
+        if (obj != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> map = (Map<String, Object>) obj;
+
+            // boolean 처리
+            Object oauthObj = map.get("oauth");
+            boolean oauth = (oauthObj instanceof Boolean) ? (Boolean) oauthObj : false;
+            model.addAttribute("oauth", oauth);
+
+            // String 처리
+            Object loginIdObj = map.get("prefillLoginId");
+            Object nameObj    = map.get("prefillName");
+            Object emailObj   = map.get("prefillEmail");
+
+            model.addAttribute("prefillLoginId", loginIdObj instanceof String ? (String) loginIdObj : "");
+            model.addAttribute("prefillName",    nameObj    instanceof String ? (String) nameObj    : "");
+            model.addAttribute("prefillEmail",   emailObj   instanceof String ? (String) emailObj   : "");
+
+            // 한 번 사용 후 제거
+            session.removeAttribute("oauthPrefill");
+        } else {
+            model.addAttribute("oauth", false);
+        }
         return "user/sign-up";
     }
 

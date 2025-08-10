@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <th:block th:replace="fragments/headerStyle :: headerStyle" />
@@ -116,22 +116,22 @@
         <form id="signUpForm" action="/user/do-sign-up" method="post">
             <div class="form-group">
                 <label for="userLoginId">아이디 <span class="required">*</span></label>
-                <input type="text" id="userLoginId" name="userLoginId" placeholder="영문, 숫자 5-20자">
+                <input type="text" id="userLoginId" name="userLoginId" placeholder="영문, 숫자 5-20자" th:value="${prefillLoginId}">
             </div>
 
             <div class="form-group">
                 <label for="password">비밀번호 <span class="required">*</span></label>
-                <input type="password" id="password" name="password" placeholder="영문, 숫자, 특수문자 조합 8-20자">
+                <input type="password" id="password" name="password" placeholder="영문, 숫자, 특수문자 조합 8-20자" th:value="${oauth} ? 'oauth-temp-password' : ''">
             </div>
 
             <div class="form-group">
                 <label for="passwordCheck">비밀번호 확인</label>
-                <input type="password" id="passwordCheck" placeholder="비밀번호를 다시 입력하세요">
+                <input type="password" id="passwordCheck" placeholder="비밀번호를 다시 입력하세요" >
             </div>
 
             <div class="form-group">
                 <label for="name">이름</label>
-                <input type="text" id="name" name="name" placeholder="이름을 입력하세요">
+                <input type="text" id="name" name="name" placeholder="이름을 입력하세요" th:value="${prefillName}">
             </div>
 
             <div class="form-group">
@@ -142,7 +142,7 @@
             <div class="form-group">
                 <label for="email">이메일</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="email" id="email" name="email" placeholder="example@email.com" style="flex: 1;">
+                    <input type="email" id="email" name="email" placeholder="example@email.com" style="flex: 1;" th:value="${prefillEmail}">
                     <button type="button" id="sendCodeBtn" style="width: 120px;"> 인증요청 </button>
                 </div>
             </div>
