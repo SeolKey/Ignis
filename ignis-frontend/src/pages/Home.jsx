@@ -1,68 +1,71 @@
-import React from 'react';
-import { Card, Button, Typography, Row, Col } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import '../styles/Home.css';
 
 const { Title, Text } = Typography;
 
 export default function MainPage() {
   const navigate = useNavigate();
-  const sectionStyle = { marginBottom: 48 };
-  const cardStyle = { borderRadius: 12 };
+  const [donationList, setDonationList] = useState([]);
 
-  const renderItems = (category, color) => (
-    <div style={sectionStyle}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-        <Title level={4}>{category}</Title>
-        <Button
-          type="link"
-          onClick={() => {
-            if (category === '기부') navigate('/donation-list');
-            else if (category === '봉사') navigate('/volunteer-list');
-            else if (category === '펀딩') navigate('/funding-list');
-          }}
-        >
-          더 보러가기 &gt;
-        </Button>
-      </Row>
-      <Row gutter={[16, 16]}>
-        {[1, 2, 3, 4].map((i) => (
-          <Col xs={12} sm={12} md={6} key={i}>
-            <Card
-              style={{ ...cardStyle, backgroundColor: color }}
-              bodyStyle={{ minHeight: 100 }}
-              hoverable
-            >
-              <Text strong>{category} ITEM{i}</Text>
-              {category === '펀딩' && <div style={{ marginTop: 8 }}>목표금액 10,000원</div>}
-            </Card>
-          </Col>
-        ))}
-      </Row>
-    </div>
-  );
+  useEffect(() => {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:80';
+  fetch(`${API_BASE}/api/home`, { credentials: 'include' })
+    .then(res => res.json())
+    .then(data => setDonationList(data?.donationList ?? []))
+    .catch(err => console.error('홈 데이터 로드 실패:', err));
+}, []);
+
 
   return (
     <Layout>
-      <div style={{ padding: '48px 24px' }}>
-        <Card style={{ backgroundColor: '#338AFF', borderRadius: 16, marginBottom: 64 }} bodyStyle={{ padding: 48 }}>
-          <Title level={3} style={{ color: 'white' }}>여름, 시원한 바람을 느끼려면?</Title>
-          <Text style={{ color: 'white', display: 'block', marginBottom: 16 }}>새로 입고된 텐 부채 확인해보세요!</Text>
-          <Button>자세히 보기</Button>
-        </Card>
+      <div className="page">
+        {/* 배너 */}
+        <div className="banner-card" style={{ padding: 48 }}>
+          <Title level={3} className="banner-title">여름, 시원한 바람을 느끼려면?</Title>
+          <Text className="banner-desc">새로 입고된 텐 부채 확인해보세요!</Text>
+          <Button className="banner-button">자세히 보기</Button>
+        </div>
 
-        {renderItems('기부', '#f0f0f0')}
+        {/* 기부 섹션 (home.html 구조 그대로) */}
+        <section className="section">
+          <div className="top-bar">
+            <h2>기부</h2>
+            {/* 목록으로 이동 */}
+            <a onClick={() => navigate('/donation-list')} style={{ cursor: 'pointer' }}>
+              더 보러가기 →
+            </a>
+          </div>
 
+          <div className="card-container">
+            {donationList.map((item) => (
+              <div key={item.donationId} className="card">
+                <a
+                  onClick={() => navigate(`/donation-detail/${item.donationId}`)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <img
+                    src={item.imagePath}
+                    alt="기부 이미지"
+                    className="donation-image"
+                  />
+                  <p>{item.title}</p>
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* (선택) 기부 생성 버튼 */}
         <Button
           type="primary"
-          style={{ marginTop: 16 }}
+          className="create-button"
           onClick={() => navigate('/donation-create')}
         >
           기부 생성하기
         </Button>
-
-        {renderItems('봉사', '#e6f7ff')}
-        {renderItems('펀딩', '#f6ffed')}
       </div>
     </Layout>
   );

@@ -1,0 +1,84 @@
+/* 페이지 패딩 */
+.page {
+  padding: 48px 24px;
+}
+
+/* 배너 카드 */
+.banner-card {
+  border-radius: 16px;
+  margin-bottom: 64px;
+  background-color: #338AFF;
+}
+
+/* 배너 텍스트 */
+.banner-title {
+  color: #fff !important;
+}
+.banner-desc {
+  color: #fff;
+  display: block;
+  margin-bottom: 16px;
+}
+
+/* 배너 버튼 */
+.banner-button {
+  background-color: #ffffff;
+  color: #338AFF;
+  border: none;
+  padding: 8px 20px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.banner-button:hover {
+  background-color: #e6f0ff;
+  color: #1a5fd0;
+}
+
+
+/* 섹션 공통 */
+.section {
+  margin-bottom: 48px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+}
+
+/* 항목 카드 (AntD Card의 내부 패딩/모서리 조정) */
+.item-card {
+  border-radius: 12px;
+  min-height: 100px;
+}
+
+/* 카테고리 배경 버전 */
+.variant-gray {
+  background-color: #f0f0f0;
+}
+.variant-blue {
+  background-color: #e6f7ff;
+}
+.variant-green {
+  background-color: #f6ffed;
+}
+
+/* 펀딩 목표 텍스트 */
+.goal-text {
+  margin-top: 8px;
+}
+
+/* 상단 우측 링크 버튼 여백 조정(선택사항) */
+.more-link {
+  padding: 0;
+}
+
+/* 생성 버튼 상단 여백 */
+.create-button {
+  margin-top: 16px;
+}

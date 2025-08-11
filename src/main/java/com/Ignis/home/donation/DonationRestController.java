@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,8 +78,6 @@ public class DonationRestController {
         return result;
     }
 
-
-
     @PostMapping("/update-status")
     public Map<String, Object> updateDonationStatus(
             @RequestParam("donationId") Long donationId,
@@ -88,5 +87,21 @@ public class DonationRestController {
         donationBO.updateDonationStatus(donationId, status);
         result.put("result", "상태 변경 완료");
         return result;
+    }
+
+    // ========== [추가] 상세 JSON API ==========
+    // React 상세 페이지용: GET /donation/api/{id}
+    @GetMapping("/api/{id}")
+    public Donation getDonationApi(@PathVariable Long id) {
+        return donationBO.getDonationById(id);
+    }
+
+    // ========== [추가-옵션] 제한 목록 JSON API ==========
+    // 홈 카드에서 4개만 등: GET /donation/api/list?limit=4
+    @GetMapping("/api/list")
+    public List<Donation> getDonationListLimited(@RequestParam(defaultValue = "10") int limit) {
+        // BO 메서드명에 맞게 조정 가능 (예: getRecentDonationList(limit))
+        return donationBO.getRecentDonationList(limit);
+        // return donationBO.getDonationListLimit(limit);
     }
 }
