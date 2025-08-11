@@ -5,12 +5,7 @@ import java.time.LocalDateTime;
 import com.Ignis.common.util.SecurityUtil;
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +28,7 @@ public class UserEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -43,16 +38,15 @@ public class UserEntity {
     private String role;
 
     @Column(nullable = false)
-    private boolean emailVerified = false; // ✅ 이메일 인증 여부
+    private boolean emailVerified = false;
 
     @Column(name = "email_sent")
-    private LocalDateTime emailSent; // ✅ 메일 보낸 시간
+    private LocalDateTime emailSent;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // 도메인 로직
     public void assignDefaultRole() {
         if (this.role == null) {
             this.role = "USER";

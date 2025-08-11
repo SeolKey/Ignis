@@ -1,4 +1,4 @@
-package com.Ignis.user; 
+package com.Ignis.user;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
@@ -45,32 +44,55 @@ public class OAuth2Controller {
 
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2User oauth2User = oauthToken.getPrincipal();
+            String registrationId = oauthToken.getAuthorizedClientRegistrationId();
 
-            String email = oauth2User.getAttribute("email");
-            String name  = oauth2User.getAttribute("name");
-            String sub   = oauth2User.getAttribute("sub"); // Google 고유 ID
+            String email = null;
+            String name = null;
+            String sub = null;
 
-            // 1) 이미 회원이면: 바로 로그인 세션 세팅 후 Welcome
-            UserEntity exists = userRepository.findByEmail(email);
-            if (exists != null) {
-                session.setAttribute("userId",   exists.getUserId());
-                session.setAttribute("loginId",  exists.getUserLoginId());
-                session.setAttribute("userName", exists.getName());
-                return "redirect:/user/welcome";
+            if ("google".equals(registrationId)) {
+                email = oauth2User.getAttribute("email");
+                name = oauth2User.getAttribute("name");
+                sub  = oauth2User.getAttribute("sub");
+            } else if ("kakao".equals(registrationId)) {
+                Map<String, Object> kakaoAccount = oauth2User.getAttribute("kakao_account");
+                if (kakaoAccount != null) {
+                    email = (String) kakaoAccount.get("email");
+                    Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+                    if (profile != null) {
+                        name = (String) profile.get("nickname");
+                    }
+                }
+                Object kakaoId = oauth2User.getAttribute("id");
+                sub = kakaoId != null ? String.valueOf(kakaoId) : null;
             }
 
-            // 2) 처음 온 사용자면: 회원가입 폼으로 보내되, 구글 정보 미리 채우기
-            Map<String, Object> prefill = new HashMap<>();
-            prefill.put("oauth", true);
-            prefill.put("prefillEmail", email);
-            prefill.put("prefillName", name);
-            prefill.put("prefillLoginId", "google_" + sub); // 추천 로그인ID
-            session.setAttribute("oauthPrefill", prefill);
+            // 1) 기존 회원 찾기
+            UserEntity exists = userRepository.findByEmail(email);
 
-            return "redirect:/user/sign-up";
+            if (exists == null) {
+                // 🔹 자동 회원가입
+                UserEntity newUser = new UserEntity();
+                newUser.setEmail(email);
+                newUser.setName(name);
+                newUser.setUserLoginId(registrationId + "_" + sub);
+                newUser.setPassword(""); // 소셜 계정은 비번 없이
+                newUser.setPhoneNumber("000-0000-0000"); // ✅ 임시 기본값
+                newUser.setRole("USER");
+                userRepository.save(newUser);
+
+                session.setAttribute("userName", name);
+                session.setAttribute("userId", newUser.getUserId());
+            } else {
+                // 🔹 기존 회원이면 로그인 세션 저장
+                session.setAttribute("userName", exists.getName());
+                session.setAttribute("userId", exists.getUserId());
+            }
+
+            // 🔹 로그인 후 홈 또는 프론트로 이동
+            return "redirect:/";
         }
 
-        // 혹시 인증 정보가 없으면 로그인 화면으로
         return "redirect:/user/login";
     }
 
@@ -121,15 +143,11 @@ public class OAuth2Controller {
         form.add("token", token);
 
         HttpEntity<LinkedMultiValueMap<String, String>> entity = new HttpEntity<>(form, headers);
-
         try {
             rt.postForEntity("https://oauth2.googleapis.com/revoke", entity, String.class);
-        } catch (Exception e) {
-            // 로그만 남기고 무시 가능
-        }
+        } catch (Exception e) { }
     }
 
-    // 🔹 여기서부터 추가: /api/user 엔드포인트
     @RestController
     @RequestMapping("/api")
     @RequiredArgsConstructor

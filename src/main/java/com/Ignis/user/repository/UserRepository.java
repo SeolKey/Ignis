@@ -1,8 +1,7 @@
 package com.Ignis.user.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.Ignis.user.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
@@ -16,5 +15,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     UserEntity findByUserLoginIdAndPassword(String userLoginId, String password);
 
-    UserEntity findByEmail(String email); // ✅ 이메일로 유저 찾기 추가
+    UserEntity findByEmail(String email);
+
+    // 대소문자 무시용
+    boolean existsByUserLoginIdIgnoreCase(String userLoginId);
+    boolean existsByEmailIgnoreCase(String email);
 }

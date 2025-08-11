@@ -101,6 +101,7 @@
 </head>
 <body>
 
+
 <!-- 헤더 영역 -->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
@@ -108,7 +109,9 @@
 <div class="login-wrapper">
     <div class="login-container">
         <h2>로그인</h2>
-
+		
+		
+		
         <p th:if="${error}" th:text="${error}" class="error-msg"></p>
 
         <form id="loginForm" action="/user/do-login" method="post">

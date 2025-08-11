@@ -3,11 +3,7 @@ package com.Ignis.user;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.Ignis.user.bo.UserBO;
 import com.Ignis.user.entity.UserEntity;
@@ -24,8 +20,8 @@ public class UserRestController {
 
     @PostMapping("/do-login")
     public Map<String, Object> login(@RequestParam("userLoginId") String userLoginId,
-            @RequestParam("password") String password,
-            HttpSession session) {
+                                     @RequestParam("password") String password,
+                                     HttpSession session) {
         Map<String, Object> result = new HashMap<>();
 
         UserEntity user = userBO.getUserByLoginIdAndPassword(userLoginId, password);
@@ -35,7 +31,7 @@ public class UserRestController {
 
             result.put("result", "성공");
             result.put("userId", user.getUserId());
-            result.put("username", user.getName()); // ✅ 여기가 중요
+            result.put("username", user.getName());
         } else {
             result.put("code", 403);
             result.put("error_message", "아이디 또는 비밀번호가 잘못되었습니다.");
@@ -69,7 +65,7 @@ public class UserRestController {
 
     @PostMapping("/email-auth/verify")
     public Map<String, Object> verifyEmailCode(@RequestParam("email") String email,
-            @RequestParam("code") String code) {
+                                               @RequestParam("code") String code) {
         Map<String, Object> result = new HashMap<>();
         boolean isCorrect = userBO.verifyCode(email, code);
 
@@ -81,5 +77,35 @@ public class UserRestController {
             result.put("error_message", "인증코드가 올바르지 않거나 만료되었습니다.");
         }
         return result;
+    }
+
+    // ✅ 아이디 중복확인
+    @GetMapping("/check-login-id")
+    public Map<String, Object> checkLoginId(@RequestParam("loginId") String loginId) {
+        Map<String, Object> res = new HashMap<>();
+        if (loginId == null || !loginId.matches("^[a-zA-Z0-9]{5,20}$")) {
+            res.put("available", false);
+            res.put("message", "아이디는 영문/숫자 5~20자여야 합니다.");
+            return res;
+        }
+        boolean available = userBO.isAvailableLoginId(loginId);
+        res.put("available", available);
+        if (!available) res.put("message", "이미 사용 중인 아이디입니다.");
+        return res;
+    }
+
+    // ✅ 이메일 중복확인
+    @GetMapping("/check-email")
+    public Map<String, Object> checkEmail(@RequestParam("email") String email) {
+        Map<String, Object> res = new HashMap<>();
+        if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            res.put("exists", false);
+            res.put("message", "이메일 형식을 확인해주세요.");
+            return res;
+        }
+        boolean exists = userBO.isEmailExists(email);
+        res.put("exists", exists);
+        if (exists) res.put("message", "이 이메일은 이미 가입되어 있습니다.");
+        return res;
     }
 }

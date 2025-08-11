@@ -19,10 +19,9 @@ import java.util.Random;
 public class UserBO {
 
     private final UserRepository userRepository;
-
     private final JavaMailSender mailSender;
 
-    private final Map<String, VerificationInfo> verificationMap = new HashMap<>(); // 메모리 기반 저장소
+    private final Map<String, VerificationInfo> verificationMap = new HashMap<>();
 
     public void signUp(UserEntity user) {
         user.assignDefaultRole();
@@ -43,6 +42,10 @@ public class UserBO {
 
     public boolean isAvailableLoginId(String loginId) {
         return !userRepository.existsByUserLoginId(loginId);
+    }
+
+    public boolean isEmailExists(String email) {
+        return userRepository.findByEmail(email.trim().toLowerCase()) != null;
     }
 
     public boolean updatePassword(Long userId, String currentPassword, String newPassword) {
@@ -83,7 +86,7 @@ public class UserBO {
         message.setText("인증코드: " + code + "\n\n3분 내에 입력해주세요.");
         message.setFrom("이그니스 <rjdgh456@naver.com>");
         mailSender.send(message);
-        
+
         UserEntity user = userRepository.findByEmail(email);
         if (user != null) {
             user.setEmailSent(LocalDateTime.now());
@@ -123,13 +126,7 @@ public class UserBO {
             this.code = code;
             this.generatedTime = generatedTime;
         }
-
-        public String getCode() {
-            return code;
-        }
-
-        public LocalDateTime getGeneratedTime() {
-            return generatedTime;
-        }
+        public String getCode() { return code; }
+        public LocalDateTime getGeneratedTime() { return generatedTime; }
     }
 }

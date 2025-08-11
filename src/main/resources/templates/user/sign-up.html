@@ -1,252 +1,246 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <th:block th:replace="fragments/headerStyle :: headerStyle" />
-    <title>회원가입</title>
-    <meta charset="UTF-8">
-    <style>
-        body {
-            font-family: "Noto Sans KR", sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f6fa;
-        }
+  <title>회원가입</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: "Noto Sans KR", sans-serif; margin:0; padding:0; background:#f5f6fa; }
+    .signup-wrapper { display:flex; justify-content:center; align-items:flex-start; padding-top:40px; height:calc(100vh - 80px); }
+    .signup-container { background:#fff; padding:40px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,.1); width:420px; }
+    .signup-container h2 { margin-bottom:12px; font-size:24px; font-weight:700; }
+    .subtitle { font-size:14px; color:#666; margin-bottom:24px; }
 
-        .signup-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 40px;
-            height: calc(100vh - 80px);
-        }
+    .form-group { margin-bottom:18px; }
+    .form-group label { display:block; font-weight:500; margin-bottom:6px; }
+    .form-group input, .form-group textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
 
-        .signup-container {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 420px;
-        }
+    /* 공통 행 레이아웃: 입력(1fr) + 행동영역(auto) */
+    .row-grid { display:grid; grid-template-columns: 1fr auto; gap:8px; align-items:stretch; }
+    .row-grid > input, .row-grid > textarea { width:100%; }
 
-        .signup-container h2 {
-            margin-bottom: 12px;
-            font-size: 24px;
-            font-weight: bold;
-        }
+    .mini-hint { margin-top:6px; font-size:12px; color:#777; }
+    .ok { color:#2e7d32; } .warn { color:#d32f2f; }
 
-        .signup-container p.subtitle {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 24px;
-        }
+    .form-check { display:flex; justify-content:space-between; align-items:center; margin-top:12px; font-size:14px; }
 
-        .form-group {
-            margin-bottom: 18px;
-        }
+    .signup-btn { width:100%; padding:12px; background:#2979ff; color:#fff; border:none; border-radius:6px; font-size:16px; cursor:pointer; }
+    .signup-btn:hover { background:#1565c0; }
 
-        .form-group label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
+    .bottom-link { text-align:center; margin-top:20px; font-size:14px; }
+    .bottom-link a { color:#2979ff; text-decoration:none; font-weight:700; }
 
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+    .required { color:red; font-size:13px; margin-left:4px; }
+    .consent-text { flex-grow:1; margin-right:12px; white-space:nowrap; }
 
-        .form-check {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 12px;
-            font-size: 14px;
-        }
+    /* 버튼 스타일 */
+    button.slim { padding:10px 12px; border:1px solid #ddd; border-radius:6px; background:#fff; cursor:pointer; }
 
-        .signup-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: #2979ff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
+    .action-btn { border:none; background:#2979ff; color:#fff; border-radius:6px; padding:10px 16px; }
+    .action-btn:disabled, button.slim:disabled { opacity:.6; cursor:not-allowed; }
 
-        .signup-btn:hover {
-            background-color: #1565c0;
-        }
-
-        .bottom-link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        .bottom-link a {
-            color: #2979ff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .required {
-            color: red;
-            font-size: 13px;
-            margin-left: 4px;
-        }
-
-        .consent-text {
-            flex-grow: 1;
-            margin-right: 12px;
-            white-space: nowrap;
-        }
-    </style>
+    /* 버튼 없는 줄에서 오른쪽 폭을 맞추기 위한 투명 자리 */
+    .ghost-btn { visibility:hidden; padding:10px 16px; border:0; border-radius:6px; }
+  </style>
 </head>
 <body>
 <div th:replace="~{fragments/header :: commonHeader}"></div>
+
 <div class="signup-wrapper">
-    <div class="signup-container">
-        <h2>회원가입</h2>
-        <p class="subtitle">필수 정보를 입력하여 회원가입을 완료해 주세요.</p>
-        <form id="signUpForm" action="/user/do-sign-up" method="post">
-            <div class="form-group">
-                <label for="userLoginId">아이디 <span class="required">*</span></label>
-                <input type="text" id="userLoginId" name="userLoginId" placeholder="영문, 숫자 5-20자" th:value="${prefillLoginId}">
-            </div>
+  <div class="signup-container">
+    <h2>회원가입</h2>
+    <p class="subtitle">필수 정보를 입력하여 회원가입을 완료해 주세요.</p>
 
-            <div class="form-group">
-                <label for="password">비밀번호 <span class="required">*</span></label>
-                <input type="password" id="password" name="password" placeholder="영문, 숫자, 특수문자 조합 8-20자" th:value="${oauth} ? 'oauth-temp-password' : ''">
-            </div>
-
-            <div class="form-group">
-                <label for="passwordCheck">비밀번호 확인</label>
-                <input type="password" id="passwordCheck" placeholder="비밀번호를 다시 입력하세요" >
-            </div>
-
-            <div class="form-group">
-                <label for="name">이름</label>
-                <input type="text" id="name" name="name" placeholder="이름을 입력하세요" th:value="${prefillName}">
-            </div>
-
-            <div class="form-group">
-                <label for="phoneNumber">전화번호</label>
-                <input type="text" id="phoneNumber" name="phoneNumber" placeholder="'-'없이 숫자만 입력하세요">
-            </div>
-
-            <div class="form-group">
-                <label for="email">이메일</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="email" id="email" name="email" placeholder="example@email.com" style="flex: 1;" th:value="${prefillEmail}">
-                    <button type="button" id="sendCodeBtn" style="width: 120px;"> 인증요청 </button>
-                </div>
-            </div>
-
-            <div class="form-group" id="emailCodeArea" style="display: none;">
-                <label for="emailCode">인증 코드</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="emailCode" placeholder="인증코드를 입력하세요" style="flex: 1;">
-                    <button type="button" id="verifyCodeBtn" style="width: 120px;"> 인증확인 </button>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="privacy">개인정보 수집 베트</label>
-                <textarea id="privacy" rows="4" placeholder="본인은 개인정보 수집 베트에 동의합니다."></textarea>
-                <div class="form-check">
-                    <span class="consent-text">개인정보 수집 베트에 동의합니다. (필수)</span>
-                    <input type="checkbox" required>
-                </div>
-            </div>
-
-            <button type="submit" class="signup-btn">회원가입</button>
-        </form>
-
-        <div class="bottom-link">
-            이미 계정이 있으시는가요? <a th:href="@{/user/login}">로그인</a>
+    <form id="signUpForm" action="/user/do-sign-up" method="post">
+      <!-- 아이디 + 중복확인 -->
+      <div class="form-group">
+        <label for="userLoginId">아이디 <span class="required">*</span></label>
+        <div class="row-grid">
+          <input type="text" id="userLoginId" name="userLoginId" placeholder="영문, 숫자 5-20자" th:value="${prefillLoginId}">
+          <button type="button" id="checkLoginIdBtn" class="slim">중복확인</button>
         </div>
+        <div id="loginIdHint" class="mini-hint"></div>
+      </div>
+
+      <!-- 비밀번호 -->
+      <div class="form-group">
+        <label for="password">비밀번호 <span class="required">*</span></label>
+        <div class="row-grid">
+          <input type="password" id="password" name="password" placeholder="영문, 숫자, 특수문자 조합 8-20자" th:value="${oauth} ? 'oauth-temp-password' : ''">
+          <span class="ghost-btn" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 비밀번호 확인 -->
+      <div class="form-group">
+        <label for="passwordCheck">비밀번호 확인</label>
+        <div class="row-grid">
+          <input type="password" id="passwordCheck" placeholder="비밀번호를 다시 입력하세요">
+          <span class="ghost-btn" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 이름 -->
+      <div class="form-group">
+        <label for="name">이름</label>
+        <div class="row-grid">
+          <input type="text" id="name" name="name" placeholder="이름을 입력하세요" th:value="${prefillName}">
+          <span class="ghost-btn" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 전화번호 -->
+      <div class="form-group">
+        <label for="phoneNumber">전화번호</label>
+        <div class="row-grid">
+          <input type="text" id="phoneNumber" name="phoneNumber" placeholder="'-'없이 숫자만 입력하세요">
+          <span class="ghost-btn" aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <!-- 이메일 + 인증요청 -->
+      <div class="form-group">
+        <label for="email">이메일</label>
+        <div class="row-grid">
+          <input type="email" id="email" name="email" placeholder="example@email.com" th:value="${prefillEmail}">
+          <button type="button" id="sendCodeBtn" class="action-btn">인증요청</button>
+        </div>
+        <div id="emailHint" class="mini-hint"></div>
+      </div>
+
+      <!-- 이메일 코드 확인 -->
+      <div class="form-group" id="emailCodeArea" style="display:none;">
+        <label for="emailCode">인증 코드</label>
+        <div class="row-grid">
+          <input type="text" id="emailCode" placeholder="인증코드를 입력하세요">
+          <button type="button" id="verifyCodeBtn" class="action-btn">인증확인</button>
+        </div>
+      </div>
+
+      <!-- 약관 -->
+      <div class="form-group">
+        <label for="privacy">개인정보 수집 베트</label>
+        <div>
+          <textarea id="privacy" rows="4" placeholder="본인은 개인정보 수집 베트에 동의합니다."></textarea>
+        </div>
+        <div class="form-check">
+          <span class="consent-text">개인정보 수집에 대해 동의합니다. (필수)</span>
+          <input type="checkbox" required>
+        </div>
+      </div>
+
+      <button type="submit" class="signup-btn">회원가입</button>
+    </form>
+
+    <div class="bottom-link">
+      이미 계정이 있으신가요? <a th:href="@{/user/login}">로그인</a>
     </div>
+  </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function () {
-    let emailVerified = false;
+$(function () {
+  // 엔드포인트
+  const LOGIN_ID_CHECK_URL = "/user/check-login-id";
+  const EMAIL_CHECK_URL    = "/user/check-email";
+  const EMAIL_SEND_URL     = "/user/email-auth/send";
+  const EMAIL_VERIFY_URL   = "/user/email-auth/verify";
 
-    $("#sendCodeBtn").click(function () {
-        const email = $("#email").val().trim();
-        if (!email) {
-            alert("이메일을 입력해주세요.");
-            return;
+  let emailVerified = false;
+  let loginIdChecked = false;
+  const loginIdRegex = /^[a-zA-Z0-9]{5,20}$/;
+
+  // 아이디 중복확인
+  $("#checkLoginIdBtn").on("click", function () {
+    const $btn = $(this);
+    const loginId = $("#userLoginId").val().trim();
+    const $hint = $("#loginIdHint").removeClass("ok warn").text("");
+
+    if (!loginId) return alert("아이디를 입력해주세요.");
+    if (!loginIdRegex.test(loginId)) { $hint.addClass("warn").text("아이디는 영문/숫자 5~20자로 입력해주세요."); return; }
+
+    $btn.prop("disabled", true);
+    $.get(LOGIN_ID_CHECK_URL, { loginId })
+      .done(res => {
+        if (res?.available) { $hint.addClass("ok").text("사용 가능한 아이디입니다."); loginIdChecked = true; }
+        else { $hint.addClass("warn").text(res?.message || "이미 사용 중인 아이디입니다."); loginIdChecked = false; }
+      })
+      .fail(() => { $hint.addClass("warn").text("아이디 확인 중 오류가 발생했습니다."); loginIdChecked = false; })
+      .always(() => $btn.prop("disabled", false));
+  });
+
+  // 이메일 인증요청(가입여부 먼저 확인)
+  $("#sendCodeBtn").on("click", function () {
+    const $btn = $(this);
+    const email = $("#email").val().trim();
+    const $hint = $("#emailHint").removeClass("ok warn").text("");
+    if (!email) return alert("이메일을 입력해주세요.");
+
+    $btn.prop("disabled", true);
+    $.get(EMAIL_CHECK_URL, { email })
+      .done(res => {
+        if (res?.exists) { alert("이 이메일은 이미 가입되어있습니다."); return; }
+        $.post(EMAIL_SEND_URL, { email })
+          .done(() => { alert("인증코드가 이메일로 전송되었습니다. 3분 내에 입력해주세요."); $("#emailCodeArea").show(); $hint.addClass("ok").text("인증코드 전송됨."); })
+          .fail(() => { alert("인증코드 전송 중 오류가 발생했습니다."); $hint.addClass("warn").text("인증코드 전송 실패"); });
+      })
+      .fail(() => alert("이메일 확인 중 오류가 발생했습니다."))
+      .always(() => $btn.prop("disabled", false));
+  });
+
+  // 이메일 인증확인
+  $("#verifyCodeBtn").on("click", function () {
+    const $btn = $(this);
+    const email = $("#email").val().trim();
+    const code = $("#emailCode").val().trim();
+    if (!code) return alert("인증코드를 입력해주세요.");
+
+    $btn.prop("disabled", true);
+    $.post(EMAIL_VERIFY_URL, { email, code })
+      .done(res => {
+        if (res?.result === "인증 성공") {
+          emailVerified = true;
+          alert("이메일 인증이 완료되었습니다.");
+          $("#emailHint").removeClass("warn").addClass("ok").text("이메일 인증 완료");
+        } else {
+          alert(res?.error_message || "인증 실패");
         }
+      })
+      .fail(() => alert("인증 확인 중 오류가 발생했습니다."))
+      .always(() => $btn.prop("disabled", false));
+  });
 
-        $.post("/user/email-auth/send", { email: email }, function () {
-            alert("인증코드가 이메일로 전송되었습니다. 3분 내에 입력해주세요.");
-            $("#emailCodeArea").show();
-        });
+  // 제출
+  $("#signUpForm").on("submit", function(e){
+    e.preventDefault();
+    if (!emailVerified) return alert("이메일 인증을 완료해주세요.");
+
+    const formData = {
+      userLoginId: $("#userLoginId").val().trim(),
+      password: $("#password").val(),
+      name: $("#name").val(),
+      email: $("#email").val(),
+      phoneNumber: $("#phoneNumber").val()
+    };
+    if (formData.password !== $("#passwordCheck").val()) return alert("비밀번호가 일치하지 않습니다.");
+
+    $.ajax({
+      url: $(this).attr("action"),
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(formData),
+      success: function(data){
+        if (data.result === "회원가입 성공") { alert("회원가입 성공!"); location.href = "/user/login"; }
+        else { alert(data.error_message || "회원가입 실패"); }
+      },
+      error: function(){ alert("서버 통신 중 오류가 발생했습니다."); }
     });
+  });
 
-    $("#verifyCodeBtn").click(function () {
-        const email = $("#email").val().trim();
-        const code = $("#emailCode").val().trim();
-
-        if (!code) {
-            alert("인증코드를 입력해주세요.");
-            return;
-        }
-
-        $.post("/user/email-auth/verify", { email: email, code: code }, function (res) {
-            if (res.result === "인증 성공") {
-                emailVerified = true;
-                alert("이메일 인증이 완료되었습니다.");
-            } else {
-                alert(res.error_message || "인증 실패");
-            }
-        });
-    });
-
-    $('#signUpForm').on('submit', function(e) {
-        e.preventDefault();
-
-        if (!emailVerified) {
-            alert("이메일 인증을 완료해주세요.");
-            return;
-        }
-
-        const formData = {
-            userLoginId: $("#userLoginId").val().trim(),
-            password: $("#password").val(),
-            name: $("#name").val(),
-            email: $("#email").val(),
-            phoneNumber: $("#phoneNumber").val()
-        };
-
-        const passwordCheck = $("#passwordCheck").val();
-        if (formData.password !== passwordCheck) {
-            alert("비밀번호가 일치하지 않습니다.");
-            return;
-        }
-
-        $.ajax({
-            url: $(this).attr('action'),
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(formData),
-            success: function(data) {
-                if (data.result === "회원가입 성공") {
-                    alert("회원가입 성공!");
-                    location.href = "/user/login";
-                } else {
-                    alert(data.error_message || "회원가입 실패");
-                }
-            }
-        });
-    });
+  // 상태 초기화
+  $("#userLoginId").on("input", function(){ loginIdChecked = false; $("#loginIdHint").text("").removeClass("ok warn"); });
+  $("#email").on("input", function(){ emailVerified = false; $("#emailHint").text("").removeClass("ok warn"); $("#emailCodeArea").hide(); $("#emailCode").val(""); });
 });
 </script>
 </body>
