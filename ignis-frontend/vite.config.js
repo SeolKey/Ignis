@@ -6,11 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:80',
-      '/oauth2': 'http://localhost:80',
-      '/logout': 'http://localhost:80',
-      '/user': 'http://localhost:80',
-      '/donation': 'http://localhost:80',
+      '/api':      { target: 'http://localhost:80', changeOrigin: true },
+      '/user':     { target: 'http://localhost:80', changeOrigin: true },
+      '/login':    { target: 'http://localhost:80', changeOrigin: true },
+      '/oauth2':   { target: 'http://localhost:80', changeOrigin: true },
+      '/logout':   { target: 'http://localhost:80', changeOrigin: true },
+      '/donation': { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })

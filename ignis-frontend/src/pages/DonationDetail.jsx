@@ -7,6 +7,7 @@ import {
 import { CalendarOutlined, ShareAltOutlined } from '@ant-design/icons';
 import '../styles/DonationDetail.css';
 import Layout from '../components/Layout';
+import testImage from '../assets/testImage.png';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -67,7 +68,7 @@ export default function DonationDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch {/* 취소 등 무시 */}
+    } catch {/* 취소 등 무시 */ }
   };
 
   if (loading) {
@@ -97,9 +98,20 @@ export default function DonationDetail() {
           <Col xs={24} md={16}>
             <Card bordered={false} className="thumbnail-card">
               <img
-                src={donation.imagePath || '/default-image.png'}
+                src={donation.imagePath ? donation.imagePath : testImage} // 없으면 기본 이미지
                 alt="대표 이미지"
-                style={{ width: '100%', height: 300, objectFit: 'cover', borderRadius: 8, background: '#f0f0f0' }}
+                style={{
+                  width: '100%',
+                  height: 300,
+                  objectFit: 'cover',
+                  borderRadius: 8,
+                  background: '#f0f0f0'
+                }}
+                onError={(e) => {
+                  if (!e.currentTarget.src.includes(testImage)) {
+                    e.currentTarget.src = testImage; // 로드 실패 시 교체
+                  }
+                }}
               />
             </Card>
 

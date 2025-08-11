@@ -37,7 +37,6 @@
   color: #1a5fd0;
 }
 
-
 /* 섹션 공통 */
 .section {
   margin-bottom: 48px;
@@ -51,34 +50,49 @@
   margin: 0;
 }
 
-/* 항목 카드 (AntD Card의 내부 패딩/모서리 조정) */
-.item-card {
-  border-radius: 12px;
-  min-height: 100px;
+/* 카드 컨테이너 (기부) */
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 
-/* 카테고리 배경 버전 */
-.variant-gray {
-  background-color: #f0f0f0;
-}
-.variant-blue {
-  background-color: #e6f7ff;
-}
-.variant-green {
-  background-color: #f6ffed;
+.card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: none;         /* ✅ 애니메이션 제거 */
+  cursor: pointer;
 }
 
-/* 펀딩 목표 텍스트 */
-.goal-text {
-  margin-top: 8px;
+.card:hover {
+  transform: none;          /* ✅ 떠오르는 효과 제거 */
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08); /* 원래 그대로 */
 }
 
-/* 상단 우측 링크 버튼 여백 조정(선택사항) */
-.more-link {
-  padding: 0;
+
+/* 카드 이미지 */
+.donation-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;  /* 비율 고정 */
+  object-fit: cover;
+  display: block;
+  background: #f3f4f6;   /* 로딩 중 배경 */
+}
+
+/* 카드 제목 */
+.card p {
+  margin: 12px 14px 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 생성 버튼 상단 여백 */
 .create-button {
-  margin-top: 16px;
+  margin-top: 24px;
 }

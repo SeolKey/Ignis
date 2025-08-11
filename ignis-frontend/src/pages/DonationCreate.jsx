@@ -54,8 +54,10 @@ const DonationCreate = () => {
       if (!response.ok) throw new Error('서버 오류');
 
       const result = await response.json();
+      console.log(result);
       message.success('기부 프로젝트 등록 성공!');
-      navigate(`/donation/${result.donation_id}`);
+      navigate('/');
+
     } catch (err) {
       console.error('업로드 실패:', err);
       message.error('기부 프로젝트 등록 실패!');
