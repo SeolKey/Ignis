@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   Avatar,
@@ -30,12 +30,20 @@ import '../styles/MyPage.css';
 const { Title, Text } = Typography;
 
 export default function MyPage() {
-  // 더미 데이터 (기능 연동 전)
-  const user = {
-    name: '김00',
-    email: 'admin@example.com',
-    grade: 'Platinum',
-  };
+  const [user, setUser] = useState({});
+  
+  useEffect(() => {
+    // 사용자 정보 요청
+    async function fetchUserData() {
+      const res = await fetch('/api/user', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      }
+    }
+
+    fetchUserData();
+  }, []); // 컴포넌트 마운트 시 한 번만 실행
 
   const stats = [
     { title: '총 참여 수', value: 128, icon: <GiftTwoTone twoToneColor="#1677ff" /> },
@@ -53,12 +61,11 @@ export default function MyPage() {
     <Layout>
       <div className="mypage-wrap">
         <Row gutter={[24, 24]}>
-          {/* LEFT: 프로필 + 메뉴 */}
           <Col xs={24} md={8} lg={6}>
             <Card className="profile-card" bordered={false}>
               <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                <Avatar size={88} style={{ background: '#1677ff' }}>김</Avatar>
-                <Title level={4} style={{ marginBottom: 0 }}>{user.name}</Title>
+                <Avatar size={88} style={{ background: '#1677ff' }}>{user.userName?.charAt(0)}</Avatar>
+                <Title level={4} style={{ marginBottom: 0 }}>{user.userName}</Title>
                 <Text type="secondary">{user.email}</Text>
                 <Tag color="gold" style={{ marginTop: 8 }}>{user.grade}</Tag>
               </Space>
@@ -75,11 +82,10 @@ export default function MyPage() {
             </Card>
           </Col>
 
-          {/* RIGHT: 대시보드 */}
           <Col xs={24} md={16} lg={18}>
             <div className="greeting-bar">
               <div>
-                <Title level={3} style={{ marginBottom: 4 }}>안녕하세요, {user.name}님!</Title>
+                <Title level={3} style={{ marginBottom: 4 }}>안녕하세요, {user.userName}님!</Title>
                 <Text type="secondary">오늘도 좋은 하루 되세요.</Text>
               </div>
               <Space>

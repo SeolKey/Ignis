@@ -17,7 +17,6 @@ const DonationHeader = () => {
   const location = useLocation();
   const [username, setUsername] = useState(null);
 
-  // 현재 경로에 맞춰 메뉴 기본 선택키 추정 (선택 사항)
   const selectedKey =
     location.pathname.startsWith('/donation') ? 'donation' :
     location.pathname.startsWith('/volunteer') ? 'volunteer' :
@@ -28,11 +27,10 @@ const DonationHeader = () => {
 
     (async () => {
       try {
-        // 서버 세션 기준으로만 판단 (credentials 필수)
         const res = await fetch('/api/user', { credentials: 'include' });
 
         if (!res.ok) {
-          if (!cancelled) setUsername(null); // 비로그인 UI
+          if (!cancelled) setUsername(null); 
           return;
         }
 
@@ -43,7 +41,6 @@ const DonationHeader = () => {
         }
 
         const data = await res.json();
-        // 백엔드 필드명 호환(userName | username)
         const name = data?.userName ?? data?.username ?? null;
         if (!cancelled) setUsername(name || null);
       } catch (e) {
@@ -61,7 +58,7 @@ const DonationHeader = () => {
     } catch (e) {
       console.warn('서버 로그아웃 실패:', e);
     } finally {
-      setUsername(null); // 서버 기준이므로 스토리지 사용 안 함
+      setUsername(null);
       navigate('/login');
     }
   };
@@ -94,7 +91,7 @@ const DonationHeader = () => {
         {username ? (
           <>
             <Menu.Item key="user" icon={<UserOutlined />}>
-              {username}님
+              <Link to="/mypage">{username}님</Link> {/* 마이페이지로 이동하는 링크 추가 */}
             </Menu.Item>
             <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
               로그아웃

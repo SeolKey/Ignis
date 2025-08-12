@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Layout,
   Typography,
   Input,
   Button,
@@ -10,16 +9,9 @@ import {
   Checkbox,
   Divider,
 } from 'antd';
-import {
-  HomeOutlined,
-  HeartOutlined,
-  SmileOutlined,
-  FundOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
 import '../styles/PaymentPage.css';
+import Layout from '../components/Layout'; // Layout 추가
 
-const { Header, Content, Footer } = Layout;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
@@ -60,14 +52,8 @@ const PaymentPage = () => {
   };
 
   return (
-    <Layout className="payment-layout">
-      {/* 헤더 */}
-      <Header className="donation-header">
-        <div className="logo">IGNIS</div>
-      </Header>
-
-      {/* 본문 */}
-      <Content className="payment-content">
+    <Layout> {/* Layout 컴포넌트로 감쌈 */}
+      <div className="payment-content">
         <Card className="payment-card" variant="borderless">
           <Title level={3}>결제하기</Title>
 
@@ -153,15 +139,10 @@ const PaymentPage = () => {
             결제하기
           </Button>
         </Card>
-      </Content>
-
-      {/* 푸터 */}
-      <Footer className="donation-footer">
-        © 2025 IGNIS. 포트폴리오용 테스트 페이지입니다.
-      </Footer>
+      </div>
     </Layout>
   );
 };
 
-console.log(' PaymentPage 컴포넌트 불러와짐');
+console.log('PaymentPage 컴포넌트 불러와짐');
 export default PaymentPage;
