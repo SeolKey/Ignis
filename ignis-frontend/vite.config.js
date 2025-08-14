@@ -13,6 +13,8 @@ export default defineConfig({
       '/logout':   { target: 'http://localhost:80', changeOrigin: true },
       '/donation': { target: 'http://localhost:80', changeOrigin: true },
       '/comment':  { target: 'http://localhost:80', changeOrigin: true },
+      '/notice': { target: 'http://localhost:80', changeOrigin: true },
+      '/post': { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })
