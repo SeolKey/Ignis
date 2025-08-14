@@ -1,4 +1,62 @@
+.footer,
+.footer * {
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: none;
+}
+
 .footer {
-  margin-top: 60px;
+  background-color: #fff; /* 흰색 배경 */
+  color: #333; /* 글자색 짙은 회색 */
+  padding: 40px 20px;
+  font-size: 14px;
+}
+
+.footer a {
+  color: #555;
+  margin-right: 15px;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer a:hover {
+  color: #000;
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.footer-links a {
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+.footer-socials a {
+  font-size: 20px;
+  margin-left: 10px;
+  color: #555;
+}
+
+.footer-socials a:hover {
+  color: #000;
+}
+
+.footer-bottom {
+  border: none !important; /* 테두리 제거 */
+  padding-top: 15px;
   text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.footer-bottom p {
+  margin: 3px 0;
 }

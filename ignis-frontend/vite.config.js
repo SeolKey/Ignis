@@ -12,6 +12,7 @@ export default defineConfig({
       '/oauth2':   { target: 'http://localhost:80', changeOrigin: true },
       '/logout':   { target: 'http://localhost:80', changeOrigin: true },
       '/donation': { target: 'http://localhost:80', changeOrigin: true },
+      '/comment':  { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })

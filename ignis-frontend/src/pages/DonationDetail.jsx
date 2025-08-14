@@ -1,16 +1,18 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Row, Col, Card, Typography, Progress,
-  Button, Tabs, Divider, message, Spin
+  Button, Tabs, Divider, message, Spin, List, Input
 } from 'antd';
 import { CalendarOutlined, ShareAltOutlined } from '@ant-design/icons';
 import '../styles/DonationDetail.css';
 import Layout from '../components/Layout';
 import testImage from '../assets/testImage.png';
+import { Carousel } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
+const { TextArea } = Input;
 
 const fmtDate = (iso) => {
   if (!iso) return '';
@@ -22,19 +24,30 @@ const fmtDate = (iso) => {
   return `${y}.${m}.${dd}`;
 };
 
+const fmtDateTime = (iso) => {
+  if (!iso) return '';
+  return iso.replace('T', ' ').substring(0, 16);
+};
+
 export default function DonationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  // ---------- state ----------
   const [loading, setLoading] = useState(true);
   const [donation, setDonation] = useState(null);
 
+  // 댓글 상태
+  const [comments, setComments] = useState([]);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentInput, setCommentInput] = useState('');
+
+  // ---------- effects ----------
   useEffect(() => {
     let ignore = false;
     (async () => {
       try {
         setLoading(true);
-        // 백엔드 REST: GET /api/donation/{id}
         const res = await fetch(`/donation/api/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -49,6 +62,82 @@ export default function DonationDetail() {
     return () => { ignore = true; };
   }, [id]);
 
+  // ---------- derived values / helpers (hooks before any early return) ----------
+  const contentId = donation?.donationId ?? donation?.id ?? Number(id);
+
+  // ✅ 댓글 목록 불러오기 (Accept: application/json + res.ok 체크)
+  const loadComments = useCallback(async () => {
+    if (!contentId) return;
+    try {
+      setCommentLoading(true);
+      const res = await fetch(`/comment/list?contentType=donation&contentId=${contentId}`, {
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status} ${text}`);
+      }
+      const data = await res.json();
+      setComments(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error('댓글 불러오기 실패:', e);
+      message.error('댓글을 불러오지 못했어요.');
+    } finally {
+      setCommentLoading(false);
+    }
+  }, [contentId, navigate]);
+
+  // ✅ 댓글 작성 (JSON 바디 + res.ok 체크)
+  const submitComment = async () => {
+    const content = commentInput.trim();
+    if (!content) return message.warning('댓글 내용을 입력해줘.');
+    try {
+      setCommentLoading(true);
+      const res = await fetch('/comment/create', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          contentType: 'donation',
+          contentId,
+          content,
+          parentId: null,
+        }),
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(`HTTP ${res.status} ${text}`);
+      }
+      const result = await res.json();
+      if (result?.result === 'success') {
+        setCommentInput('');
+        message.success('댓글이 등록되었습니다.');
+        await loadComments();
+      } else {
+        message.error(result?.errorMessage || '댓글 등록에 실패했습니다.');
+      }
+    } catch (e) {
+      console.error(e);
+      message.error('댓글 등록 중 오류가 발생했어요.');
+    } finally {
+      setCommentLoading(false);
+    }
+  };
+
   const progress = useMemo(() => {
     const cur = Number(donation?.currentPrice || 0);
     const max = Number(donation?.maxPrice || 0);
@@ -56,8 +145,25 @@ export default function DonationDetail() {
     return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
   }, [donation]);
 
+  // 캐러셀 이미지 소스 정규화 (없거나 1장 이하면 기본이미지로 슬라이드 유지)
+  const imagesForCarousel = useMemo(() => {
+    const raw = Array.isArray(donation?.images)
+      ? donation.images
+        .map((it) => {
+          if (typeof it === 'string') return it;
+          if (it?.url) return it.url;
+          if (it?.path) return it.path;
+          if (it?.imagePath) return it.imagePath;
+          return null;
+        })
+        .filter(Boolean)
+      : [];
+    if (raw.length < 2) return [testImage, testImage, testImage];
+    return raw;
+  }, [donation]);
+
   const start = fmtDate(donation?.createdAt);
-  const end = donation?.endAt ? fmtDate(donation.endAt) : ''; // 백엔드가 endAt 주면 사용
+  const end = donation?.endAt ? fmtDate(donation.endAt) : '';
 
   const handleParticipate = () => navigate('/payment');
   const share = async () => {
@@ -68,9 +174,10 @@ export default function DonationDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch {/* 취소 등 무시 */ }
+    } catch { /* 무시 */ }
   };
 
+  // ---------- early returns (after hooks) ----------
   if (loading) {
     return (
       <Layout>
@@ -91,31 +198,38 @@ export default function DonationDetail() {
     );
   }
 
+  // ---------- render ----------
   return (
     <Layout>
       <div className="donation-content">
         <Row gutter={[24, 24]}>
           <Col xs={24} md={16}>
             <Card bordered={false} className="thumbnail-card">
-              <img
-                src={donation.imagePath ? donation.imagePath : testImage} // 없으면 기본 이미지
-                alt="대표 이미지"
-                style={{
-                  width: '100%',
-                  height: 300,
-                  objectFit: 'cover',
-                  borderRadius: 8,
-                  background: '#f0f0f0'
-                }}
-                onError={(e) => {
-                  if (!e.currentTarget.src.includes(testImage)) {
-                    e.currentTarget.src = testImage; // 로드 실패 시 교체
-                  }
-                }}
-              />
+              <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
+                {imagesForCarousel.map((src, idx) => (
+                  <div key={idx}>
+                    <img
+                      src={src || testImage}
+                      alt={`이미지-${idx}`}
+                      style={{
+                        width: '100%',
+                        height: 300,
+                        objectFit: 'cover',
+                        borderRadius: 8,
+                        background: '#f0f0f0'
+                      }}
+                      onError={(e) => { e.currentTarget.src = testImage; }}
+                    />
+                  </div>
+                ))}
+              </Carousel>
             </Card>
 
-            <Tabs defaultActiveKey="1" className="custom-tabs">
+            <Tabs
+              defaultActiveKey="1"
+              className="custom-tabs"
+              onChange={(key) => { if (key === '3') loadComments(); }}
+            >
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{donation.title}</Title>
                 <Card className="content-card" bordered={false}>
@@ -130,13 +244,51 @@ export default function DonationDetail() {
 
               <TabPane tab="안내사항" key="2">
                 <Paragraph>
-                  - 본 프로젝트는 실제 기부를 기반으로 하는 서비스입니다.<br />
-                  - 기부 완료 후 환불은 불가하니 신중히 참여해주세요.
+                  - 본 프로젝트는 <strong>실제 기부금 전달</strong>을 기반으로 운영되는 서비스입니다.<br />
+                  - 모든 기부금은 투명한 절차를 거쳐 해당 프로젝트의 수혜자에게 전달됩니다.<br />
+                  - 기부 참여 전, <strong>프로젝트 내용·목적·기부처</strong>를 반드시 확인해주세요.<br />
+                  - 기부 완료 후에는 <strong>법령 및 서비스 정책상 환불이 불가</strong>하니 신중히 결정해 주시기 바랍니다.<br />
+                  - 기부 내역과 사용 결과는 마이페이지 및 프로젝트 상세 페이지에서 확인 가능합니다.<br />
+                  - 문의 사항이 있으면 고객센터 또는 1:1 문의를 이용해주세요.
                 </Paragraph>
               </TabPane>
 
+
               <TabPane tab="댓글" key="3">
-                <Paragraph>댓글 기능은 준비 중입니다.</Paragraph>
+                <Card bordered={false} style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', gap: 12 }}>
+                    <TextArea
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      placeholder="댓글을 입력하세요"
+                      autoSize={{ minRows: 3, maxRows: 6 }}
+                    />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {/* 폼 submit 방지: htmlType="button" */}
+                      <Button type="primary" htmlType="button" onClick={submitComment} loading={commentLoading}>
+                        발송
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* antd Comment 없이 List.Item으로 구현 (버전 충돌 방지) */}
+                <List
+                  loading={commentLoading}
+                  locale={{ emptyText: '아직 댓글이 없습니다.' }}
+                  dataSource={comments}
+                  renderItem={(c) => (
+                    <List.Item>
+                      <div style={{ width: '100%' }}>
+                        <div style={{ fontWeight: 'bold' }}>{c?.userName || '익명 사용자'}</div>
+                        <div style={{ whiteSpace: 'pre-wrap' }}>{c?.content}</div>
+                        <div style={{ fontSize: 12, color: '#999' }}>
+                          {fmtDateTime(c?.createdAt || '')}
+                        </div>
+                      </div>
+                    </List.Item>
+                  )}
+                />
               </TabPane>
             </Tabs>
           </Col>
