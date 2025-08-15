@@ -11,19 +11,61 @@ const FundingCreate = () => {
     const navigate = useNavigate();
     const [submitting, setSubmitting] = useState(false);
 
-    const onFinish = async () => {
+    const onFinish = async (values) => {
         setSubmitting(true);
         try {
-            // TODO: API 연동
-            // await fetch('/funding/react/create', { ... })
-            message.success('임시: 생성 성공(목업)');
-            navigate('/funding', { replace: true });
-        } catch {                              // ✅ e 안 쓰면 변수명 자체를 제거
-            message.error('생성 실패');
+            const res = await fetch('/funding/react/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    title: values.title ?? '',
+                    description: values.description ?? '',
+                    maxPrice: String(values.maxPrice ?? 0),
+                    imagePath: values.imagePath ?? '', // 이미지 없으면 빈값
+                }),
+                credentials: 'include',
+            });
+
+            // 디버그 로그
+            const ct = res.headers.get('content-type') || '';
+            console.log('[funding/create] status=', res.status, 'content-type=', ct);
+
+            if (!res.ok) {
+                const text = await res.clone().text().catch(() => '');
+                message.error(`생성 실패(${res.status}). ${text.slice(0, 120)}`);
+                return;
+            }
+
+            if (!ct.includes('application/json')) {
+                const text = await res.clone().text().catch(() => '');
+                message.error(`JSON 아님: ${text.replace(/\s+/g, ' ').slice(0, 120)}`);
+                return;
+            }
+
+            const data = await res.json().catch(() => null);
+            console.log('[funding/create] json=', data);
+
+            const ok =
+                data &&
+                (data.result === '성공' ||
+                    data.success === true ||
+                    data.status === 'ok' ||
+                    !!data.fundingId || !!data.id);
+
+            if (ok) {
+                message.success('펀딩 생성 성공');
+                navigate('/funding', { replace: true });
+            } else {
+                message.error(`펀딩 생성 실패. ${data?.error ? `사유: ${String(data.error).slice(0, 120)}` : ''}`);
+            }
+        } catch (err) {
+            message.error(`서버 오류: ${err?.message || err}`);
         } finally {
             setSubmitting(false);
         }
     };
+
+
 
     return (
         <Layout>

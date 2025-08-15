@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Space, Button, Divider } from 'antd';
+import { Card, Typography, Space, Button, Divider, message } from 'antd'; // message 임포트!
 import { useNavigate, useParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 
@@ -10,18 +10,13 @@ const FundingDetail = () => {
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
 
-  // TODO: API 연동
   useEffect(() => {
-    setItem({
-      id,
-      title: `펀딩 제목 #${id}`,
-      description: '펀딩 상세 설명이 들어갑니다.',
-      maxPrice: 1000000,
-      currentPrice: 250000,
-      imagePath: '',
-      createdAt: '2025-08-15',
-    });
+    fetch(`/funding/react/detail/${id}`, { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setItem(data?.funding ?? null)) // 컨트롤러 응답 { funding: {...} }
+      .catch(() => message.error('펀딩 상세 불러오기 실패'));
   }, [id]);
+
 
   return (
     <Layout>

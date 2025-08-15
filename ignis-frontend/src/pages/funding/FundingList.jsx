@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Space, Table, Typography } from 'antd';
+import { Card, Button, Space, Table, Typography, message } from 'antd'; // message 임포트!
 import { PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
@@ -11,18 +11,16 @@ const FundingList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // TODO: API 연동
   useEffect(() => {
     setLoading(true);
-    // setData(mockData)
-    setTimeout(() => {
-      setData([
-        { key: 1, id: 1, title: '테스트 펀딩 1', maxPrice: 1000000, currentPrice: 250000, createdAt: '2025-08-15' },
-        { key: 2, id: 2, title: '테스트 펀딩 2', maxPrice: 2000000, currentPrice: 1800000, createdAt: '2025-08-14' },
-      ]);
-      setLoading(false);
-    }, 200);
+    fetch('/funding/react/list', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((json) => setData(json?.fundingList ?? [])) // 컨트롤러 응답 { fundingList: [...] }
+      .catch(() => message.error('펀딩 목록 불러오기 실패'))
+      .finally(() => setLoading(false));
   }, []);
+
+
 
   const columns = [
     { title: '번호', dataIndex: 'id', width: 90, align: 'center' },

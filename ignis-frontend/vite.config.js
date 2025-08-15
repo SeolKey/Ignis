@@ -15,6 +15,7 @@ export default defineConfig({
       '/comment':  { target: 'http://localhost:80', changeOrigin: true },
       '/notice': { target: 'http://localhost:80', changeOrigin: true },
       '/post': { target: 'http://localhost:80', changeOrigin: true },
+      '/funding': { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })
