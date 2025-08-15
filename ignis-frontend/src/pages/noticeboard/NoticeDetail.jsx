@@ -15,7 +15,7 @@ const NoticeDetail = () => {
     const ctrl = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/notice/notice-detail-view/${id}`, { credentials: 'include', signal: ctrl.signal });
+        const res = await fetch(`/notice/react/detail/${id}`, { credentials: 'include', signal: ctrl.signal });
         if (!res.ok) throw new Error('DETAIL_FAIL');
 
         const ct = res.headers.get('content-type') || '';

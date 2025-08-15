@@ -1,52 +1,78 @@
+// App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+/* ========== 공통/홈 ========== */
 import Home from './pages/Home';
-import DonationDetail from './pages/DonationDetail';
-import DonationCreate from './pages/DonationCreate';
 import PaymentPage from './pages/PaymentPage';
+import MyPage from './pages/MyPage';
+
+/* ========== 인증 ========== */
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+
+/* ========== 기부( Donation ) ========== */
 import DonationList from './pages/DonationList';
-import MyPage from './pages/MyPage';
-import NoticeList from "./pages/noticeboard/NoticeList";
-import NoticeDetail from "./pages/noticeboard/NoticeDetail";
-import NoticeCreate from "./pages/noticeboard/NoticeCreate";
-import NoticeEdit from "./pages/noticeboard/NoticeEdit";
+import DonationDetail from './pages/DonationDetail';
+import DonationCreate from './pages/DonationCreate';
+
+/* ========== 공지사항( Notice ) ========== */
+import NoticeList from './pages/noticeboard/NoticeList';
+import NoticeDetail from './pages/noticeboard/NoticeDetail';
+import NoticeCreate from './pages/noticeboard/NoticeCreate';
+import NoticeEdit from './pages/noticeboard/NoticeEdit';
+
+/* ========== 자유게시판( Freeboard ) ========== */
 import FreeList from './pages/freeboard/FreeList';
 import FreeDetail from './pages/freeboard/FreeDetail';
 import FreeCreate from './pages/freeboard/FreeCreate';
 import FreeEdit from './pages/freeboard/FreeEdit';
 
+/* ========== 펀딩( Funding ) ========== */
+import FundingList from './pages/funding/FundingList';
+import FundingDetail from './pages/funding/FundingDetail';
+import FundingCreate from './pages/funding/FundingCreate';
+import FundingEdit from './pages/funding/FundingEdit';
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* ===== 홈/공통 ===== */}
         <Route path="/" element={<Home />} />
-        <Route path="/donation-detail" element={<DonationDetail />} />  {/* 기부 상세 페이지 경로 수정 */}
-        <Route path="/donation-create" element={<DonationCreate />} />   {/* 기부 생성 페이지 경로 수정 */}
-        <Route path="/payment" element={<PaymentPage />} />            {/* 결제 페이지 경로 수정 */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/donation-detail/:id" element={<DonationDetail />} />
-        <Route path='/donation-list' element={<DonationList />} />
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/mypage" element={<MyPage />} />
 
-        {/* 공지사항 */}
+        {/* ===== 인증 ===== */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+
+        {/* ===== 기부( Donation ) ===== */}
+        <Route path="/donation-detail" element={<DonationDetail />} />
+        <Route path="/donation-detail/:id" element={<DonationDetail />} />
+        <Route path="/donation-create" element={<DonationCreate />} />
+        <Route path="/donation-list" element={<DonationList />} />
+
+        {/* ===== 공지사항( Notice ) ===== */}
         <Route path="/board/notice" element={<NoticeList />} />
         <Route path="/board/notice/create" element={<NoticeCreate />} />
         <Route path="/board/notice/:id" element={<NoticeDetail />} />
         <Route path="/board/notice/:id/edit" element={<NoticeEdit />} />
 
-        {/*  [ADD] 자유게시판 */}
+        {/* ===== 자유게시판( Freeboard ) ===== */}
         <Route path="/board/free" element={<FreeList />} />
         <Route path="/board/free/create" element={<FreeCreate />} />
         <Route path="/board/free/:id" element={<FreeDetail />} />
         <Route path="/board/free/:id/edit" element={<FreeEdit />} />
-        
+
+        {/* ===== 펀딩( Funding ) ===== */}
+        <Route path="/funding" element={<FundingList />} />
+        <Route path="/funding/create" element={<FundingCreate />} />
+        <Route path="/funding/:id" element={<FundingDetail />} />
+        <Route path="/funding/:id/edit" element={<FundingEdit />} />
       </Routes>
     </Router>
   );
 }
-console.log(" App.jsx 실행됨");
 
-export default App; 
+console.log('App.jsx 실행됨');
+export default App;

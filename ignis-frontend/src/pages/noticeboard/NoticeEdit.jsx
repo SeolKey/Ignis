@@ -1,3 +1,4 @@
+// src/pages/noticeboard/NoticeEdit.jsx
 import React, { useEffect } from 'react';
 import { Card, Form, Input, Button, Typography, message, Space } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,14 +17,20 @@ const NoticeEdit = () => {
     const ctrl = new AbortController();
     (async () => {
       try {
-        const res = await fetch(`/notice/notice-detail-view/${id}`, { credentials: 'include', signal: ctrl.signal });
+        // ✅ React 전용 상세 API
+        const res = await fetch(`/notice/react/detail/${id}`, {
+          credentials: 'include',
+          signal: ctrl.signal,
+        });
         if (!res.ok) throw new Error('DETAIL_FAIL');
+
         const ct = res.headers.get('content-type') || '';
         if (ct.includes('application/json')) {
           const data = await res.json();
+          const n = data.notice ?? {}; // 컨트롤러 응답: { notice: {...} }
           form.setFieldsValue({
-            title: data?.title ?? data?.notice?.title ?? '',
-            content: data?.content ?? data?.notice?.content ?? '',
+            title: n.title ?? '',
+            content: n.content ?? '',
           });
         } else {
           form.setFieldsValue({ title: '', content: '' });
@@ -35,27 +42,42 @@ const NoticeEdit = () => {
     return () => ctrl.abort();
   }, [id, form]);
 
-  // 2) onFinish 저장 (기존 onFinish가 있다면 본문만 교체)
   const onFinish = async (values) => {
     try {
-      const body = new URLSearchParams({ title: values.title, content: values.content });
-      const res = await fetch(`/notice/notice-edit-view/${id}`, {
+      const body = new URLSearchParams({
+        title: values.title,
+        content: values.content,
+      });
+
+      const res = await fetch(`/notice/react/edit/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body,
         credentials: 'include',
       });
-      // 응답이 텍스트일 수도 있으니 성공 가정 후 이동
-      if (res.ok) {
+
+      const ct = res.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
+        const txt = await res.text().catch(() => '');
+        message.error(`수정 실패: JSON이 아님 (${res.status})`);
+        console.warn('edit response (non-JSON):', txt);
+        return;
+      }
+
+      const data = await res.json();
+      if (res.ok && data?.result === 'success') {
         message.success('수정 완료');
         navigate(`/board/notice/${id}`);
       } else {
-        message.error('수정 실패');
+        message.error(`수정 실패: ${data?.reason || res.status}`);
       }
-    } catch {
-      message.error('수정 실패');
+    } catch (e) {
+      console.error(e);
+      message.error('수정 실패 (네트워크 오류)');
     }
   };
+
+
   return (
     <Layout>
       <div className="board-wrap">
