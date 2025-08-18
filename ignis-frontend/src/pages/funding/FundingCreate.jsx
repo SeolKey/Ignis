@@ -1,107 +1,147 @@
-import React, { useState } from 'react';
-import { Card, Form, Input, InputNumber, Button, Typography, Space, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import Layout from '../../components/Layout';
+import React, { useState } from "react";
+import { Form, Input, Button, Card, Upload, Typography, message } from "antd";
+import { InboxOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import Layout from "../../components/Layout";
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+const { Title } = Typography;
+const { Dragger } = Upload;
 
 const FundingCreate = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const [file, setFile] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
+    const handleFileChange = (info) => {
+        // 최신 항목 1개만 보관
+        const f = info?.fileList?.[0]?.originFileObj ?? null;
+        setFile(f);
+    };
+
     const onFinish = async (values) => {
-        setSubmitting(true);
+        // 이미지 필수 가드
+        if (!file) {
+            message.error("이미지를 첨부해줘.");
+            return;
+        }
+
+        // 숫자 정규화
+        const mp = String(values.maxPrice ?? "").replace(/[^0-9]/g, "");
+        if (!mp) {
+            message.error("목표 금액을 입력해줘.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", values.title ?? "");
+        formData.append("description", values.description ?? "");
+        formData.append("maxPrice", mp);
+        formData.append("file", file);
+
+        // 디버깅 로그
+        console.log("[debug] to-send:", {
+            title: values.title,
+            description: values.description,
+            maxPrice: mp,
+            hasFile: !!file,
+        });
+
         try {
-            const res = await fetch('/funding/react/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    title: values.title ?? '',
-                    description: values.description ?? '',
-                    maxPrice: String(values.maxPrice ?? 0),
-                    imagePath: values.imagePath ?? '', // 이미지 없으면 빈값
-                }),
-                credentials: 'include',
+            setSubmitting(true);
+            const res = await fetch("/funding/react/create", {
+                method: "POST",
+                body: formData,
+                credentials: "include", // 세션 쿠키 포함
             });
 
-            // 디버그 로그
-            const ct = res.headers.get('content-type') || '';
-            console.log('[funding/create] status=', res.status, 'content-type=', ct);
+            let json = {};
+            try {
+                json = await res.json();
+            } catch (err) {
+                console.warn("⚠️ 응답 JSON 파싱 실패:", err);
+            }
 
-            if (!res.ok) {
-                const text = await res.clone().text().catch(() => '');
-                message.error(`생성 실패(${res.status}). ${text.slice(0, 120)}`);
+            console.log("[funding/create] status=", res.status, "json=", json);
+
+            if (res.status === 401) {
+                message.warning("로그인 후 이용 가능해.");
+                navigate("/login");
                 return;
             }
 
-            if (!ct.includes('application/json')) {
-                const text = await res.clone().text().catch(() => '');
-                message.error(`JSON 아님: ${text.replace(/\s+/g, ' ').slice(0, 120)}`);
-                return;
-            }
-
-            const data = await res.json().catch(() => null);
-            console.log('[funding/create] json=', data);
-
-            const ok =
-                data &&
-                (data.result === '성공' ||
-                    data.success === true ||
-                    data.status === 'ok' ||
-                    !!data.fundingId || !!data.id);
-
-            if (ok) {
-                message.success('펀딩 생성 성공');
-                navigate('/funding', { replace: true });
+            if (res.ok && json?.result === "성공") {
+                message.success("펀딩 등록 완료!");
+                navigate("/funding");
             } else {
-                message.error(`펀딩 생성 실패. ${data?.error ? `사유: ${String(data.error).slice(0, 120)}` : ''}`);
+                message.error(json?.error || `등록 실패 (HTTP ${res.status})`);
             }
         } catch (err) {
-            message.error(`서버 오류: ${err?.message || err}`);
+            console.error("업로드 실패:", err);
+            message.error("펀딩 등록 중 오류가 발생했어.");
         } finally {
             setSubmitting(false);
         }
     };
 
-
-
     return (
         <Layout>
-            <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }}>
-                <Card style={{ marginBottom: 12 }}>
-                    <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-                        <div>
-                            <Title level={3} style={{ margin: 0 }}>펀딩 생성</Title>
-                            <Text type="secondary">필수 정보를 입력하세요.</Text>
-                        </div>
-                        <Button onClick={() => navigate('/funding')}>목록</Button>
-                    </Space>
-                </Card>
+            <div className="funding-create-container" style={{ maxWidth: 720, margin: "0 auto" }}>
+                <Card className="funding-create-card" bordered>
+                    <Title level={3}>펀딩 생성</Title>
 
-                <Card>
                     <Form form={form} layout="vertical" onFinish={onFinish}>
-                        <Form.Item name="title" label="제목" rules={[{ required: true, message: '제목을 입력하세요' }]}>
-                            <Input placeholder="제목" />
+                        <Form.Item
+                            label="제목"
+                            name="title"
+                            rules={[{ required: true, message: "제목을 입력해줘." }]}
+                        >
+                            <Input placeholder="펀딩 제목을 입력하세요" />
                         </Form.Item>
 
-                        <Form.Item name="description" label="설명" rules={[{ required: true, message: '설명을 입력하세요' }]}>
-                            <TextArea rows={8} placeholder="프로젝트 설명" />
+                        <Form.Item
+                            label="설명"
+                            name="description"
+                            rules={[{ required: true, message: "설명을 입력해줘." }]}
+                        >
+                            <Input.TextArea rows={4} placeholder="펀딩 설명을 입력하세요" />
                         </Form.Item>
 
-                        <Form.Item name="accountInfo" label="계좌 정보" tooltip="은행명 / 계좌번호 / 예금주">
-                            <Input placeholder="예) 하나 123-456-789012 / 홍길동" />
+                        <Form.Item
+                            label="목표 금액"
+                            name="maxPrice"
+                            rules={[{ required: true, message: "목표 금액을 입력해줘." }]}
+                        >
+                            <Input inputMode="numeric" placeholder="숫자만 입력하세요" />
                         </Form.Item>
 
-                        <Form.Item name="maxPrice" label="목표 금액" rules={[{ required: true, message: '목표 금액을 입력하세요' }]}>
-                            <InputNumber style={{ width: '100%' }} min={0} step={1000} placeholder="예) 1,000,000" />
+                        <Form.Item label="이미지 업로드" required>
+                            <Dragger
+                                beforeUpload={() => false} // 자동 업로드 막고, FormData로 함께 전송
+                                onChange={handleFileChange}
+                                maxCount={1}
+                                accept="image/*"
+                                multiple={false}
+                            >
+                                <p className="ant-upload-drag-icon">
+                                    <InboxOutlined />
+                                </p>
+                                <p className="ant-upload-text">클릭하거나 이미지를 이곳에 드래그하세요</p>
+                                <p className="ant-upload-hint">한 번에 1개 이미지만 업로드할 수 있어요</p>
+                            </Dragger>
                         </Form.Item>
 
-                        <Space>
-                            <Button onClick={() => navigate(-1)}>취소</Button>
-                            <Button type="primary" htmlType="submit" loading={submitting}>등록</Button>
-                        </Space>
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                block
+                                disabled={!file || submitting}
+                                loading={submitting}
+                            >
+                                생성하기
+                            </Button>
+                        </Form.Item>
                     </Form>
                 </Card>
             </div>

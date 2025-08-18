@@ -33,6 +33,12 @@ import FundingDetail from './pages/funding/FundingDetail';
 import FundingCreate from './pages/funding/FundingCreate';
 import FundingEdit from './pages/funding/FundingEdit';
 
+/* ========== 봉사( Volunteer ) ========== */
+import VolunteerList from './pages/volunteer/VolunteerList';
+import VolunteerDetail from './pages/volunteer/VolunteerDetail';
+import VolunteerCreate from './pages/volunteer/VolunteerCreate';
+
+
 function App() {
   return (
     <Router>
@@ -69,6 +75,16 @@ function App() {
         <Route path="/funding/create" element={<FundingCreate />} />
         <Route path="/funding/:id" element={<FundingDetail />} />
         <Route path="/funding/:id/edit" element={<FundingEdit />} />
+        {/* ===== 펀딩( Funding ) ===== */}
+        <Route path="/funding" element={<FundingList />} />                {/* 펀딩 리스트 */}
+        <Route path="/funding/create" element={<FundingCreate />} />       {/* 펀딩 생성 */}
+        <Route path="/funding/:id" element={<FundingDetail />} />          {/* 펀딩 상세 */}
+        <Route path="/funding/:id/edit" element={<FundingEdit />} />       {/* 펀딩 수정 */}
+
+        {/* ===== 봉사( Volunteer ) ===== */}
+        <Route path="/volunteer" element={<VolunteerList />} />            {/* 봉사 리스트 */}
+        <Route path="/volunteer/create" element={<VolunteerCreate />} />   {/* 봉사 생성 */}
+        <Route path="/volunteer/:id" element={<VolunteerDetail />} />      {/* 봉사 상세 */}
       </Routes>
     </Router>
   );

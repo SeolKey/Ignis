@@ -3,7 +3,6 @@ package com.Ignis.home.funding;
 import com.Ignis.common.enums.Status;
 import com.Ignis.home.funding.bo.FundingPriceBO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +13,8 @@ import com.Ignis.home.funding.domain.Funding;
 import java.util.*;
 
 import jakarta.servlet.http.HttpSession;
+
+import org.springframework.http.*; // 추가
 
 @RestController
 @RequestMapping("/funding")
@@ -91,64 +92,90 @@ public class FundingRestController {
         return result;
     }
 
-    /** 목록: FundingList.jsx -> { fundingList: [...] } */
+    // =================== React 전용 API ===================
+
+    /** 목록 */
     @GetMapping("/react/list")
-    public Map<String, Object> fundingListForReact() {
-        Map<String, Object> res = new HashMap<>();
-        List<Funding> list = fundingBO.getFundingList(); // BO 메서드명에 맞춰 사용
-        res.put("fundingList", list);
-        return res;
+    public ResponseEntity<?> getFundingListForReact() {
+        List<Funding> list = fundingBO.getFundingList();
+        return ResponseEntity.ok(Map.of("fundingList", list));
     }
 
-    /** 상세: FundingDetail.jsx -> { funding: {...} } */
+    /** 상세 */
     @GetMapping("/react/detail/{id}")
-    public Map<String, Object> fundingDetailForReact(@PathVariable("id") Long fundingId) {
-        Map<String, Object> res = new HashMap<>();
-        Funding funding = fundingBO.getFundingById(fundingId); // BO 메서드명에 맞춰 사용
-        res.put("funding", funding);
-        return res;
-    }
-
-    /** 생성: FundingCreate.jsx (x-www-form-urlencoded) */
-    @PostMapping(value = "/react/create", consumes = "application/x-www-form-urlencoded")
-    public Map<String, Object> fundingCreateForReact(
-            @RequestParam("title") String title,
-            @RequestParam("description") String description,
-            @RequestParam("maxPrice") Integer maxPrice, // ✅ Integer로 변경
-            @RequestParam(value = "imagePath", required = false) String imagePath,
-            HttpSession session) {
-        Map<String, Object> res = new HashMap<>();
-        try {
-            Long userId = (Long) session.getAttribute("userId");
-            if (userId == null) {
-                res.put("result", "실패");
-                res.put("error", "로그인이 필요합니다.");
-                return res;
-            }
-
-            Funding f = new Funding();
-            f.setUserId(userId);
-            f.setTitle(title);
-            f.setDescription(description);
-            f.setMaxPrice(maxPrice); // ✅ setter 시그니처에 맞춤
-            if (imagePath != null)
-                f.setImagePath(imagePath);
-            // f.setAccountInfo(accountInfo); // ❌ Funding에 없으므로 제거
-
-            // ✅ BO 메서드명에 맞춰 호출
-            // 아래 두 줄 중 프로젝트에 존재하는 메서드명을 사용하세요.
-            fundingBO.insertFunding(f, null);
-            // fundingBO.createFunding(f); // ← BO에 이 메서드가 존재한다면 이걸로 교체
-
-            res.put("result", "성공");
-            // res.put("fundingId", f.getFundingId()); // BO/Mapper가 키 채우면 사용
-        } catch (Exception e) {
-            res.put("result", "실패");
-            res.put("error", "DB 오류: " + e.getMessage());
+    public ResponseEntity<?> getFundingDetailForReact(@PathVariable("id") Long fundingId) {
+        Funding detail = fundingBO.getFundingById(fundingId);
+        if (detail == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("result", "실패", "error", "NOT_FOUND"));
         }
-        return res;
+        return ResponseEntity.ok(detail);
     }
 
+    /** 생성 */
+    @PostMapping("/react/create")
+public ResponseEntity<?> createFundingForReact(
+        @RequestParam String title,
+        @RequestParam String description,
+        @RequestParam("maxPrice") String maxPriceRaw,
+        @RequestParam("file") MultipartFile file,
+        HttpSession session) {
+
+    Long userId = (Long) session.getAttribute("userId");
+    if (userId == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("result","fail","error","로그인 필요"));
+    }
+
+    // 이미지 필수
+    if (file == null || file.isEmpty()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("result","fail","error","이미지 파일을 첨부해주세요."));
+    }
+
+    // 파일 메타 검증(BO에서 getOriginalFilename()/getContentType() 만질 때 NPE 방지)
+    String originalName = file.getOriginalFilename();
+    if (originalName == null || originalName.isBlank()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("result","fail","error","유효하지 않은 이미지 파일입니다."));
+    }
+    String contentType = file.getContentType();
+    if (contentType == null || contentType.isBlank()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("result","fail","error","이미지 Content-Type 확인이 필요합니다."));
+    }
+
+    // 숫자 정규화
+    String norm = (maxPriceRaw == null ? "" : maxPriceRaw).replaceAll("[^0-9]","");
+    if (norm.isEmpty()) {
+        return ResponseEntity.badRequest()
+                .body(Map.of("result","fail","error","목표 금액을 입력해주세요."));
+    }
+    Integer maxPrice = Integer.valueOf(norm);
+
+    try {
+        Funding f = new Funding();
+        // f.setUserId(userId.intValue()); // Integer면 이 줄
+        f.setUserId(userId);               // Long이면 이 줄
+
+        f.setTitle(title == null ? "" : title);
+        f.setDescription(description == null ? "" : description);
+        f.setMaxPrice(maxPrice);
+        f.setCurrentPrice(0);
+        if (f.getStatus() == null) f.setStatus("PENDING");
+        if (f.getImagePath() == null) f.setImagePath(""); // BO/Mapper가 만져도 안전
+
+        // 원본 MultipartFile 그대로 전달
+        fundingBO.insertFunding(f, file);
+
+        return ResponseEntity.ok(Map.of("result","성공","fundingId", f.getFundingId()));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("result","fail","error",
+                        e.getClass().getSimpleName()+": "+String.valueOf(e.getMessage())));
+    }
+}
 
 
 }

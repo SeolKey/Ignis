@@ -39,7 +39,8 @@ public class SecurityConfig {
                     "/user/**",
                     "/error", "/public/**",
                     "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                    "/donation-detail/**", "/donation-create", "/funding/**",
+                    "/donation-detail/**", "/donation-create", 
+                    "/funding/**",
                     "/api/**"
                 ).permitAll()
                 .anyRequest().authenticated()

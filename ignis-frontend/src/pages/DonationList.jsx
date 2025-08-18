@@ -15,7 +15,7 @@ const DonationList = () => {
     const fetchDonations = async () => {
       try {
         setLoading(true);
-        // ✅ 새 API 경로 (프록시에 /donation 이미 있음)
+        //  새 API 경로
         const res = await fetch('/donation/api/list?status=APPROVED&page=0&size=12', {
           credentials: 'include',
         });

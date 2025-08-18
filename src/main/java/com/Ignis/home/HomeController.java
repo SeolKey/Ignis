@@ -30,7 +30,7 @@ public class HomeController {
     @Autowired
     private FundingBO fundingBO;
 
-    /** ① 기존 Thymeleaf 홈 페이지 (서버 렌더링) */
+    /**   기존 Thymeleaf 홈 페이지 (서버 렌더링) */
     @GetMapping("/")
     public String showHomePage(Model model) {
         List<Donation> donationList = donationBO.getRecentDonationList(4);
@@ -44,7 +44,7 @@ public class HomeController {
         return "home/home";
     }
 
-    /** ② React용 JSON API (클라이언트에서 fetch('/api/home')) */
+    /**  React용 JSON API (클라이언트에서 fetch('/api/home')) */
     @GetMapping("/api/home")
     @ResponseBody
     public Map<String, Object> getHomeData() {
