@@ -24,7 +24,7 @@
 	    ORDER BY created_at DESC
     </select>
     
-    <!-- 전체 리스트 -->
+    <!-- Pending 리스트 -->
     <select id="selectPendingDonationList" resultType="com.Ignis.home.donation.domain.Donation">
 	     SELECT 
 	        donation_id AS donationId,
@@ -70,7 +70,8 @@
 	    WHERE donation_id = #{donationId}
     </select>
     
-   <insert id="insertDonation" parameterType="com.Ignis.home.donation.domain.Donation">
+    <!-- 등록 -->
+    <insert id="insertDonation" parameterType="com.Ignis.home.donation.domain.Donation">
 	    INSERT INTO donation (
 	        user_id,
 	        title,
@@ -98,7 +99,7 @@
 	    )
 	</insert>
 
-	
+	<!-- 최신 승인된 n개 -->
 	<select id="selectRecentDonationList" resultType="com.Ignis.home.donation.domain.Donation">
 	    SELECT
 	        donation_id AS donationId,
@@ -115,13 +116,24 @@
 	    LIMIT #{limit}
 	</select>
 
+	<!-- 상태 업데이트 -->
 	<update id="updateDonationStatus">
         UPDATE donation
         SET status = #{status}, updated_at = NOW()
         WHERE donation_id = #{donationId}
     </update>
 
+    <!-- 삭제 -->
     <delete id="deleteDonation" parameterType="Long">
         DELETE FROM donation WHERE donation_id = #{donationId}
     </delete>
+
+    <!-- ✅ [추가] current_price 업데이트 (참여 시 금액 반영) -->
+    <update id="updateDonationCurrentPrice">
+        UPDATE donation
+        SET current_price = #{currentPrice},
+            updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
 </mapper>

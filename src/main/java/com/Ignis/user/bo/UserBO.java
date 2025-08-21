@@ -76,6 +76,22 @@ public class UserBO {
         return null;
     }
 
+    public UserEntity getUserById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
+    /** 📌 전화번호 업데이트 */
+    public void updatePhoneNumber(Long userId, String phoneNumber) {
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+        user.setPhoneNumber(phoneNumber);
+        userRepository.save(user);
+    }
+
+    /** 📌 전화번호 조회 */
+    public String getPhoneNumber(Long userId) {
+        return userRepository.findPhoneNumberByUserId(userId);
+    }
+
     public void generateAndSendVerificationCode(String email) {
         String code = String.valueOf(new Random().nextInt(900000) + 100000);
         verificationMap.put(email, new VerificationInfo(code, LocalDateTime.now()));

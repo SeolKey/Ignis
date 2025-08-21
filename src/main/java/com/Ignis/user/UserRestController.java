@@ -108,4 +108,43 @@ public class UserRestController {
         if (exists) res.put("message", "이 이메일은 이미 가입되어 있습니다.");
         return res;
     }
+
+    // ✅ 현재 로그인 사용자의 전화번호 조회
+    @GetMapping("/me/phone")
+    public Map<String, Object> getPhone(HttpSession session) {
+        Map<String, Object> res = new HashMap<>();
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            res.put("status", "unauthorized");
+            return res;
+        }
+
+        String phone = userBO.getPhoneNumber(userId);
+        res.put("phone", phone);
+        return res;
+    }
+
+    // ✅ 현재 로그인 사용자의 전화번호 업데이트
+    @PutMapping("/me/phone")
+    public Map<String, Object> updatePhone(@RequestBody Map<String, String> body,
+                                           HttpSession session) {
+        Map<String, Object> res = new HashMap<>();
+        Long userId = (Long) session.getAttribute("userId");
+
+        if (userId == null) {
+            res.put("status", "unauthorized");
+            return res;
+        }
+
+        try {
+            String phone = body.get("phone");
+            userBO.updatePhoneNumber(userId, phone);
+            res.put("result", "success");
+        } catch (Exception e) {
+            res.put("result", "fail");
+            res.put("error_message", e.getMessage());
+        }
+        return res;
+    }
 }

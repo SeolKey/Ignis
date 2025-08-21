@@ -22,7 +22,7 @@ public interface DonationMapper {
     // 단건 조회
     Donation selectDonationById(Long donationId);
 
-    // (선택) 등록, 수정, 삭제도 여기에 추가 가능
+    // 등록
     int insertDonation(Donation donation);
     
     List<Donation> selectRecentDonationList(int limit);
@@ -30,4 +30,8 @@ public interface DonationMapper {
     void updateDonationStatus(@Param("donationId") Long donationId, @Param("status") String status);
 
     void deleteDonation(int donationId);
+
+    // ✅ [추가] currentPrice 업데이트
+    void updateDonationCurrentPrice(@Param("donationId") Long donationId,
+                                    @Param("currentPrice") int currentPrice);
 }
