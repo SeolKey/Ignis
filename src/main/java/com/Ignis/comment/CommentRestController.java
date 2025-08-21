@@ -19,7 +19,7 @@ public class CommentRestController {
 
     private final CommentBO commentBO;
 
-    // 댓글 작성
+    // 댓글 작성 (최상위)
     @PostMapping("/create")
     public Map<String, Object> createComment(@RequestBody Comment comment, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
@@ -44,7 +44,38 @@ public class CommentRestController {
         return result;
     }
 
-    // 댓글 목록 조회
+    // 대댓글 작성
+    @PostMapping("/reply")
+    public Map<String, Object> createReply(@RequestBody Comment comment, HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            result.put("code", 401);
+            result.put("errorMessage", "로그인이 필요합니다.");
+            return result;
+        }
+
+        if (comment.getParentId() == null) {
+            result.put("code", 400);
+            result.put("errorMessage", "parentId가 필요합니다.");
+            return result;
+        }
+
+        comment.setUserId(userId);
+
+        int rowCount = commentBO.addReply(comment);
+        if (rowCount > 0) {
+            result.put("result", "success");
+        } else {
+            result.put("code", 500);
+            result.put("errorMessage", "대댓글 작성 실패");
+        }
+
+        return result;
+    }
+
+    // 댓글 목록 조회 (부모 댓글만)
     @GetMapping("/list")
     public List<Comment> getCommentList(@RequestParam("contentType") String contentType,
             @RequestParam("contentId") Long contentId) {
@@ -70,9 +101,7 @@ public class CommentRestController {
             return result;
         }
 
-        // 실제로는 댓글의 작성자와 userId가 일치하는지 체크하는 게 더 안전함
-
-        int rowCount = commentBO.deleteComment(commentId);
+        int rowCount = commentBO.deleteComment(commentId, userId);
         if (rowCount > 0) {
             result.put("result", "success");
         } else {
@@ -82,36 +111,4 @@ public class CommentRestController {
 
         return result;
     }
-
-    // 목록: GET /comment/list (Accept: application/json 이면 이 메서드가 매칭)
-    @GetMapping(value = "/list", produces = "application/json")
-    public List<Comment> listJson(
-            @RequestParam String contentType,
-            @RequestParam Long contentId) {
-        return commentBO.getCommentList(contentType, contentId);
-    }
-
-    // 작성: POST /comment/create (Content-Type: application/json 이면 이 메서드가 매칭)
-    @PostMapping(value = "/create", consumes = "application/json", produces = "application/json")
-    public Map<String, Object> createJson(@RequestBody Comment comment, HttpSession session) {
-        Map<String, Object> result = new HashMap<>();
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            result.put("code", 401);
-            result.put("errorMessage", "로그인이 필요합니다.");
-            return result;
-        }
-
-        comment.setUserId(userId);
-        int rowCount = commentBO.addComment(comment);
-        if (rowCount > 0) {
-            result.put("result", "success");
-        } else {
-            result.put("code", 500);
-            result.put("errorMessage", "댓글 작성 실패");
-        }
-        return result;
-    }
-
 }

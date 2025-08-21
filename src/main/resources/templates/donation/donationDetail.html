@@ -108,13 +108,34 @@
         width: auto !important;
         min-width: 80px;
     }
-    .comment-form .form-text {
-        font-size: 0.85rem;
-    }
     .comment-textarea {
         width: 80%;
         min-height: 100px;
         resize: vertical;
+    }
+
+    /* ===== 댓글/답글 스타일 ===== */
+    .comment {
+        margin-bottom: 1rem;
+        padding-bottom: .75rem;
+        border-bottom: 1px solid #ddd;
+    }
+    .comment .meta {
+        font-size: 0.85rem;
+        color: #666;
+    }
+    .reply {
+        margin-top: .5rem;
+        margin-left: 1.5rem;
+        padding: .5rem .75rem;
+        background: #f9f9f9;
+        border-left: 3px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    .reply .meta {
+        font-size: 0.75rem;
+        color: #888;
     }
 </style>
 </head>
@@ -153,10 +174,6 @@
                         <div class="d-flex w-100 mb-2">
                             <textarea id="comment-content" class="form-control comment-textarea me-2 w-100" placeholder="댓글을 입력하세요"></textarea>
                             <button id="comment-submit" class="btn btn-primary align-self-start">발송</button>
-                        </div>
-                        <div class="ms-1">
-                            <label for="comment-image" class="form-text text-muted" style="cursor: pointer;">📎 이미지 첨부</label>
-                            <input type="file" id="comment-image" style="display: none;">
                         </div>
                     </div>
                 </div>
@@ -205,26 +222,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // 댓글 전체 로드
     function loadComments() {
         fetch(`/comment/list?contentType=${contentType}&contentId=${contentId}`)
             .then(res => res.json())
-            .then(data => {
+            .then(async data => {
                 const container = document.getElementById('comment-list');
                 container.innerHTML = "";
                 if (!data || data.length === 0) {
                     container.innerHTML = "<p class='text-muted'>아직 댓글이 없습니다.</p>";
                     return;
                 }
-                data.forEach(c => {
+                for (const c of data) {
                     const div = document.createElement('div');
-                    div.className = 'mb-3 border-bottom pb-2';
+                    div.className = 'comment';
                     div.innerHTML = `
-                    	<div class="fw-bold mb-1">${c.userName || '익명 사용자'}</div>
+                        <div class="fw-bold">${c.userName || '익명 사용자'}</div>
                         <div>${c.content}</div>
-                        <div class="text-muted" style="font-size: 0.8rem;">${c.createdAt.replace("T", " ").substring(0, 16)}</div>
+                        <div class="meta">${c.createdAt.replace("T", " ").substring(0, 16)}</div>
+                        <button class="btn btn-sm btn-outline-primary reply-btn mt-1" data-id="${c.commentId}">답글쓰기</button>
+                        <div class="replies mt-2" id="replies-${c.commentId}"></div>
                     `;
                     container.appendChild(div);
-                });
+
+                    // 대댓글 불러오기
+                    loadReplies(c.commentId);
+                }
             })
             .catch(err => {
                 console.error("댓글 불러오기 실패:", err);
@@ -232,6 +255,27 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
+    // 대댓글 로드
+    function loadReplies(parentId) {
+        fetch(`/comment/replies?parentId=${parentId}`)
+            .then(res => res.json())
+            .then(replies => {
+                const container = document.getElementById(`replies-${parentId}`);
+                container.innerHTML = "";
+                replies.forEach(r => {
+                    const rdiv = document.createElement('div');
+                    rdiv.className = 'reply';
+                    rdiv.innerHTML = `
+                        <div class="fw-bold">${r.userName || '익명 사용자'}</div>
+                        <div>${r.content}</div>
+                        <div class="meta">${r.createdAt.replace("T", " ").substring(0, 16)}</div>
+                    `;
+                    container.appendChild(rdiv);
+                });
+            });
+    }
+
+    // 최상위 댓글 등록
     document.getElementById("comment-submit").addEventListener("click", () => {
         const content = document.getElementById("comment-content").value.trim();
         if (!content) {
@@ -256,6 +300,50 @@ document.addEventListener('DOMContentLoaded', function () {
                   alert(result.errorMessage || "댓글 등록에 실패했습니다.");
               }
           });
+    });
+
+    // 답글쓰기 토글 및 등록
+    document.addEventListener("click", (e) => {
+        if (e.target.classList.contains("reply-btn")) {
+            const parentId = e.target.dataset.id;
+            const repliesDiv = document.getElementById(`replies-${parentId}`);
+            if (repliesDiv.querySelector(".reply-form")) {
+                repliesDiv.querySelector(".reply-form").remove();
+                return;
+            }
+            const form = document.createElement("div");
+            form.className = "reply-form input-group mb-2";
+            form.innerHTML = `
+                <input type="text" class="form-control reply-input" placeholder="답글을 입력하세요">
+                <button class="btn btn-primary send-reply" data-parent="${parentId}">등록</button>
+            `;
+            repliesDiv.prepend(form);
+        }
+
+        if (e.target.classList.contains("send-reply")) {
+            const parentId = e.target.dataset.parent;
+            const input = e.target.closest(".reply-form").querySelector(".reply-input");
+            const content = input.value.trim();
+            if (!content) return;
+
+            fetch("/comment/reply", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contentType: contentType,
+                    contentId: contentId,
+                    content: content,
+                    parentId: parentId
+                })
+            }).then(res => res.json())
+              .then(result => {
+                  if (result.result === "success") {
+                      loadReplies(parentId);
+                  } else {
+                      alert(result.errorMessage || "대댓글 등록에 실패했습니다.");
+                  }
+              });
+        }
     });
 });
 </script>

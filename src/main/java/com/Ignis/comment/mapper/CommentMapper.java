@@ -12,7 +12,7 @@ public interface CommentMapper {
 
     int insertComment(Comment comment);
 
-    // 특정 콘텐츠의 댓글 목록 조회
+    // 특정 콘텐츠의 부모 댓글 목록 조회
     List<Comment> selectCommentList(
         @Param("contentType") String contentType,
         @Param("contentId") Long contentId
