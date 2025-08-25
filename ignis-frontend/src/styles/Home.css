@@ -50,11 +50,23 @@
   margin: 0;
 }
 
-/* 카드 컨테이너 (기부) */
+/* 카드 컨테이너: 반응형 2→3→4열 */
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  gap: 24px;                         /* 카드 간격 ↑ */
+  grid-template-columns: repeat(2, 1fr);   /* 모바일 2열 */
+}
+
+@media (min-width: 768px) {
+  .card-container {
+    grid-template-columns: repeat(3, 1fr); /* 태블릿 3열 */
+  }
+}
+
+@media (min-width: 1200px) {
+  .card-container {
+    grid-template-columns: repeat(4, 1fr); /* 데스크톱 4열 고정 */
+  }
 }
 
 .card {
@@ -62,8 +74,9 @@
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  transition: none;         /* ✅ 애니메이션 제거 */
+  transition: none;      
   cursor: pointer;
+  min-height: 260px;
 }
 
 .card:hover {
@@ -72,14 +85,15 @@
 }
 
 
-/* 카드 이미지 */
+/* 카드 이미지: 키워서 썸네일 느낌 강화 */
 .donation-image {
   width: 100%;
-  aspect-ratio: 16 / 9;  /* 비율 고정 */
+  height: 200px;        /* 180~220px 사이로 취향대로 조정 가능 */
   object-fit: cover;
   display: block;
-  background: #f3f4f6;   /* 로딩 중 배경 */
+  background: #f3f4f6;
 }
+
 
 /* 카드 제목 */
 .card p {

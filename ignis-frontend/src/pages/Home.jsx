@@ -79,7 +79,7 @@ export default function MainPage() {
             <a onClick={() => navigate('/donation-list')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
           </div>
 
-          <div className="card-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+          <div className="card-container card-grid">
             {donationList.map((item) => (
               <div
                 key={item.donationId ?? item.id}
@@ -112,7 +112,7 @@ export default function MainPage() {
             <a onClick={() => navigate('/volunteer')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
           </div>
 
-          <div className="card-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+          <div className="card-container card-grid">
             {volunteerList.map((item) => (
               <div
                 key={item.volunteerId ?? item.id}
@@ -145,7 +145,7 @@ export default function MainPage() {
             <a onClick={() => navigate('/funding')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
           </div>
 
-          <div className="card-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16 }}>
+          <div className="card-container card-grid">
             {fundingList.map((item) => (
               <div
                 key={item.fundingId ?? item.id}

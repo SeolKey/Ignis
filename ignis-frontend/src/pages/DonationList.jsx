@@ -1,97 +1,132 @@
+// src/pages/DonationList.jsx
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Button, Typography, message, Empty, Skeleton } from 'antd';
-import { Link, useNavigate } from 'react-router-dom';
+import { message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import '../styles/DonationList.css';
+import fallback from '../assets/testImage.png';
 
-const { Title } = Typography;
+const toImageUrl = (p) => {
+  if (!p) return fallback;
+  if (/^https?:\/\//i.test(p)) return p;
+  const clean = String(p).replace(/^\.?\/?/, '');
+  return `/${encodeURI(clean)}`;
+};
 
-const DonationList = () => {
-  const [donations, setDonations] = useState([]);
-  const [loading, setLoading] = useState(false);
+export default function DonationList() {
   const navigate = useNavigate();
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        setLoading(true);
-        //  새 API 경로
-        const res = await fetch('/donation/api/list?status=APPROVED&page=0&size=12', {
-          credentials: 'include',
-        });
+    let mounted = true;
 
-        if (res.status === 401) {
-          message.warning('로그인이 필요합니다.');
-          navigate('/login');
-          return;
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : (
-          Array.isArray(data.data) ? data.data :
-          Array.isArray(data.donationList) ? data.donationList : []
-        );
-        setDonations(list);
-      } catch (e) {
-        console.error(e);
-        message.error('기부 목록을 불러오는 데 실패했습니다.');
-      } finally {
-        setLoading(false);
-      }
+    const pickArray = (d) => {
+      if (Array.isArray(d)) return d;
+      if (Array.isArray(d?.donationList)) return d.donationList;
+      if (Array.isArray(d?.postList)) return d.postList;
+      return [];
     };
 
-    fetchDonations();
-  }, [navigate]);
+    const tryFetch = async (url) => {
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${url} ${res.status}`);
+      const data = await res.json();
+      return pickArray(data);
+    };
+
+    (async () => {
+      setLoading(true);
+      try {
+        // ✅ 1) 전용 리스트 엔드포인트를 먼저 시도 (전체 목록 기대)
+        const candidates = [
+          '/donation/react/list',
+          '/api/donation/list',
+          '/donation/list',
+        ];
+        for (const url of candidates) {
+          try {
+            const arr = await tryFetch(url);
+            if (mounted && arr.length > 0) {
+              setList(arr);
+              return;
+            }
+          } catch { /* 다음 후보로 */ }
+        }
+
+        // ✅ 2) 전부 실패하면 홈 API(보통 4개만)로 폴백
+        try {
+          const arr = await tryFetch('/api/home');
+          if (mounted) setList(arr);   // 홈이 4개만 줘도 일단 표시
+        } catch {
+          if (mounted) setList([]);
+        }
+      } catch (e) {
+        if (mounted) {
+          console.error('기부 리스트 로드 실패:', e);
+          message.error('기부 리스트를 불러오지 못했어요.');
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <Layout>
-      <div className="donation-list-content">
-        <Title level={2}>기부 목록</Title>
+      <div className="donation-list-page">
+        <h1 className="donation-list-title">지금 도움이 필요한 모금함</h1>
 
         {loading ? (
-          <Row gutter={[16, 16]}>
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Col key={i} xs={24} sm={12} md={8}>
-                <Card>
-                  <Skeleton active />
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        ) : donations.length === 0 ? (
-          <Empty description="승인된 기부가 없습니다." />
+          <div>불러오는 중…</div>
+        ) : list.length === 0 ? (
+          <div>표시할 모금함이 없습니다.</div>
         ) : (
-          <Row gutter={[16, 16]}>
-            {donations.map((donation) => (
-              <Col key={donation.donationId} xs={24} sm={12} md={8}>
-                <Card
-                  title={donation.title}
-                  bordered={false}
-                  extra={<Link to={`/donation-detail/${donation.donationId}`}>상세보기</Link>}
-                  cover={
-                    donation.imagePath ? (
-                      <img
-                        alt="기부 이미지"
-                        src={donation.imagePath}
-                        style={{ height: 160, objectFit: 'cover' }}
-                      />
-                    ) : null
-                  }
+          <div className="donation-grid">
+            {list.map((item) => {
+              const id = item.donationId ?? item.id;
+              const org = item.organization ?? item.orgName ?? item.writer ?? '';
+              const current = Number(item.currentPrice ?? 0);
+              const max = Number(item.maxPrice ?? 0);
+              const percent = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
+
+              return (
+                <article
+                  key={id}
+                  className="donation-card"
+                  onClick={() => navigate(`/donation-detail/${id}`)}
                 >
-                  <p style={{ minHeight: 48 }}>{donation.description || '설명이 없습니다.'}</p>
-                  <p>목표 금액: {Number(donation.maxPrice || 0).toLocaleString()}원</p>
-                  <Button type="primary" block onClick={() => navigate(`/donation-detail/${donation.donationId}`)}>
-                    기부하기
-                  </Button>
-                </Card>
-              </Col>
-            ))}
-          </Row>
+                  <img
+                    className="donation-thumb"
+                    src={toImageUrl(item.imagePath)}
+                    alt={item.title || '기부 이미지'}
+                    loading="lazy"
+                    onError={(e) => {
+                      if (!e.currentTarget.src.includes(fallback)) e.currentTarget.src = fallback;
+                    }}
+                  />
+
+                  <div className="donation-body">
+                    {org && <p className="donation-org">{org}</p>}
+                    <h3 className="donation-title">{item.title}</h3>
+
+                    {max > 0 && (
+                      <div className="donation-foot">
+                        <div className="donation-progress" style={{ ['--pct']: `${percent}%` }}>
+                          <span />
+                        </div>
+                        <span className="donation-stats">{percent}%</span>
+                      </div>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         )}
       </div>
     </Layout>
   );
-};
-
-export default DonationList;
+}

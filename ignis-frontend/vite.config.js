@@ -16,6 +16,7 @@ export default defineConfig({
       '/notice': { target: 'http://localhost:80', changeOrigin: true },
       '/post': { target: 'http://localhost:80', changeOrigin: true },
       '/funding': { target: 'http://localhost:80', changeOrigin: true },
+      '/volunteer': { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })

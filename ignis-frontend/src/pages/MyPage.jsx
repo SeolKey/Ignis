@@ -88,10 +88,7 @@ export default function MyPage() {
                 <Title level={3} style={{ marginBottom: 4 }}>안녕하세요, {user.userName}님!</Title>
                 <Text type="secondary">오늘도 좋은 하루 되세요.</Text>
               </div>
-              <Space>
-                <Button type="primary" icon={<PlusOutlined />}>새 주문</Button>
-                <Button icon={<DownloadOutlined />}>내역 다운로드</Button>
-              </Space>
+              
             </div>
 
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

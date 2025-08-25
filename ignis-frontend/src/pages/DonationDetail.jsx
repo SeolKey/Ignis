@@ -9,10 +9,12 @@ import '../styles/DonationDetail.css';
 import Layout from '../components/Layout';
 import testImage from '../assets/testImage.png';
 import { Carousel } from 'antd';
+import { Modal, Form, Input as AntInput } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { TextArea } = Input;
+
 
 const fmtDate = (iso) => {
   if (!iso) return '';
@@ -41,6 +43,14 @@ export default function DonationDetail() {
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentInput, setCommentInput] = useState('');
+
+  // 전화번호 모달 상태
+  const [phoneModalOpen, setPhoneModalOpen] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneSaving, setPhoneSaving] = useState(false);
+
+  const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+
 
   // ---------- effects ----------
   useEffect(() => {
@@ -165,7 +175,50 @@ export default function DonationDetail() {
   const start = fmtDate(donation?.createdAt);
   const end = donation?.endAt ? fmtDate(donation.endAt) : '';
 
-  const handleParticipate = () => navigate('/payment');
+
+
+
+  // 전화번호 확인 후 필요 시 모달 / 아니면 결제 이동
+  // 전화번호 확인 후 필요 시 모달 / 아니면 결제 이동
+  const handleParticipate = async () => {
+    try {
+      const res = await fetch('/user/me/phone', {
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+
+      const isJson = (res.headers.get('content-type') || '').includes('application/json');
+      const data = isJson ? await res.json() : null;
+      console.log("🚀 /user/me/phone 응답:", data);
+      // 응답에서 phone을 유연하게 추출
+      const phoneRaw =
+        (data && typeof data.phone === 'string' && data.phone) ||
+        (data && typeof data.phoneNumber === 'string' && data.phoneNumber) ||
+        (data && data.user && typeof data.user.phone === 'string' && data.user.phone) ||
+        '';
+
+      const digits = phoneRaw.replace(/\D/g, ''); // 숫자만
+      const isUnset = digits.length === 0 || /^0+$/.test(digits); // 비었거나 전부 0
+
+      if (isUnset) {
+        setPhoneInput(phoneRaw);        // 빈 값이면 '', 있으면 기존 값
+        setPhoneModalOpen(true);        // 모달 열기
+      } else {
+        message.success('연락처 확인 완료! 결제 페이지로 이동합니다.');
+        navigate('/payment');           // 필요하면 `/payment/${contentId}`
+      }
+    } catch (e) {
+      console.error(e);
+      message.error('전화번호 확인 중 오류가 발생했어.');
+    }
+  };
+
+
   const share = async () => {
     try {
       if (navigator.share) {
@@ -328,6 +381,57 @@ export default function DonationDetail() {
           </Col>
         </Row>
       </div>
+      <Modal
+        title="연락처 확인"
+        open={phoneModalOpen}
+        onCancel={() => setPhoneModalOpen(false)}
+        onOk={async () => {
+          const v = (phoneInput || '').trim();
+          if (!phoneRegex.test(v)) {
+            message.error('휴대폰 형식을 확인해줘. (예: 010-1234-5678)');
+            return;
+          }
+          try {
+            setPhoneSaving(true);
+            const res = await fetch('/user/me/phone', {
+              method: 'PUT',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ phone: v }),
+            });
+            const out = await res.json().catch(() => ({}));
+            if (out?.result === 'success') {
+              message.success('감사합니다! 결제 페이지로 이동합니다.');
+              setPhoneModalOpen(false);
+              navigate('/payment');   // 필요하면 `/payment/${contentId}` 로 바꿔도 됨
+            } else {
+              message.error(out?.error_message || '전화번호 저장에 실패했어.');
+            }
+          } catch (e) {
+            console.error(e);
+            message.error('요청 처리 중 오류가 발생했어.');
+          } finally {
+            setPhoneSaving(false);
+          }
+        }}
+
+        confirmLoading={phoneSaving}
+        okText="확인"
+        cancelText="취소"
+      >
+        <Form layout="vertical">
+          <Form.Item label="전화번호 (하이픈 포함)">
+            <AntInput
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              placeholder="010-1234-5678"
+              inputMode="numeric"
+              maxLength={13}
+            />
+          </Form.Item>
+          <div style={{ color: '#999' }}>예: 010-1234-5678</div>
+        </Form>
+      </Modal>
     </Layout>
   );
 }

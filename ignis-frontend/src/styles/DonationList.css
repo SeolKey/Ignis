@@ -1,16 +1,93 @@
-.donation-box {
-  border: 1px solid #ccc;
-  padding: 12px;
-  margin-bottom: 16px;
-  border-radius: 6px;
+/* 페이지 여백 */
+.donation-list-page {
+  padding: 40px 24px 72px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
-.donation-title-link {
-  font-size: 18px;
-  font-weight: bold;
-  text-decoration: none;
-  color: black;
+
+/* 상단 제목 */
+.donation-list-title {
+  margin: 0 0 24px 0;
+  font-size: 28px;
+  font-weight: 800;
 }
-.donation-title-link:hover {
-  color: #2a7ae2;
-  text-decoration: underline;
+
+/* 카드 그리드: 모바일 1열 → 태블릿 2열 → 데스크톱 3열 (원하면 4열 주석 해제) */
+.donation-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 640px) {
+  .donation-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .donation-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1024px) {
+  .donation-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 4열 원하면 아래 주석 해제
+@media (min-width: 1400px) {
+  .donation-grid { grid-template-columns: repeat(4, 1fr); }
+}
+*/
+
+/* 카드 */
+.donation-card {
+  border-radius: 10px; 
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+}
+.donation-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+
+/* 큰 썸네일 (해피빈 느낌) */
+.donation-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;   /* 기존 16/9 → 조금 정사각형에 가깝게 */
+  object-fit: cover;
+}
+
+
+/* 본문 */
+.donation-body {
+  padding: 10px 12px;
+}
+.donation-title {
+  font-size: 15px;      /* 17px → 15px */
+  line-height: 1.4;
+}
+.donation-org {
+  font-size: 12px;      /* 조금 더 작게 */
+}
+
+/* 진행바/하단 정보 (선택) */
+.donation-foot {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.donation-progress {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+.donation-progress > span {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: var(--pct, 0%);
+  background: #22c55e;     /* 초록 진행색 */
+}
+.donation-stats {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #374151;
 }

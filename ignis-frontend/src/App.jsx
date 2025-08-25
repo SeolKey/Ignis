@@ -1,5 +1,5 @@
-// App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// src/App.jsx
+import { Routes, Route } from 'react-router-dom';
 
 /* ========== 공통/홈 ========== */
 import Home from './pages/Home';
@@ -38,55 +38,47 @@ import VolunteerList from './pages/volunteer/VolunteerList';
 import VolunteerDetail from './pages/volunteer/VolunteerDetail';
 import VolunteerCreate from './pages/volunteer/VolunteerCreate';
 
-
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* ===== 홈/공통 ===== */}
-        <Route path="/" element={<Home />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/mypage" element={<MyPage />} />
+    <Routes>
+      {/* ===== 홈/공통 ===== */}
+      <Route path="/" element={<Home />} />
+      <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/mypage" element={<MyPage />} />
 
-        {/* ===== 인증 ===== */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
+      {/* ===== 인증 ===== */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
 
-        {/* ===== 기부( Donation ) ===== */}
-        <Route path="/donation-detail" element={<DonationDetail />} />
-        <Route path="/donation-detail/:id" element={<DonationDetail />} />
-        <Route path="/donation-create" element={<DonationCreate />} />
-        <Route path="/donation-list" element={<DonationList />} />
+      {/* ===== 기부( Donation ) ===== */}
+      <Route path="/donation-list" element={<DonationList />} />
+      <Route path="/donation-detail" element={<DonationDetail />} />
+      <Route path="/donation-detail/:id" element={<DonationDetail />} />
+      <Route path="/donation-create" element={<DonationCreate />} />
 
-        {/* ===== 공지사항( Notice ) ===== */}
-        <Route path="/board/notice" element={<NoticeList />} />
-        <Route path="/board/notice/create" element={<NoticeCreate />} />
-        <Route path="/board/notice/:id" element={<NoticeDetail />} />
-        <Route path="/board/notice/:id/edit" element={<NoticeEdit />} />
+      {/* ===== 공지사항( Notice ) ===== */}
+      <Route path="/board/notice" element={<NoticeList />} />
+      <Route path="/board/notice/create" element={<NoticeCreate />} />
+      <Route path="/board/notice/:id" element={<NoticeDetail />} />
+      <Route path="/board/notice/:id/edit" element={<NoticeEdit />} />
 
-        {/* ===== 자유게시판( Freeboard ) ===== */}
-        <Route path="/board/free" element={<FreeList />} />
-        <Route path="/board/free/create" element={<FreeCreate />} />
-        <Route path="/board/free/:id" element={<FreeDetail />} />
-        <Route path="/board/free/:id/edit" element={<FreeEdit />} />
+      {/* ===== 자유게시판( Freeboard ) ===== */}
+      <Route path="/board/free" element={<FreeList />} />
+      <Route path="/board/free/create" element={<FreeCreate />} />
+      <Route path="/board/free/:id" element={<FreeDetail />} />
+      <Route path="/board/free/:id/edit" element={<FreeEdit />} />
 
-        {/* ===== 펀딩( Funding ) ===== */}
-        <Route path="/funding" element={<FundingList />} />
-        <Route path="/funding/create" element={<FundingCreate />} />
-        <Route path="/funding/:id" element={<FundingDetail />} />
-        <Route path="/funding/:id/edit" element={<FundingEdit />} />
-        {/* ===== 펀딩( Funding ) ===== */}
-        <Route path="/funding" element={<FundingList />} />                {/* 펀딩 리스트 */}
-        <Route path="/funding/create" element={<FundingCreate />} />       {/* 펀딩 생성 */}
-        <Route path="/funding/:id" element={<FundingDetail />} />          {/* 펀딩 상세 */}
-        <Route path="/funding/:id/edit" element={<FundingEdit />} />       {/* 펀딩 수정 */}
+      {/* ===== 펀딩( Funding ) ===== */}
+      <Route path="/funding" element={<FundingList />} />
+      <Route path="/funding/create" element={<FundingCreate />} />
+      <Route path="/funding/:id" element={<FundingDetail />} />
+      <Route path="/funding/:id/edit" element={<FundingEdit />} />
 
-        {/* ===== 봉사( Volunteer ) ===== */}
-        <Route path="/volunteer" element={<VolunteerList />} />            {/* 봉사 리스트 */}
-        <Route path="/volunteer/create" element={<VolunteerCreate />} />   {/* 봉사 생성 */}
-        <Route path="/volunteer/:id" element={<VolunteerDetail />} />      {/* 봉사 상세 */}
-      </Routes>
-    </Router>
+      {/* ===== 봉사( Volunteer ) ===== */}
+      <Route path="/volunteer" element={<VolunteerList />} />
+      <Route path="/volunteer/create" element={<VolunteerCreate />} />
+      <Route path="/volunteer/:id" element={<VolunteerDetail />} />
+    </Routes>
   );
 }
 

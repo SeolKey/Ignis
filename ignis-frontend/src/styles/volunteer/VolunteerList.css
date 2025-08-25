@@ -1,0 +1,78 @@
+/* 페이지 래퍼 */
+.vol-list-page {
+  padding: 40px 24px 72px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 헤더 */
+.vol-list-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;       /* 제목과 버튼 사이 간격 */
+  margin-bottom: 16px;
+}
+
+/* 제목은 기본 margin 제거 */
+.vol-list-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.vol-list-empty {
+  padding: 40px 0;
+  color: #6b7280;
+}
+
+/* 그리드: 모바일 1 → 태블릿 2 → 데스크탑 4 */
+.vol-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 640px) {
+  .vol-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .vol-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* 카드 */
+.vol-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transition: transform .16s ease, box-shadow .16s ease;
+  cursor: pointer;
+}
+.vol-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+
+/* 썸네일 */
+.vol-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  background: #f3f4f6;
+  display: block;
+}
+
+/* 본문 */
+.vol-body {
+  padding: 10px 12px 14px;
+}
+.vol-title {
+  margin: 0;
+  color: #111827;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
