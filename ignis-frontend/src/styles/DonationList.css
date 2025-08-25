@@ -91,3 +91,11 @@
   font-size: 12px;
   color: #374151;
 }
+
+/* 제목 + 버튼 헤더 */
+.donation-list-header {
+  display: flex;
+  justify-content: space-between; /* 제목과 버튼 좌우 배치 */
+  align-items: center;
+  margin-bottom: 24px;
+}

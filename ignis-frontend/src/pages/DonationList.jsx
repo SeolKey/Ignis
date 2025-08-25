@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import '../styles/DonationList.css';
 import fallback from '../assets/testImage.png';
+import { Button } from 'antd';
 
 const toImageUrl = (p) => {
   if (!p) return fallback;
@@ -77,7 +78,15 @@ export default function DonationList() {
   return (
     <Layout>
       <div className="donation-list-page">
-        <h1 className="donation-list-title">지금 도움이 필요한 모금함</h1>
+        <div className="donation-list-header">
+          <h1 className="donation-list-title">지금 도움이 필요한 모금함</h1>
+          <Button
+            type="primary"
+            onClick={() => navigate('/donation-create')}
+          >
+            기부 생성
+          </Button>
+        </div>
 
         {loading ? (
           <div>불러오는 중…</div>

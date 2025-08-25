@@ -97,15 +97,15 @@ const DonationHeader = () => {
         </Menu.Item>
 
         <Menu.Item key="donation" icon={<HeartOutlined />}>
-          <Link to="/donation/donation-list-view">기부</Link>
+          <Link to="/donation-list">기부</Link>
         </Menu.Item>
 
         <Menu.Item key="volunteer" icon={<SmileOutlined />}>
-          <Link to="/volunteer/volunteer-list-view">봉사</Link>
+          <Link to="/volunteer">봉사</Link>
         </Menu.Item>
 
         <Menu.Item key="funding" icon={<FundOutlined />}>
-          <Link to="/funding/funding-list-view">펀딩</Link>
+          <Link to="/funding">펀딩</Link>
         </Menu.Item>
 
         {/* ▼ 게시판 드롭다운 (자유게시판/공지사항) */}
