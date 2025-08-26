@@ -91,6 +91,10 @@ public class FundingRestController {
         result.put("result", "success");
         return result;
     }
+    @GetMapping("/api/most-viewed")
+    public List<Funding> mostViewed(@RequestParam(defaultValue = "10") int limit) {
+        return fundingBO.getMostViewedFundingList(limit);
+    }
 
     // =================== React 전용 API ===================
 

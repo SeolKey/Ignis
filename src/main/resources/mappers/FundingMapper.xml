@@ -17,7 +17,8 @@
             status,
             reject_reason AS rejectReason,
             created_at AS createdAt,
-            updated_at AS updatedAt
+            updated_at AS updatedAt,
+            view_count AS viewCount
         FROM funding
         WHERE status = 'APPROVED'
         ORDER BY created_at DESC
@@ -36,7 +37,8 @@
             status,
             reject_reason AS rejectReason,
             created_at AS createdAt,
-            updated_at AS updatedAt
+            updated_at AS updatedAt,
+            view_count AS viewCount
         FROM funding
         WHERE funding_id = #{fundingId}
     </select>
@@ -53,7 +55,8 @@
             status,
             reject_reason,
             created_at,
-            updated_at
+            updated_at,
+            view_count
         ) VALUES (
             #{userId},
             #{title},
@@ -64,7 +67,8 @@
             #{status},
             #{rejectReason},
             NOW(),
-            NOW()
+            NOW(),
+            0
         )
     </insert>
     
@@ -79,7 +83,8 @@
 	        current_price AS currentPrice,
 	        status,
 	        created_at AS createdAt,
-	        updated_at AS updatedAt
+	        updated_at AS updatedAt,
+            view_count AS viewCount
 	    FROM funding
 	    WHERE status = 'APPROVED'
 	    ORDER BY created_at DESC
@@ -105,7 +110,8 @@
             status,
             reject_reason AS rejectReason,
             created_at AS createdAt,
-            updated_at AS updatedAt
+            updated_at AS updatedAt,
+            view_count AS viewCount
         FROM funding
         WHERE status = 'PENDING'
         ORDER BY created_at DESC
@@ -122,5 +128,31 @@
     <delete id="deleteFunding" parameterType="Long">
         DELETE FROM funding WHERE funding_id = #{fundingId}
     </delete>
+
+    <update id="incrementViewCount" parameterType="Long">
+        UPDATE funding
+        SET view_count = view_count + 1, updated_at = NOW()
+        WHERE funding_id = #{fundingId}
+    </update>
+
+    <select id="selectMostViewedFundingList" resultType="com.Ignis.home.funding.domain.Funding">
+        SELECT
+            funding_id    AS fundingId,
+            user_id       AS userId,
+            title,
+            description,
+            max_price     AS maxPrice,
+            current_price AS currentPrice,
+            image_path    AS imagePath,
+            status,
+            reject_reason AS rejectReason,
+            created_at    AS createdAt,
+            updated_at    AS updatedAt,
+            view_count    AS viewCount
+        FROM funding
+        WHERE status = 'APPROVED'
+        ORDER BY view_count DESC, created_at DESC
+            LIMIT #{limit}
+    </select>
 
 </mapper>

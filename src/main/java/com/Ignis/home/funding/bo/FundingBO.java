@@ -52,4 +52,12 @@ public class FundingBO {
     
     public void deleteFunding (int fundingId){fundingMapper.deleteFunding(fundingId);
     }
+
+    public void increaseViewCount(Long fundingId) {
+        fundingMapper.incrementViewCount(fundingId);
+    }
+
+    public List<Funding> getMostViewedFundingList(int limit) {
+        return fundingMapper.selectMostViewedFundingList(limit);
+    }
 }

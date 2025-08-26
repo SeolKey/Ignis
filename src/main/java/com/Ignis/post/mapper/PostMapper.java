@@ -13,4 +13,6 @@ public interface PostMapper {
     void updatePost(Post post);
     void deletePost(int id);
 
+    void incrementViewCount(int postId);
+    List<Post> selectPostListByViews();
 }

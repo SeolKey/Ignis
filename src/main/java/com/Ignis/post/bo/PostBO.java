@@ -32,4 +32,12 @@ public class PostBO {
     public void deletePostById(int id){
         postMapper.deletePost(id);
     }
+
+    public void increaseViewCount(int postId){
+        postMapper.incrementViewCount(postId);
+    }
+
+    public List<Post> getPostListByViews(){
+        return postMapper.selectPostListByViews();
+    }
 }

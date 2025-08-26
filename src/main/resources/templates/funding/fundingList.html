@@ -21,6 +21,13 @@
             color: #2a7ae2;
             text-decoration: underline;
         }
+        .tabs { display:flex; gap:8px; margin:12px 0 20px; }
+        .tab-btn {
+            padding:8px 14px; border:1px solid #ccc; border-radius:6px;
+            text-decoration:none; color:#333; background:#fff; font-weight:600;
+        }
+        .tab-btn.active { border-color:#2a7ae2; color:#2a7ae2;
+        }
     </style>
 </head>
 <body>
@@ -31,6 +38,16 @@
     <h1>펀딩 목록</h1>
 
     <button onclick="location.href='/funding/funding-create-view'">펀딩 작성하기</button>
+
+    <div class="tabs">
+        <a th:href="@{/funding/funding-list-view(sort='latest')}"
+           class="tab-btn"
+           th:classappend="${sort}=='latest' ? ' active' : ''">최신순</a>
+
+        <a th:href="@{/funding/funding-list-view(sort='views')}"
+           class="tab-btn"
+           th:classappend="${sort}=='views' ? ' active' : ''">조회순</a>
+    </div>
 
     <div th:if="${fundingList != null}">
         <div th:each="f : ${fundingList}" class="funding-box">

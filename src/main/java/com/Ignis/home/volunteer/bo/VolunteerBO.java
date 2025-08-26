@@ -58,4 +58,12 @@ public class VolunteerBO {
     public String saveImage(MultipartFile imageFile) {
         return fileManagerService.saveFile(imageFile);
     }
+
+    public void increaseViewCount(Long volunteerId) {
+        volunteerMapper.incrementViewCount(volunteerId);
+    }
+
+    public List<Volunteer> getMostViewedVolunteerList(int limit) {
+        return volunteerMapper.selectMostViewedVolunteerList(limit);
+    }
 }

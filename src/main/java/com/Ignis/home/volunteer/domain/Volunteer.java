@@ -22,4 +22,5 @@ public class Volunteer {
     private Integer currentPeople;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer viewCount;
 }

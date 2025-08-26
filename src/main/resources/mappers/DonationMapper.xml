@@ -18,7 +18,8 @@
 	        reject_reason AS rejectReason,
 	        image_path AS imagePath,
 	        created_at AS createdAt,
-	        updated_at AS updatedAt
+	        updated_at AS updatedAt,
+			view_count AS viewCount
 	    FROM donation
 	    WHERE status = 'APPROVED'
 	    ORDER BY created_at DESC
@@ -38,7 +39,8 @@
 	        reject_reason AS rejectReason,
 	        image_path AS imagePath,
 	        created_at AS createdAt,
-	        updated_at AS updatedAt
+	        updated_at AS updatedAt,
+			view_count AS viewCount
 	    FROM donation
 	    WHERE status = 'PENDING'
 	    ORDER BY created_at DESC
@@ -65,7 +67,8 @@
         reject_reason AS rejectReason,
         image_path AS imagePath,
         created_at AS createdAt,
-        updated_at AS updatedAt
+        updated_at AS updatedAt,
+		view_count AS viewCount
 	    FROM donation
 	    WHERE donation_id = #{donationId}
     </select>
@@ -83,7 +86,8 @@
 	        reject_reason,
 	        image_path,
 	        created_at,
-	        updated_at
+	        updated_at,
+			view_count
 	    ) VALUES (
 	        #{userId},
 	        #{title},
@@ -95,7 +99,8 @@
 	        #{rejectReason},
 	        #{imagePath},
 	        NOW(),
-	        NOW()
+	        NOW(),
+	    	0
 	    )
 	</insert>
 
@@ -109,7 +114,8 @@
 	        image_path AS imagePath,
 	        status,
 	        created_at AS createdAt,
-	        updated_at AS updatedAt
+	        updated_at AS updatedAt,
+			view_count AS viewCount
 	    FROM donation
 	    WHERE status = 'APPROVED'
 	    ORDER BY created_at DESC
@@ -135,5 +141,32 @@
             updated_at = NOW()
         WHERE donation_id = #{donationId}
     </update>
+
+	<update id="incrementViewCount" parameterType="Long">
+		UPDATE donation
+		SET view_count = view_count + 1, updated_at = NOW()
+		WHERE donation_id = #{donationId}
+	</update>
+
+	<select id="selectMostViewedDonationList" resultType="com.Ignis.home.donation.domain.Donation">
+		SELECT
+			donation_id AS donationId,
+			user_id     AS userId,
+			title,
+			description,
+			account_info  AS accountInfo,
+			max_price     AS maxPrice,
+			current_price AS currentPrice,
+			status,
+			reject_reason AS rejectReason,
+			image_path    AS imagePath,
+			created_at    AS createdAt,
+			updated_at    AS updatedAt,
+			view_count    AS viewCount
+		FROM donation
+		WHERE status = 'APPROVED'
+		ORDER BY view_count DESC, created_at DESC
+			LIMIT #{limit}
+	</select>
 
 </mapper>

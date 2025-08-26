@@ -20,9 +20,16 @@ public class DonationController {
     private DonationBO donationBO;
 
     @GetMapping("/donation-list-view")
-    public String donationListPage(Model model) {
-        List<Donation> list = donationBO.getDonationList();
+    public String donationListPage(@RequestParam(name = "sort", defaultValue = "latest") String sort, @RequestParam(name = "limit", defaultValue = "1000") int limit, Model model) {
+        List<Donation> list;
+        if ("views".equalsIgnoreCase(sort)) {
+            list = donationBO.getMostViewedDonationList(limit); // 조회수 순
+        } else {
+            sort = "latest";
+            list = donationBO.getDonationList(); // 최신순(기존)
+        }
         model.addAttribute("donationList", list);  // View로 넘겨줌
+        model.addAttribute("sort", sort);
         return "donation/donationList";      // templates/donation/donation-list-view.html
     }
     
@@ -33,6 +40,7 @@ public class DonationController {
     
     @GetMapping("/donation-detail-view")
     public String donationDetail(@RequestParam("donationId") Long donationId, Model model) {
+        donationBO.increaseViewCount(donationId);
         Donation donation = donationBO.getDonationById(donationId);
         model.addAttribute("donation", donation);
         return "donation/donationDetail";

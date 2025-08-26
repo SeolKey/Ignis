@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -19,9 +20,13 @@ public class PostController {
     private final PostBO postBO;
 
     @GetMapping("/post-list-view")
-    public String postList(Model model) {
-        List<Post> postList = postBO.getPostList();
+    public String postList(@RequestParam(name = "sort", defaultValue = "latest") String sort, Model model) {
+        List<Post> postList = "views".equalsIgnoreCase(sort)
+                ? postBO.getPostListByViews()
+                : postBO.getPostList();
+
         model.addAttribute("postList", postList);
+        model.addAttribute("sort", sort);
         return "post/postList";
     }
 
@@ -40,6 +45,7 @@ public class PostController {
 
     @GetMapping("/post-detail-view/{id}")
     public String postDetailView(Model model, @PathVariable("id") int id) {
+        postBO.increaseViewCount(id);
         Post post = postBO.getPostById(id);
         model.addAttribute("post", post);
         return "post/postDetail";

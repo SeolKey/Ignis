@@ -19,4 +19,5 @@ public class Funding {
     private String rejectReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer viewCount;
 }

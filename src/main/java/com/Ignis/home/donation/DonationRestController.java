@@ -122,4 +122,8 @@ public class DonationRestController {
 
         return result;
     }
+    @GetMapping("/api/most-viewed")
+    public List<Donation> getMostViewed(@RequestParam(defaultValue = "10") int limit) {
+        return donationBO.getMostViewedDonationList(limit);
+    }
 }

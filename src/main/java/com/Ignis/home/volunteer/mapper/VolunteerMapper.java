@@ -15,4 +15,7 @@ public interface VolunteerMapper {
     int insertVolunteer(Volunteer volunteer);
     
     List<Volunteer> selectRecentVolunteerList(int limit);
+
+    void incrementViewCount(Long volunteerId);
+    List<Volunteer> selectMostViewedVolunteerList(int limit);
 }

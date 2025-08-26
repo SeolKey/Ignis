@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.Ignis.home.funding.bo.FundingBO;
 import com.Ignis.home.funding.domain.Funding;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/funding")
@@ -22,9 +23,16 @@ public class FundingController {
     private FundingBO fundingBO;
 
     @GetMapping("/funding-list-view")
-    public String fundingListPage(Model model) {
-        List<Funding> fundingList = fundingBO.getFundingList();
-        model.addAttribute("fundingList", fundingList);
+    public String fundingListPage(@RequestParam(name = "sort", defaultValue = "latest") String sort, @RequestParam(name = "limit", defaultValue = "1000") int limit, Model model) {
+        List<Funding> list;
+        if ("views".equalsIgnoreCase(sort)) {
+            list = fundingBO.getMostViewedFundingList(limit);
+        } else {
+            sort = "latest";
+            list = fundingBO.getFundingList();
+        }
+        model.addAttribute("fundingList", list);
+        model.addAttribute("sort", sort);
         return "funding/fundingList";
     }
 
@@ -35,6 +43,7 @@ public class FundingController {
 
     @GetMapping("/funding-detail-view/{fundingId}")
     public String fundingDetailPage(@PathVariable("fundingId") Long fundingId, Model model) {
+        fundingBO.increaseViewCount(fundingId);
         Funding funding = fundingBO.getFundingById(fundingId);
         model.addAttribute("funding", funding);
         return "funding/fundingDetail";

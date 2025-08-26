@@ -20,4 +20,5 @@ public class Donation {
     private String imagePath;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer viewCount; // 조회수
 }

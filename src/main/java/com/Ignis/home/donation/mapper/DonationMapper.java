@@ -34,4 +34,8 @@ public interface DonationMapper {
     // ✅ [추가] currentPrice 업데이트
     void updateDonationCurrentPrice(@Param("donationId") Long donationId,
                                     @Param("currentPrice") int currentPrice);
+
+    void incrementViewCount(Long donationId); // 조회수 증가
+
+    List<Donation> selectMostViewedDonationList(int limit); // 조회수 순으로 나열
 }

@@ -88,4 +88,12 @@ public class DonationBO {
         // TODO: 필요하다면 기부 참여 로그(참여자 테이블)에 기록
         // e.g. donationMapper.insertDonationParticipation(userId, donationId, amount);
     }
+
+    public void increaseViewCount(Long donationId) {
+        donationMapper.incrementViewCount(donationId);
+    }
+
+    public List<Donation> getMostViewedDonationList(int limit) {
+        return donationMapper.selectMostViewedDonationList(limit);
+    }
 }

@@ -28,5 +28,9 @@ public interface FundingMapper {
             @Param("rejectReason") String rejectReason);
     
     void deleteFunding(int fundingId);
+
+    void incrementViewCount(Long fundingId); // 조회수 증가
+
+    List<Funding> selectMostViewedFundingList(int limit);
 }
 

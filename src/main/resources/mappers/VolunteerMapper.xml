@@ -21,7 +21,8 @@
         reject_reason AS rejectReason,
         current_people AS currentPeople,
         created_at AS createdAt,
-        updated_at AS updatedAt
+        updated_at AS updatedAt,
+		view_count AS viewCount
     FROM volunteer
     WHERE status = 'APPROVED'
     ORDER BY created_at DESC
@@ -44,7 +45,8 @@
 	        reject_reason AS rejectReason,
 	        current_people AS currentPeople,
 	        created_at AS createdAt,
-	        updated_at AS updatedAt
+	        updated_at AS updatedAt,
+			view_count AS viewCount
 	    FROM volunteer
 	    WHERE volunteer_id = #{id}
     </select>
@@ -61,7 +63,8 @@
 	        max_participants,
 	        status,
 	        current_people,
-	        created_at
+	        created_at,
+			view_count
 	    )
 	    VALUES (
 	        #{userId},
@@ -74,7 +77,8 @@
 	        #{maxParticipants},
 	        #{status},
 	        #{currentPeople},
-	        #{createdAt}
+	        #{createdAt},
+	        0
     )
 	</insert>
 	
@@ -92,11 +96,41 @@
 	        current_people AS currentPeople,
 	        status,
 	        created_at AS createdAt,
-	        updated_at AS UpdatedAt
+	        updated_at AS UpdatedAt,
+			view_count AS viewCount
 	    FROM volunteer
 	    WHERE status = 'APPROVED'
 	    ORDER BY created_at DESC
 	    LIMIT #{limit}
 	</select>
-	
+
+	<update id="incrementViewCount" parameterType="Long">
+		UPDATE volunteer
+		SET view_count = view_count + 1,
+			updated_at = NOW()
+		WHERE volunteer_id = #{volunteerId}
+	</update>
+
+	<select id="selectMostViewedVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
+		SELECT
+			volunteer_id AS volunteerId,
+			user_id AS userId,
+			title,
+			description,
+			location,
+			image_path AS imagePath,
+			start_time AS startTime,
+			end_time AS endTime,
+			max_participants AS maxParticipants,
+			current_people AS currentPeople,
+			status,
+			created_at AS createdAt,
+			updated_at AS UpdatedAt,
+			view_count AS viewCount
+		FROM volunteer
+		WHERE status = 'APPROVED'
+		ORDER BY view_count DESC, created_at DESC
+			LIMIT #{limit}
+	</select>
+
 </mapper>

@@ -15,4 +15,5 @@ public class Post {
     private String imagePath;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer viewCount;
 }

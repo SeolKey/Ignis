@@ -13,7 +13,8 @@
                 content,
                 image_path AS imagePath,
                 created_at AS createdAt,
-                updated_at AS updatedAt
+                updated_at AS updatedAt,
+                view_count AS viewCount
             FROM post
             ORDER BY created_at DESC
     </select>
@@ -26,7 +27,8 @@
                 content,
                 image_path AS imagePath,
                 created_at AS createdAt,
-                updated_at AS updatedAt
+                updated_at AS updatedAt,
+                view_count AS viewCount
             FROM post
             WHERE post_id = #{id}
     </select>
@@ -48,4 +50,25 @@
     <delete id="deletePost" parameterType="int">
         DELETE FROM post WHERE post_id = #{id}
     </delete>
+
+    <select id="selectPostListByViews" resultType="com.Ignis.post.domain.Post">
+        SELECT
+            post_id    AS postId,
+            user_id    AS userId,
+            title,
+            content,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount
+        FROM post
+        ORDER BY view_count DESC, created_at DESC
+    </select>
+
+    <update id="incrementViewCount" parameterType="int">
+        UPDATE post
+        SET view_count = view_count + 1,
+            updated_at = NOW()
+        WHERE post_id = #{postId}
+    </update>
 </mapper>
