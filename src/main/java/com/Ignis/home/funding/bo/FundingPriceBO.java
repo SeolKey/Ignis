@@ -13,19 +13,19 @@ import com.Ignis.home.funding.mapper.FundingPriceMapper;
 @Transactional
 public class FundingPriceBO {
 
-    @Autowired
-    private FundingPriceMapper fundingPriceMapper;
-    
-    @Autowired
-    private FundingMapper fundingMapper;
-
-    public void participateFunding(Long userId, Long fundingId, Integer givePrice) {
-        FundingPrice fundingPrice = new FundingPrice();
-        fundingPrice.setUserId(userId);
-        fundingPrice.setFundingId(fundingId);
-        fundingPrice.setGivePrice(givePrice);
-        fundingPriceMapper.insertFundingPrice(fundingPrice);
-
-        fundingMapper.updateCurrentPrice(fundingId, givePrice);
-    }
+//    @Autowired
+//    private FundingPriceMapper fundingPriceMapper;
+//
+//    @Autowired
+//    private FundingMapper fundingMapper;
+//
+//    public void participateFunding(Long userId, Long fundingId, Integer givePrice) {
+//        FundingPrice fundingPrice = new FundingPrice();
+//        fundingPrice.setUserId(userId);
+//        fundingPrice.setFundingId(fundingId);
+//        fundingPrice.setGivePrice(givePrice);
+//        fundingPriceMapper.insertFundingPrice(fundingPrice);
+//
+//        fundingMapper.updateCurrentPrice(fundingId, givePrice);
+//    }
 }

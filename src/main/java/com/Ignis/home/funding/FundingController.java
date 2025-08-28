@@ -3,6 +3,7 @@ package com.Ignis.home.funding;
 import java.util.List;
 
 import com.Ignis.home.funding.bo.FundingPriceBO;
+import com.Ignis.payment.PaymentBO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,9 @@ public class FundingController {
 
     @Autowired
     private FundingBO fundingBO;
+
+    @Autowired
+    private PaymentBO paymentBO;
 
     @GetMapping("/funding-list-view")
     public String fundingListPage(@RequestParam(name = "sort", defaultValue = "latest") String sort, @RequestParam(name = "limit", defaultValue = "1000") int limit, Model model) {
@@ -67,12 +71,23 @@ public class FundingController {
 
     @GetMapping("/participate-complete")
     public String participateCompletePage(
+            @RequestParam("imp_uid") String impUid,
+            @RequestParam("merchant_uid") String merchantUid,
+            @RequestParam("fundingId") Long fundingId,
             HttpSession session,
             Model model) {
 
-        model.addAttribute("userId", session.getAttribute("participationUserId"));
-        model.addAttribute("fundingId", session.getAttribute("participationFundingId"));
-        model.addAttribute("givePrice", session.getAttribute("participationGivePrice"));
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return "redirect:/user/sign-in-view";
+        }
+
+        // 서버에서 PortOne 검증 후 DB 반영
+        PaymentBO.CompletedPayment done = paymentBO.completeFunding(impUid, merchantUid, fundingId);
+
+        model.addAttribute("userId", userId);
+        model.addAttribute("fundingId", done.getFundingId());
+        model.addAttribute("givePrice", done.getAmount());
         return "funding/fundingParticipateComplete";
     }
 }

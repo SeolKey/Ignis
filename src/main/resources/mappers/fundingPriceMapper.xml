@@ -3,23 +3,65 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.Ignis.home.funding.mapper.FundingPriceMapper">
 
-    <insert id="insertFundingPrice"
+    <resultMap id="FundingPriceMap" type="com.Ignis.home.funding.domain.FundingPrice">
+        <id     column="funding_price_id" property="fundingPriceId"/>
+        <result column="funding_id"       property="fundingId"/>
+        <result column="user_id"          property="userId"/>
+        <result column="give_price"       property="givePrice"/>
+        <result column="imp_uid"          property="impUid"/>
+        <result column="merchant_uid"     property="merchantUid"/>
+        <result column="pg_provider"      property="pgProvider"/>
+        <result column="pg_tid"           property="pgTid"/>
+        <result column="pay_method"       property="payMethod"/>
+        <result column="currency"         property="currency"/>
+        <result column="status"           property="status"/>
+        <result column="receipt_url"      property="receiptUrl"/>
+        <result column="paid_at"          property="paidAt"/>
+        <result column="created_at"       property="createdAt"/>
+        <result column="updated_at"       property="updatedAt"/>
+    </resultMap>
+
+    <!-- 사전등록용 READY 행 -->
+    <insert id="insertFundingPriceReady"
             parameterType="com.Ignis.home.funding.domain.FundingPrice"
             useGeneratedKeys="true"
             keyProperty="fundingPriceId">
         INSERT INTO funding_price (
-            funding_id,
-            user_id,
-            give_price,
-            created_at,
-            updated_at
+            funding_id, user_id, give_price,
+            merchant_uid, status, currency,
+            created_at, updated_at
         ) VALUES (
-                     #{fundingId},
-                     #{userId},
-                     #{givePrice},
-                     NOW(),
-                     NOW()
+                     #{fundingId}, #{userId}, #{givePrice},
+                     #{merchantUid}, 'READY', 'KRW',
+                     NOW(), NOW()
                  )
     </insert>
+
+    <select id="selectByMerchantUid" resultMap="FundingPriceMap">
+        SELECT *
+        FROM funding_price
+        WHERE merchant_uid = #{merchantUid}
+            LIMIT 1
+    </select>
+
+    <update id="updatePaidByMerchantUid">
+        UPDATE funding_price
+        SET status = 'PAID',
+            imp_uid = #{impUid},
+            pg_provider = #{pgProvider},
+            pg_tid = #{pgTid},
+            pay_method = #{payMethod},
+            receipt_url = #{receiptUrl},
+            paid_at = NOW(),
+            updated_at = NOW()
+        WHERE merchant_uid = #{merchantUid}
+    </update>
+
+    <update id="updateStatusByMerchantUid">
+        UPDATE funding_price
+        SET status = #{status},
+            updated_at = NOW()
+        WHERE merchant_uid = #{merchantUid}
+    </update>
 
 </mapper>

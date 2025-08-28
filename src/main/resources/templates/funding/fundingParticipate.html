@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-<th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <th:block th:replace="fragments/headerStyle :: headerStyle" />
     <meta charset="UTF-8">
     <title>펀딩 참여</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- PortOne JS SDK -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script>
+        const IMP = window.IMP;
+        IMP.init("imp15650525");
+    </script>
+
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; }
         .container { max-width: 600px; margin: auto; }
@@ -24,10 +32,10 @@
             <strong th:text="${funding.title}">제목</strong>
         </p>
         <p>목표 금액:
-            <span th:text="${funding.maxPrice} + '원'">0원</span>
+            <span th:text="${#numbers.formatDecimal(funding.maxPrice, 0, 'COMMA', 0, 'POINT')} + '원'">0원</span>
         </p>
         <p>현재 금액:
-            <span th:text="${funding.currentPrice} + '원'">0원</span>
+            <span th:text="${#numbers.formatDecimal(funding.currentPrice, 0, 'COMMA', 0, 'POINT')} + '원'">0원</span>
         </p>
     </div>
 
@@ -44,22 +52,85 @@
 </div>
 
 <script>
-    $(function() {
-        $('#participateForm').submit(function(e) {
-            e.preventDefault();
-            const data = $(this).serialize();
+    // PortOne SDK 로드 보장 유틸
+    function ensureIMPReady(merchantCode) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
 
-            $.ajax({
-                url: '/funding/participate',
-                type: 'POST',
-                data: data,
-                success: function(res) {
-                    window.location.href = '/funding/participate-complete';
-                },
-                error: function(xhr) {
-                    alert(xhr.responseJSON?.error || '참여 처리 중 오류가 발생했습니다.');
+            function tryInit() {
+                if (window.IMP && typeof window.IMP.init === 'function') {
+                    try {
+                        window.IMP.init(merchantCode); // 초기화
+                        resolve(window.IMP);
+                    } catch (e) {
+                        reject(e);
+                    }
+                } else if (Date.now() - start > 5000) {
+                    reject(new Error('PortOne SDK not loaded'));
+                } else {
+                    setTimeout(tryInit, 50);
                 }
-            });
+            }
+            tryInit();
+        });
+    }
+
+    $(function () {
+        $('#participateForm').submit(async function (e) {
+            e.preventDefault();
+
+            const fundingId = Number($('input[name="fundingId"]').val());
+            const givePrice = Number($('#givePrice').val());
+
+            if (!Number.isInteger(givePrice) || givePrice <= 0) {
+                alert('참여 금액을 정수로 입력하세요.');
+                return;
+            }
+
+            try {
+                // 서버 사전등록
+                const prep = await $.ajax({
+                    url: '/api/payments/prepare',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        targetType: 'FUNDING',
+                        targetId: fundingId,
+                        amount: givePrice
+                    })
+                });
+
+                //  PortOne SDK 준비 & 초기화
+                const merchantCode = 'imp15650525';
+                const IMP = await ensureIMPReady(merchantCode);
+
+                //  결제창 호출
+                IMP.request_pay({
+                    pg: 'html5_inicis',
+                    pay_method: 'card',
+                    merchant_uid: prep.merchantUid,
+                    name: prep.name,
+                    amount: prep.amount,          // 숫자
+                    buyer_name: prep.buyerName || '',
+                    buyer_email: prep.buyerEmail || '',
+                    buyer_tel: prep.buyerTel || ''
+                }, function (rsp) {
+                    if (rsp.success) {
+                        const q = $.param({
+                            imp_uid: rsp.imp_uid,
+                            merchant_uid: rsp.merchant_uid,
+                            fundingId: fundingId
+                        });
+                        window.location.href = '/funding/participate-complete?' + q;
+                    } else {
+                        alert('결제가 취소/실패했습니다.\n사유: ' + (rsp.error_msg || '알 수 없음'));
+                    }
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert('결제 준비/호출 중 오류가 발생했습니다.\n' + err.message);
+            }
         });
     });
 </script>

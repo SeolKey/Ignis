@@ -21,8 +21,8 @@ public class FundingRestController {
     @Autowired
     private FundingBO fundingBO;
 
-    @Autowired
-    private FundingPriceBO fundingPriceBO;
+//    @Autowired
+//    private FundingPriceBO fundingPriceBO;
 
     @PostMapping("/create")
     public Map<String, Object> createFunding(
@@ -59,25 +59,25 @@ public class FundingRestController {
         return result;
     }
 
-    @PostMapping("/participate")
-    public String participateFunding(
-            @RequestParam("fundingId") Long fundingId,
-            @RequestParam("givePrice") Integer givePrice,
-            HttpSession session) {
-
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/user/sign-in-view";
-        }
-
-        fundingPriceBO.participateFunding(userId, fundingId, givePrice);
-
-        session.setAttribute("participationUserId", userId);
-        session.setAttribute("participationFundingId", fundingId);
-        session.setAttribute("participationGivePrice", givePrice);
-
-        return "redirect:/funding/participate-complete";
-    }
+//    @PostMapping("/participate")
+//    public String participateFunding(
+//            @RequestParam("fundingId") Long fundingId,
+//            @RequestParam("givePrice") Integer givePrice,
+//            HttpSession session) {
+//
+//        Long userId = (Long) session.getAttribute("userId");
+//        if (userId == null) {
+//            return "redirect:/user/sign-in-view";
+//        }
+//
+//        fundingPriceBO.participateFunding(userId, fundingId, givePrice);
+//
+//        session.setAttribute("participationUserId", userId);
+//        session.setAttribute("participationFundingId", fundingId);
+//        session.setAttribute("participationGivePrice", givePrice);
+//
+//        return "redirect:/funding/participate-complete";
+//    }
 
     @PostMapping("/update-status")
     public Map<String, Object> updateStatus(
