@@ -10,7 +10,8 @@ import {
   AppstoreOutlined, // ⬅ 추가
 } from '@ant-design/icons';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-
+import IgnisLogo from '../assets/IgnisLogo.png';
+import '../styles/Header.css';
 const { Header } = Layout;
 
 // .env.development 에 VITE_BACKEND_OFFLINE=1 넣어두면 개발 중 프록시 에러 로그/요청 자체를 차단
@@ -83,7 +84,9 @@ const DonationHeader = () => {
   return (
     <Header className="donation-header">
       <div className="logo">
-        <Link to="/">IGNIS</Link>
+        <Link to="/">
+          <img src={IgnisLogo} alt="IGNIS Logo" />
+        </Link>
       </div>
 
       <Menu

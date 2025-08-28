@@ -1,0 +1,25 @@
+/* VolunteerCreate 전용 래퍼 */
+.volunteer-create-page {
+  max-width: 880px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+/* 이 안에서만 sub-card, 버튼 스타일 적용 */
+.volunteer-create-page .sub-card {
+  margin-top: 24px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  padding: 16px;
+}
+
+.volunteer-create-page .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.volunteer-create-page .form-actions button + button {
+  margin-left: 8px;
+}

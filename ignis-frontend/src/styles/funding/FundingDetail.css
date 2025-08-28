@@ -1,0 +1,90 @@
+.funding-detail {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* 상단 제목 카드 */
+.funding-detail .header-card {
+  margin-bottom: 12px;
+  border: none;
+  box-shadow: none;
+}
+
+/* 이미지 영역 */
+.funding-detail .image-box {
+  width: 100%;
+  height: 280px;
+  background: #eee;
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+}
+
+.funding-detail .image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.funding-detail .image-fallback {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: #888;
+}
+
+/* 진행률/금액 */
+.funding-detail .progress-label {
+  font-weight: bold;
+}
+
+.funding-detail .funding-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.funding-detail .funding-stats div {
+  min-width: 120px;
+}
+
+/* 버튼 영역 */
+.funding-detail .action-buttons {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+/* 메타 정보 */
+.funding-detail .info-meta {
+  color: #666;
+  margin-top: 8px;
+}
+
+/* 하단 공통 섹션 카드 */
+.funding-detail .section-card {
+  margin-top: 24px;
+}
+
+/* 관련 프로젝트 */
+.funding-detail .related-projects {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.funding-detail .related-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.funding-detail .related-item .thumb {
+  width: 48px;
+  height: 48px;
+  background: #eee;
+  border-radius: 4px;
+}

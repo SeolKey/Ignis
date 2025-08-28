@@ -10,7 +10,7 @@ import {
   Divider,
 } from 'antd';
 import '../styles/PaymentPage.css';
-import Layout from '../components/Layout'; // Layout 추가
+import Layout from '../components/Layout';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -52,12 +52,11 @@ const PaymentPage = () => {
   };
 
   return (
-    <Layout> {/* Layout 컴포넌트로 감쌈 */}
+    <Layout>
       <div className="payment-content">
-        <Card className="payment-card" variant="borderless">
+        <Card className="payment-card">
           <Title level={3}>결제하기</Title>
 
-          {/* 결제 금액 */}
           <div className="section">
             <Text strong>결제 금액</Text>
             <Input
@@ -69,7 +68,6 @@ const PaymentPage = () => {
               }}
               style={{ marginTop: 8 }}
             />
-
             <Space style={{ marginTop: 12 }} wrap>
               <Button onClick={() => addAmount(1000)}>1,000원</Button>
               <Button onClick={() => addAmount(5000)}>5,000원</Button>
@@ -81,7 +79,6 @@ const PaymentPage = () => {
 
           <Divider />
 
-          {/* 결제 수단 */}
           <div className="section">
             <Text strong>결제 수단</Text>
             <Radio.Group
@@ -102,7 +99,6 @@ const PaymentPage = () => {
 
           <Divider />
 
-          {/* 총 결제 금액 */}
           <div className="section total-section">
             <Text strong>총 결제금액</Text>
             <Text className="total-amount">₩ {amount.toLocaleString()}</Text>
@@ -110,7 +106,6 @@ const PaymentPage = () => {
 
           <Divider />
 
-          {/* 이용 동의 */}
           <div className="section">
             <Text strong>결제 및 이용 동의</Text>
             <TextArea
@@ -123,8 +118,8 @@ const PaymentPage = () => {
             </Checkbox>
           </div>
 
-          {/* 결제 버튼 */}
           <Button
+            className="payment-button"
             type="primary"
             block
             style={{ marginTop: 24 }}
@@ -144,5 +139,4 @@ const PaymentPage = () => {
   );
 };
 
-console.log('PaymentPage 컴포넌트 불러와짐');
 export default PaymentPage;

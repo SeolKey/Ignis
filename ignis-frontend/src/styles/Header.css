@@ -10,19 +10,17 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: bold;
-  font-size: 18px;
-  color: #333;
+  margin-left: 50px; /* 🔥 오른쪽 끝으로 밀림 */
 }
 
-.logo-icon {
-  background-color: #2979ff;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  display: inline-block;
+
+.logo img {
+  height: 80px;
+  margin-top: 10px;      /* 위쪽 여백 */
+  margin-bottom: 15px;    /* 아래쪽 여백 */
+  vertical-align: middle;
 }
+
 
 .nav-links {
   display: flex;

@@ -1,101 +1,41 @@
-/* 페이지 패딩 */
+/* ========= 공통 레이아웃 ========= */
 .page {
   padding: 48px 24px;
-  max-width: 1200px;   /* 💡 최대 폭 제한 */
-  margin: 0 auto;      /* 💡 중앙 정렬 */
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* 배너 카드 */
-.banner-card {
-  border-radius: 16px;
-  margin-bottom: 64px;
-  background-color: #338AFF;
-}
+/* 섹션 / 카드 그리드 (기존 유지) */
+.section { margin-bottom: 48px; }
+.section-header { margin-bottom: 16px; }
+.section-title { margin: 0; }
 
-/* 배너 텍스트 */
-.banner-title {
-  color: #fff !important;
-}
-.banner-desc {
-  color: #fff;
-  display: block;
-  margin-bottom: 16px;
-}
-
-/* 배너 버튼 */
-.banner-button {
-  background-color: #ffffff;
-  color: #338AFF;
-  border: none;
-  padding: 8px 20px;
-  font-weight: bold;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.banner-button:hover {
-  background-color: #e6f0ff;
-  color: #1a5fd0;
-}
-
-/* 섹션 공통 */
-.section {
-  margin-bottom: 48px;
-}
-
-.section-header {
-  margin-bottom: 16px;
-}
-
-.section-title {
-  margin: 0;
-}
-
-/* 카드 컨테이너: 반응형 2→3→4열 */
 .card-container {
   display: grid;
-  gap: 24px;                         /* 카드 간격 ↑ */
-  grid-template-columns: repeat(2, 1fr);   /* 모바일 2열 */
+  gap: 24px;
+  grid-template-columns: repeat(2, 1fr);
 }
-
 @media (min-width: 768px) {
-  .card-container {
-    grid-template-columns: repeat(3, 1fr); /* 태블릿 3열 */
-  }
+  .card-container { grid-template-columns: repeat(3, 1fr); }
 }
-
 @media (min-width: 1200px) {
-  .card-container {
-    grid-template-columns: repeat(4, 1fr); /* 데스크톱 4열 고정 */
-  }
+  .card-container { grid-template-columns: repeat(4, 1fr); }
 }
-
 .card {
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  transition: none;      
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
   cursor: pointer;
   min-height: 260px;
 }
-
-.card:hover {
-  transform: none;          
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08); 
-}
-
-/* 카드 이미지: 썸네일 */
 .donation-image {
   width: 100%;
-  height: 200px;        
+  height: 200px;
   object-fit: cover;
   display: block;
   background: #f3f4f6;
 }
-
-/* 카드 제목 */
 .card p {
   margin: 12px 14px 14px;
   font-weight: 600;
@@ -106,7 +46,143 @@
   text-overflow: ellipsis;
 }
 
-/* 생성 버튼 상단 여백 */
-.create-button {
-  margin-top: 24px;
+/* ========= 배너: 바깥 화살표 + 슬라이더 ========= */
+/* 배너 바깥에 화살표 배치 */
+.banner-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;            /* 화살표-배너 간격 */
+  margin-bottom: 28px;  /* 배너 하단 여백 */
+}
+
+/* 슬라이더 컨테이너 */
+.banner-slider {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  flex: 1;              /* 가로폭 꽉 채움 */
+}
+
+/* 트랙: 가로 슬라이드 */
+.banner-track {
+  display: flex;
+  transition: transform 0.45s ease;
+  will-change: transform;
+}
+
+/* 슬라이드(배너 카드) */
+.banner-card {
+  flex: 0 0 100%;
+  min-width: 100%;
+  padding: 48px;
+  color: #fff;
+  box-sizing: border-box;
+}
+
+/* 배너 텍스트 */
+.banner-title {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff !important;
+}
+.banner-desc {
+  margin: 0 0 16px;
+  font-size: 15px;
+  opacity: 0.95;
+  color: #fff;
+  display: block;
+}
+
+/* 예쁜 글래스 버튼 */
+.banner-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.55);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: .2px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.18);
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.banner-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 40%);
+  opacity: .22;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.banner-button:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.18);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.2);
+}
+.banner-button:hover::after { opacity: .38; }
+.banner-button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.banner-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.55), 0 6px 16px rgba(0,0,0,0.15);
+}
+.banner-button .arrow {
+  display: inline-block;
+  transform: translateX(0);
+  transition: transform .18s ease;
+}
+.banner-button:hover .arrow { transform: translateX(4px); }
+
+/* 인디케이터 점 */
+.banner-dots {
+  position: absolute;
+  left: 0; right: 0; bottom: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.banner-dots .dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255,255,255,0.45);
+  cursor: pointer;
+}
+.banner-dots .dot.active {
+  background: #fff;
+  transform: scale(1.2);
+}
+
+/* 바깥 화살표 */
+.banner-arrow.outside {
+  position: static;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 0;
+  background: #e6e8eb; /* 기본: 살짝 진한 회색 */
+  color: #555;         /* 아이콘 대비 */
+  font-size: 20px;
+  line-height: 40px;
+  text-align: center;
+  cursor: pointer;
+}
+.banner-arrow.outside:hover { background: #dcdfe4; /* 호버: 기본보다 조금 더 진하게 */}
+
+@media (max-width: 768px) {
+  .banner-arrow.outside { display: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .banner-button, .banner-button::after, .banner-button .arrow { transition: none; }
+  }
 }

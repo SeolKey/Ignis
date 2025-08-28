@@ -3,6 +3,7 @@ import { Form, Input, Button, Card, Upload, Typography, message } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
+import "../../styles/funding/FundingCreate.css";
 
 const { Title } = Typography;
 const { Dragger } = Upload;
@@ -86,7 +87,7 @@ const FundingCreate = () => {
 
     return (
         <Layout>
-            <div className="funding-create-container" style={{ maxWidth: 720, margin: "0 auto" }}>
+            <div className="funding-create">
                 <Card className="funding-create-card" bordered>
                     <Title level={3}>펀딩 생성</Title>
 
@@ -131,17 +132,17 @@ const FundingCreate = () => {
                             </Dragger>
                         </Form.Item>
 
-                        <Form.Item>
+                        <div className="form-actions">
+                            <Button onClick={() => navigate(-1)}>취소</Button>
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                block
                                 disabled={!file || submitting}
                                 loading={submitting}
                             >
                                 생성하기
                             </Button>
-                        </Form.Item>
+                        </div>
                     </Form>
                 </Card>
             </div>

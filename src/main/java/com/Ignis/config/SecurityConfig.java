@@ -38,8 +38,8 @@ public class SecurityConfig {
                     "/oauth2/**", "/login/**",
                     "/user/**",
                     "/error", "/public/**",
-                    "/css/**", "/js/**", "/images/**", "/favicon.ico",
-                    "/donation-detail/**", "/donation-create", 
+                    "/css/**", "/js/**", "/images/**", "/favicon.ico", "/uploads/**",
+                    "/donation-detail/**", "/donation-create",
                     "/funding/**",
                     "/api/**",
                     "/volunteer/react/list", "/volunteer/react/detail/**" 

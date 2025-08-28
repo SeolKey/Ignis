@@ -21,7 +21,7 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <p>© 2025 IGNIS. 포트폴리오용 사이트입니다.</p>
+        <p>© 2025 IGNIS. 기부·봉사·펀딩 사이트입니다.</p>
         <p>주소: 서울특별시 예시구 예시동 123-45 | 연락처: 010-1234-5678 | 이메일: contact@ignis.com</p>
       </div>
     </footer>

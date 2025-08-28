@@ -9,10 +9,12 @@ import {
   DatePicker,
   InputNumber,
   message,
+  Row, Col,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import '../../styles/volunteer/VolunteerCreate.css';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -85,7 +87,7 @@ export default function VolunteerCreate() {
 
   return (
     <Layout>
-      <div className="page" style={{ maxWidth: 880, margin: '24px auto' }}>
+      <div className="volunteer-create-page">
         <Title level={3}>봉사 생성</Title>
         <Card>
           <Form
@@ -114,40 +116,50 @@ export default function VolunteerCreate() {
             </Form.Item>
 
             {/* DB NOT NULL: location */}
-            <Form.Item
-              label="장소"
-              name="location"
-              rules={[{ required: true, message: '장소를 입력하세요.' }]}
-            >
-              <Input placeholder="예) 마포구청 자원봉사센터 3층" />
-            </Form.Item>
+            <Card className="sub-card" title="봉사 정보">
+              <Row gutter={16}>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="장소"
+                    name="location"
+                    rules={[{ required: true, message: '장소를 입력하세요.' }]}
+                  >
+                    <Input placeholder="예) 마포구청 자원봉사센터 3층" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="모집 인원"
+                    name="maxParticipants"
+                    rules={[{ required: true, message: '모집 인원을 입력하세요.' }]}
+                  >
+                    <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="예) 10" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="시작 시각"
+                    name="startTime"
+                    rules={[{ required: true, message: '시작 시각을 선택하세요.' }]}
+                  >
+                    <DatePicker showTime style={{ width: '100%' }} placeholder="시작 일시 선택" />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                  <Form.Item
+                    label="종료 시각"
+                    name="endTime"
+                    rules={[
+                      { required: true, message: '종료 시각을 선택하세요.' },
+                      { validator: validateEndAfterStart },
+                    ]}
+                  >
+                    <DatePicker showTime style={{ width: '100%' }} placeholder="종료 일시 선택" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
 
-            <Form.Item
-              label="시작 시각"
-              name="startTime"
-              rules={[{ required: true, message: '시작 시각을 선택하세요.' }]}
-            >
-              <DatePicker showTime style={{ width: '100%' }} placeholder="시작 일시 선택" />
-            </Form.Item>
-
-            <Form.Item
-              label="종료 시각"
-              name="endTime"
-              rules={[
-                { required: true, message: '종료 시각을 선택하세요.' },
-                { validator: validateEndAfterStart },
-              ]}
-            >
-              <DatePicker showTime style={{ width: '100%' }} placeholder="종료 일시 선택" />
-            </Form.Item>
-
-            <Form.Item
-              label="모집 인원"
-              name="maxParticipants"
-              rules={[{ required: true, message: '모집 인원을 입력하세요.' }]}
-            >
-              <InputNumber min={1} step={1} style={{ width: '100%' }} placeholder="예) 10" />
-            </Form.Item>
 
             {/* 숨김/기본값 필드들: DB 제약 충족용 */}
             <Form.Item name="imagePath" hidden>
@@ -158,8 +170,10 @@ export default function VolunteerCreate() {
             </Form.Item>
 
             <Form.Item>
-              <Button type="primary" htmlType="submit">등록</Button>
-              <Button style={{ marginLeft: 8 }} onClick={() => navigate(-1)}>취소</Button>
+              <div className="form-actions">
+                <Button type="primary" htmlType="submit">등록</Button>
+                <Button onClick={() => navigate(-1)}>취소</Button>
+              </div>
             </Form.Item>
           </Form>
         </Card>

@@ -1,0 +1,50 @@
+/* 페이지 전체 래퍼 (이 네임스페이스 안에서만 스타일 적용) */
+.funding-create {
+  max-width: 900px;
+  margin: 32px auto 64px;
+  padding: 0 16px;
+}
+
+/* 카드 스타일 */
+.funding-create .funding-create-card {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  border: 1px solid #f0f0f0;
+}
+
+/* 제목 간격 */
+.funding-create .ant-typography {
+  margin-bottom: 8px;
+}
+
+/* 라벨 가독성 */
+.funding-create .ant-form-item-label > label {
+  font-weight: 600;
+}
+
+/* 업로드 박스 여백/모양 */
+.funding-create .ant-upload-drag {
+  border-radius: 10px;
+}
+.funding-create .ant-upload-drag:hover {
+  border-color: #b5b9c0;
+}
+
+/* 액션 버튼: 오른쪽 하단 정렬 */
+.funding-create .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 모바일 간격 조정 */
+@media (max-width: 576px) {
+  .funding-create {
+    margin: 24px auto 48px;
+  }
+  .funding-create .funding-create-card {
+    padding: 16px;
+  }
+}
