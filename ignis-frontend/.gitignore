@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Env files (⚠️ add this)
+.env
+.env.*   # 개발/운영용 분리했을 때도 제외

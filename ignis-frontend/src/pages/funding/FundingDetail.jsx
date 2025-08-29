@@ -137,7 +137,7 @@ export default function FundingDetail() {
                 <Button
                   type="primary"
                   style={{ minWidth: 180 }}
-                  onClick={() => navigate('/payment')}
+                  onClick={() => navigate(`/payment?type=funding&id=${id}&amount=${item?.maxPrice || 0}`)}
                 >
                   프로젝트 참여하기
                 </Button>
