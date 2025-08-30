@@ -1,12 +1,12 @@
 /* 레이아웃 */
-.funding-content {
+.volunteer-content {
   width: 100%;
   padding: 40px 5vw;
   background-color: #ffffff;
   box-sizing: border-box;
 }
 
-/* 썸네일 카드/이미지  */
+/* 썸네일 카드 */
 .thumbnail-card {
   background: #fff;
   border: none;
@@ -14,6 +14,7 @@
   margin-bottom: 12px;
 }
 
+/* 썸네일 이미지 */
 .thumbnail-image {
   width: 100%;
   height: auto;
@@ -36,13 +37,12 @@
   border: 1px solid #f0f0f0;
   border-radius: 8px;
 }
-
 .project-period {
   margin-bottom: 12px;
   color: #888;
 }
 
-/* 숫자 정보 블록 */
+/* 숫자 정보 블록(필요 시 확장) */
 .stats p {
   margin-bottom: 12px;
 }

@@ -15,7 +15,7 @@ const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { TextArea } = Input;
 
-
+// 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
   if (!iso) return '';
   const d = new Date(iso);
@@ -26,6 +26,7 @@ const fmtDate = (iso) => {
   return `${y}.${m}.${dd}`;
 };
 
+// 날짜+시간 포맷 (yyyy-mm-dd hh:mm)
 const fmtDateTime = (iso) => {
   if (!iso) return '';
   return iso.replace('T', ' ').substring(0, 16);
@@ -35,24 +36,19 @@ export default function DonationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // ---------- state ----------
+  // 상태 정의
   const [loading, setLoading] = useState(true);
   const [donation, setDonation] = useState(null);
-
-  // 댓글 상태
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentInput, setCommentInput] = useState('');
-
-  // 전화번호 모달 상태
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
 
   const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
 
-
-  // ---------- effects ----------
+  // 기부 상세 데이터 불러오기
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -62,8 +58,7 @@ export default function DonationDetail() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!ignore) setDonation(data);
-      } catch (e) {
-        console.error(e);
+      } catch {
         message.error('기부 상세 정보를 불러오지 못했어요.');
       } finally {
         if (!ignore) setLoading(false);
@@ -72,10 +67,9 @@ export default function DonationDetail() {
     return () => { ignore = true; };
   }, [id]);
 
-  // ---------- derived values / helpers (hooks before any early return) ----------
   const contentId = donation?.donationId ?? donation?.id ?? Number(id);
 
-  // ✅ 댓글 목록 불러오기 (Accept: application/json + res.ok 체크)
+  // 댓글 불러오기
   const loadComments = useCallback(async () => {
     if (!contentId) return;
     try {
@@ -89,21 +83,17 @@ export default function DonationDetail() {
         navigate('/login');
         return;
       }
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} ${text}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setComments(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error('댓글 불러오기 실패:', e);
+    } catch {
       message.error('댓글을 불러오지 못했어요.');
     } finally {
       setCommentLoading(false);
     }
   }, [contentId, navigate]);
 
-  // ✅ 댓글 작성 (JSON 바디 + res.ok 체크)
+  // 댓글 작성
   const submitComment = async () => {
     const content = commentInput.trim();
     if (!content) return message.warning('댓글 내용을 입력해줘.');
@@ -128,10 +118,7 @@ export default function DonationDetail() {
         navigate('/login');
         return;
       }
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} ${text}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       if (result?.result === 'success') {
         setCommentInput('');
@@ -140,14 +127,14 @@ export default function DonationDetail() {
       } else {
         message.error(result?.errorMessage || '댓글 등록에 실패했습니다.');
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       message.error('댓글 등록 중 오류가 발생했어요.');
     } finally {
       setCommentLoading(false);
     }
   };
 
+  // 진행률 계산
   const progress = useMemo(() => {
     const cur = Number(donation?.currentPrice || 0);
     const max = Number(donation?.maxPrice || 0);
@@ -155,17 +142,11 @@ export default function DonationDetail() {
     return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
   }, [donation]);
 
-  // 캐러셀 이미지 소스 정규화 (없거나 1장 이하면 기본이미지로 슬라이드 유지)
+  // 캐러셀 이미지 세팅
   const imagesForCarousel = useMemo(() => {
     const raw = Array.isArray(donation?.images)
       ? donation.images
-        .map((it) => {
-          if (typeof it === 'string') return it;
-          if (it?.url) return it.url;
-          if (it?.path) return it.path;
-          if (it?.imagePath) return it.imagePath;
-          return null;
-        })
+        .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
         .filter(Boolean)
       : [];
     if (raw.length < 2) return [testImage, testImage, testImage];
@@ -175,11 +156,7 @@ export default function DonationDetail() {
   const start = fmtDate(donation?.createdAt);
   const end = donation?.endAt ? fmtDate(donation.endAt) : '';
 
-
-
-
-  // 전화번호 확인 후 필요 시 모달 / 아니면 결제 이동
-  // 전화번호 확인 후 필요 시 모달 / 아니면 결제 이동
+  // 참여하기 버튼 (전화번호 확인 → 결제 이동)
   const handleParticipate = async () => {
     try {
       const res = await fetch('/user/me/phone', {
@@ -191,33 +168,25 @@ export default function DonationDetail() {
         navigate('/login');
         return;
       }
-
       const isJson = (res.headers.get('content-type') || '').includes('application/json');
       const data = isJson ? await res.json() : null;
-      console.log("🚀 /user/me/phone 응답:", data);
-      // 응답에서 phone을 유연하게 추출
       const phoneRaw =
-        (data && typeof data.phone === 'string' && data.phone) ||
-        (data && typeof data.phoneNumber === 'string' && data.phoneNumber) ||
-        (data && data.user && typeof data.user.phone === 'string' && data.user.phone) ||
-        '';
-
-      const digits = phoneRaw.replace(/\D/g, ''); // 숫자만
-      const isUnset = digits.length === 0 || /^0+$/.test(digits); // 비었거나 전부 0
-
+        data?.phone || data?.phoneNumber || data?.user?.phone || '';
+      const digits = phoneRaw.replace(/\D/g, '');
+      const isUnset = digits.length === 0 || /^0+$/.test(digits);
       if (isUnset) {
-        setPhoneInput(phoneRaw);        // 빈 값이면 '', 있으면 기존 값
-        setPhoneModalOpen(true);        // 모달 열기
+        setPhoneInput(phoneRaw);
+        setPhoneModalOpen(true);
       } else {
         message.success('연락처 확인 완료! 결제 페이지로 이동합니다.');
-        navigate('/payment');           // 필요하면 `/payment/${contentId}`
+        navigate('/payment');
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       message.error('전화번호 확인 중 오류가 발생했어.');
     }
   };
 
+  // 공유하기
 
   const share = async () => {
     try {
@@ -227,10 +196,13 @@ export default function DonationDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch { /* 무시 */ }
+    } catch (e) {
+      console.warn('공유 처리 중 중단/실패:', e);
+    }
   };
 
-  // ---------- early returns (after hooks) ----------
+
+  // 로딩 중
   if (loading) {
     return (
       <Layout>
@@ -241,6 +213,7 @@ export default function DonationDetail() {
     );
   }
 
+  // 데이터 없음
   if (!donation) {
     return (
       <Layout>
@@ -251,11 +224,12 @@ export default function DonationDetail() {
     );
   }
 
-  // ---------- render ----------
+  // 화면 렌더링
   return (
     <Layout>
       <div className="donation-content">
         <Row gutter={[24, 24]}>
+          {/* 메인 상세 영역 */}
           <Col xs={24} md={16}>
             <Card bordered={false} className="thumbnail-card">
               <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
@@ -283,30 +257,30 @@ export default function DonationDetail() {
               className="custom-tabs"
               onChange={(key) => { if (key === '3') loadComments(); }}
             >
+              {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{donation.title}</Title>
                 <Card className="content-card" bordered={false}>
                   <Paragraph>{donation.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
-
                 <Paragraph style={{ marginTop: 24 }}>계좌 정보</Paragraph>
                 <Card className="content-card" bordered={false}>
                   <Paragraph>{donation.accountInfo || '계좌 정보가 등록되지 않았습니다.'}</Paragraph>
                 </Card>
               </TabPane>
 
+              {/* 안내사항 */}
               <TabPane tab="안내사항" key="2">
                 <Paragraph>
-                  - 본 프로젝트는 <strong>실제 기부금 전달</strong>을 기반으로 운영되는 서비스입니다.<br />
-                  - 모든 기부금은 투명한 절차를 거쳐 해당 프로젝트의 수혜자에게 전달됩니다.<br />
-                  - 기부 참여 전, <strong>프로젝트 내용·목적·기부처</strong>를 반드시 확인해주세요.<br />
-                  - 기부 완료 후에는 <strong>법령 및 서비스 정책상 환불이 불가</strong>하니 신중히 결정해 주시기 바랍니다.<br />
-                  - 기부 내역과 사용 결과는 마이페이지 및 프로젝트 상세 페이지에서 확인 가능합니다.<br />
-                  - 문의 사항이 있으면 고객센터 또는 1:1 문의를 이용해주세요.
+                  - 본 프로젝트는 <strong>실제 기부금 전달</strong>을 기반으로 운영됩니다.<br />
+                  - 모든 기부금은 투명한 절차를 거쳐 수혜자에게 전달됩니다.<br />
+                  - 기부 참여 전, <strong>내용·목적·기부처</strong>를 반드시 확인해주세요.<br />
+                  - 기부 완료 후에는 <strong>환불 불가</strong>이니 신중히 결정해주세요.<br />
+                  - 내역과 사용 결과는 마이페이지 및 상세 페이지에서 확인 가능합니다.<br />
                 </Paragraph>
               </TabPane>
 
-
+              {/* 댓글 */}
               <TabPane tab="댓글" key="3">
                 <Card bordered={false} style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', gap: 12 }}>
@@ -317,15 +291,12 @@ export default function DonationDetail() {
                       autoSize={{ minRows: 3, maxRows: 6 }}
                     />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {/* 폼 submit 방지: htmlType="button" */}
                       <Button type="primary" htmlType="button" onClick={submitComment} loading={commentLoading}>
                         발송
                       </Button>
                     </div>
                   </div>
                 </Card>
-
-                {/* antd Comment 없이 List.Item으로 구현 (버전 충돌 방지) */}
                 <List
                   loading={commentLoading}
                   locale={{ emptyText: '아직 댓글이 없습니다.' }}
@@ -346,6 +317,7 @@ export default function DonationDetail() {
             </Tabs>
           </Col>
 
+          {/* 사이드 정보 영역 */}
           <Col xs={24} md={8}>
             <Card className="info-card" variant="borderless">
               <Title level={5}>{donation.title}</Title>
@@ -381,6 +353,8 @@ export default function DonationDetail() {
           </Col>
         </Row>
       </div>
+
+      {/* 전화번호 입력 모달 */}
       <Modal
         title="연락처 확인"
         open={phoneModalOpen}
@@ -403,18 +377,16 @@ export default function DonationDetail() {
             if (out?.result === 'success') {
               message.success('감사합니다! 결제 페이지로 이동합니다.');
               setPhoneModalOpen(false);
-              navigate('/payment');   // 필요하면 `/payment/${contentId}` 로 바꿔도 됨
+              navigate('/payment');
             } else {
               message.error(out?.error_message || '전화번호 저장에 실패했어.');
             }
-          } catch (e) {
-            console.error(e);
+          } catch {
             message.error('요청 처리 중 오류가 발생했어.');
           } finally {
             setPhoneSaving(false);
           }
         }}
-
         confirmLoading={phoneSaving}
         okText="확인"
         cancelText="취소"

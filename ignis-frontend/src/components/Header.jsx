@@ -24,9 +24,9 @@ const DonationHeader = () => {
 
   const selectedKey =
     location.pathname.startsWith('/donation') ? 'donation' :
-    location.pathname.startsWith('/volunteer') ? 'volunteer' :
-    location.pathname.startsWith('/funding') ? 'funding' :
-    location.pathname.startsWith('/board') ? 'board' : 'home'; // ⬅ 선택 상태 추가
+      location.pathname.startsWith('/volunteer') ? 'volunteer' :
+        location.pathname.startsWith('/funding') ? 'funding' :
+          location.pathname.startsWith('/board') ? 'board' : 'home'; // ⬅ 선택 상태 추가
 
   useEffect(() => {
     if (BACKEND_OFFLINE) return;
@@ -95,24 +95,24 @@ const DonationHeader = () => {
         selectedKeys={[selectedKey]}
         className="donation-menu"
       >
-        <Menu.Item key="home" icon={<HomeOutlined />}>
+        <Menu.Item key="home" icon={<span role="img" aria-label="home">🏠</span>}>
           <Link to="/">홈</Link>
         </Menu.Item>
 
-        <Menu.Item key="donation" icon={<HeartOutlined />}>
+        <Menu.Item key="donation" icon={<span role="img" aria-label="donation">❤️</span>}>
           <Link to="/donation-list">기부</Link>
         </Menu.Item>
 
-        <Menu.Item key="volunteer" icon={<SmileOutlined />}>
+        <Menu.Item key="volunteer" icon={<span role="img" aria-label="volunteer">😊</span>}>
           <Link to="/volunteer">봉사</Link>
         </Menu.Item>
 
-        <Menu.Item key="funding" icon={<FundOutlined />}>
+        <Menu.Item key="funding" icon={<span role="img" aria-label="funding">📦</span>}>
           <Link to="/funding">펀딩</Link>
         </Menu.Item>
 
         {/* ▼ 게시판 드롭다운 (자유게시판/공지사항) */}
-        <Menu.SubMenu key="board" icon={<AppstoreOutlined />} title="게시판">
+        <Menu.SubMenu key="board" icon={<span role="img" aria-label="board">📋</span>} title="게시판">
           <Menu.Item key="board-free">
             <Link to="/board/free">자유게시판</Link>
           </Menu.Item>
@@ -136,7 +136,7 @@ const DonationHeader = () => {
           </Menu.Item>
         )}
       </Menu>
-    </Header>
+    </Header >
   );
 };
 

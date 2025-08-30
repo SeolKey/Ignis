@@ -1,4 +1,3 @@
-// src/pages/volunteer/VolunteerDetail.jsx
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -6,13 +5,16 @@ import {
   Button, Tabs, Divider, message, Spin, List, Input
 } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined, ShareAltOutlined, TeamOutlined, CheckCircleTwoTone } from '@ant-design/icons';
+import { Carousel } from 'antd';
 import Layout from '../../components/Layout';
+import '../../styles/volunteer/VolunteerDetail.css';
 import testImage from '../../assets/testImage.png';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { TextArea } = Input;
 
+// 날짜 포맷 (yyyy.mm.dd hh:mm)
 const fmtDate = (v) => {
   if (!v) return '';
   try {
@@ -29,6 +31,7 @@ const fmtDate = (v) => {
   }
 };
 
+// 이미지 경로 정규화
 const toImageUrl = (p) => {
   if (!p || String(p).trim() === '' || String(p).toLowerCase() === 'null') return testImage;
   if (/^https?:\/\//i.test(p)) return p;
@@ -40,28 +43,25 @@ export default function VolunteerDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // ---------- state ----------
+  // 상태
   const [loading, setLoading] = useState(true);
   const [vol, setVol] = useState(null);
-
-  // 댓글 상태
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentInput, setCommentInput] = useState('');
 
-  // ---------- load detail ----------
+  // 상세 불러오기
   useEffect(() => {
     let ignore = false;
     (async () => {
       try {
         setLoading(true);
         const res = await fetch(`/volunteer/react/detail/${id}`, { credentials: 'include' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json().catch(() => null);
-        // 백엔드가 {result, data}로 주든, 바로 객체로 주든 대응
         const payload = data?.data ?? data ?? null;
         if (!ignore) setVol(payload);
-      } catch (e) {
-        console.error(e);
+      } catch {
         message.error('봉사 상세 정보를 불러오지 못했습니다.');
       } finally {
         if (!ignore) setLoading(false);
@@ -70,10 +70,8 @@ export default function VolunteerDetail() {
     return () => { ignore = true; };
   }, [id]);
 
-  // ---------- derived ----------
+  // 파생값
   const contentId = vol?.volunteerId ?? vol?.id ?? Number(id);
-
-  // 참가 진행률 (현재 인원 / 최대 인원)
   const progress = useMemo(() => {
     const cur = Number(vol?.currentPeople || 0);
     const max = Number(vol?.maxParticipants || 0);
@@ -81,13 +79,13 @@ export default function VolunteerDetail() {
     return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
   }, [vol]);
 
-  // 캐러셀 이미지: 봉사는 대표 이미지 1장일 수 있으니 기본 3장 반복
+  // 캐러셀 이미지 (대표 1장을 3장처럼 순환)
   const imagesForCarousel = useMemo(() => {
     const one = toImageUrl(vol?.imagePath);
     return [one, one, one];
   }, [vol]);
 
-  // ---------- comments ----------
+  // 댓글 목록
   const loadComments = useCallback(async () => {
     if (!contentId) return;
     try {
@@ -101,20 +99,17 @@ export default function VolunteerDetail() {
         navigate('/login');
         return;
       }
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} ${text}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setComments(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error('댓글 불러오기 실패:', e);
+    } catch {
       message.error('댓글을 불러오지 못했어요.');
     } finally {
       setCommentLoading(false);
     }
   }, [contentId, navigate]);
 
+  // 댓글 작성
   const submitComment = async () => {
     const content = commentInput.trim();
     if (!content) return message.warning('댓글 내용을 입력해줘.');
@@ -123,26 +118,15 @@ export default function VolunteerDetail() {
       const res = await fetch('/comment/create', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          contentType: 'volunteer',
-          contentId,
-          content,
-          parentId: null,
-        }),
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ contentType: 'volunteer', contentId, content, parentId: null }),
       });
       if (res.status === 401) {
         message.warning('로그인 후 이용 가능합니다.');
         navigate('/login');
         return;
       }
-      if (!res.ok) {
-        const text = await res.text().catch(() => '');
-        throw new Error(`HTTP ${res.status} ${text}`);
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
       if (result?.result === 'success') {
         setCommentInput('');
@@ -151,14 +135,14 @@ export default function VolunteerDetail() {
       } else {
         message.error(result?.errorMessage || '댓글 등록에 실패했습니다.');
       }
-    } catch (e) {
-      console.error(e);
+    } catch {
       message.error('댓글 등록 중 오류가 발생했어요.');
     } finally {
       setCommentLoading(false);
     }
   };
 
+  // 공유
   const share = async () => {
     try {
       if (navigator.share) {
@@ -167,31 +151,32 @@ export default function VolunteerDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch { /* no-op */ }
+    } catch (e) {
+      console.warn('공유 취소/실패:', e);
+    }
   };
 
-  // ---------- early returns ----------
+  // 로딩/빈 상태
   if (loading) {
     return (
       <Layout>
-        <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+        <div className="volunteer-content" style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
           <Spin />
         </div>
       </Layout>
     );
   }
-
   if (!vol) {
     return (
       <Layout>
-        <div style={{ padding: 24 }}>
+        <div className="volunteer-content" style={{ padding: 24 }}>
           <Paragraph>해당 봉사를 찾을 수 없습니다.</Paragraph>
         </div>
       </Layout>
     );
   }
 
-  // ---------- render ----------
+  // 렌더
   const startStr = fmtDate(vol?.startTime);
   const endStr = fmtDate(vol?.endTime);
   const loc = vol?.location || '장소 미정';
@@ -199,53 +184,51 @@ export default function VolunteerDetail() {
 
   return (
     <Layout>
-      <div className="volunteer-content" style={{ padding: 16 }}>
+      <div className="volunteer-content">
         <Row gutter={[24, 24]}>
+          {/* 메인 상세 영역 */}
           <Col xs={24} md={16}>
             <Card bordered={false} className="thumbnail-card">
-              {/* DonationDetail처럼 간단 캐러셀 느낌으로 3장 순환 */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 0 }}>
+              <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
                 {imagesForCarousel.map((src, idx) => (
                   <div key={idx}>
                     <img
                       src={src || testImage}
                       alt={`이미지-${idx}`}
-                      style={{
-                        width: '100%',
-                        height: 300,
-                        objectFit: 'cover',
-                        borderRadius: 8,
-                        background: '#f0f0f0'
-                      }}
+                      className="thumbnail-image"
+                      style={{ height: 300 }}
                       onError={(e) => { e.currentTarget.src = testImage; }}
                     />
                   </div>
                 ))}
-              </div>
+              </Carousel>
             </Card>
 
             <Tabs
               defaultActiveKey="1"
+              className="custom-tabs"
               onChange={(key) => { if (key === '3') loadComments(); }}
-              style={{ marginTop: 16 }}
             >
+              {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{title}</Title>
-                <Card bordered={false} style={{ marginTop: 8 }}>
+
+                <Card className="content-card" bordered={false}>
                   <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
                     {vol?.description || '봉사 설명이 등록되지 않았습니다.'}
                   </Paragraph>
                 </Card>
 
-                <Card bordered={false} style={{ marginTop: 16 }}>
+                <Paragraph style={{ marginTop: 24 }}>장소</Paragraph>
+                <Card className="content-card" bordered={false}>
                   <Paragraph>
                     <EnvironmentOutlined style={{ marginRight: 8 }} />
-                    <Text strong>장소</Text><br />
                     <Text>{loc}</Text>
                   </Paragraph>
                 </Card>
               </TabPane>
 
+              {/* 안내사항 */}
               <TabPane tab="안내사항" key="2">
                 <Paragraph>
                   - 본 봉사 활동은 <strong>사전 안내 사항</strong>을 숙지한 후 참여해주세요.<br />
@@ -256,6 +239,7 @@ export default function VolunteerDetail() {
                 </Paragraph>
               </TabPane>
 
+              {/* 댓글 */}
               <TabPane tab="댓글" key="3">
                 <Card bordered={false} style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', gap: 12 }}>
@@ -293,12 +277,13 @@ export default function VolunteerDetail() {
             </Tabs>
           </Col>
 
+          {/* 사이드 정보 영역 */}
           <Col xs={24} md={8}>
             <Card className="info-card" variant="borderless">
               <Title level={5} style={{ marginBottom: 8 }}>{title}</Title>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <CalendarOutlined />
+              <div className="project-period">
+                <CalendarOutlined style={{ marginRight: 8 }} />
                 <Text>{startStr}{endStr ? ` ~ ${endStr}` : ''}</Text>
               </div>
 
