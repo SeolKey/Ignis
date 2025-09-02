@@ -11,9 +11,9 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 
 /* ========== 기부( Donation ) ========== */
-import DonationList from './pages/DonationList';
-import DonationDetail from './pages/DonationDetail';
-import DonationCreate from './pages/DonationCreate';
+import DonationList from './pages/donation/DonationList';
+import DonationDetail from './pages/donation/DonationDetail';
+import DonationCreate from './pages/donation/DonationCreate';
 
 /* ========== 공지사항( Notice ) ========== */
 import NoticeList from './pages/noticeboard/NoticeList';
@@ -52,7 +52,6 @@ function App() {
 
       {/* ===== 기부( Donation ) ===== */}
       <Route path="/donation-list" element={<DonationList />} />
-      <Route path="/donation-detail" element={<DonationDetail />} />
       <Route path="/donation-detail/:id" element={<DonationDetail />} />
       <Route path="/donation-create" element={<DonationCreate />} />
 

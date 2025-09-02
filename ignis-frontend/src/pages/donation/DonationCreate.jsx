@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Card, Space, Upload, Typography, Select, DatePicker, Row, Col, message } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
-import '../styles/DonationCreate.css';
-
+import Layout from '../../components/Layout';
+import "../../styles/donation/DonationCreate.css";
 const { Title } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;

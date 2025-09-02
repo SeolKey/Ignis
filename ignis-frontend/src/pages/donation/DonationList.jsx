@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { message, Segmented, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
-import '../styles/DonationList.css';
-import fallback from '../assets/testImage.png';
+import Layout from '../../components/Layout';
+import "../../styles/donation/DonationList.css";
+import fallback from '../../assets/testImage.png';
 
 const toImageUrl = (p) => {
   if (!p) return fallback;

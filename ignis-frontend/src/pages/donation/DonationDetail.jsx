@@ -5,9 +5,9 @@ import {
   Button, Tabs, Divider, message, Spin, List, Input
 } from 'antd';
 import { CalendarOutlined, ShareAltOutlined } from '@ant-design/icons';
-import '../styles/DonationDetail.css';
-import Layout from '../components/Layout';
-import testImage from '../assets/testImage.png';
+import "../../styles/donation/DonationDetail.css";
+import Layout from '../../components/Layout';
+import testImage from '../../assets/testImage.png';
 import { Carousel } from 'antd';
 import { Modal, Form, Input as AntInput } from 'antd';
 
