@@ -90,7 +90,8 @@ public class OAuth2Controller {
             }
 
             // 🔹 로그인 후 홈 또는 프론트로 이동
-            return "redirect:/";
+            return "redirect:http://localhost:5173/";
+
         }
 
         return "redirect:/user/login";

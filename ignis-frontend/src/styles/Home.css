@@ -94,7 +94,7 @@
   display: block;
 }
 
-/* 예쁜 글래스 버튼 */
+/* 글래스 버튼 */
 .banner-button {
   position: relative;
   display: inline-flex;
@@ -186,3 +186,4 @@
     .banner-button, .banner-button::after, .banner-button .arrow { transition: none; }
   }
 }
+

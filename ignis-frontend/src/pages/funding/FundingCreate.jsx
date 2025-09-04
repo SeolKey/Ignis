@@ -50,7 +50,7 @@ const FundingCreate = () => {
 
         try {
             setSubmitting(true);
-            const res = await fetch("/funding/react/create", {
+            const res = await fetch("/funding/create", {
                 method: "POST",
                 body: formData,
                 credentials: "include", // 세션 쿠키 포함
@@ -71,7 +71,7 @@ const FundingCreate = () => {
                 return;
             }
 
-            if (res.ok && json?.result === "성공") {
+            if (res.ok && json?.result === "success") {
                 message.success("펀딩 등록 완료!");
                 navigate("/funding");
             } else {

@@ -312,9 +312,13 @@ export default function VolunteerDetail() {
                 </div>
               )}
 
+              <Button type="primary" block style={{ marginBottom: 12 }} >
+                참여하기
+              </Button>
               <Button icon={<ShareAltOutlined />} block style={{ marginTop: 12 }} onClick={share}>
                 공유하기
               </Button>
+
             </Card>
           </Col>
         </Row>

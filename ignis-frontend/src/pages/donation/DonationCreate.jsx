@@ -77,13 +77,7 @@ const DonationCreate = () => {
           </div>
 
           <Form layout="vertical" form={form} onFinish={handleSubmit}>
-            <Form.Item name="category" label="카테고리">
-              <Select defaultValue="donation">
-                <Select.Option value="donation">기부</Select.Option>
-                <Select.Option value="volunteer">봉사</Select.Option>
-                <Select.Option value="funding">펀딩</Select.Option>
-              </Select>
-            </Form.Item>
+            
 
             <Form.Item name="title" label="프로젝트 제목" rules={[{ required: true }]}>
               <Input placeholder="기부 제목을 입력하세요" />
