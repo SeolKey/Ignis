@@ -7,130 +7,170 @@
 
     <!-- 승인된 봉사글 목록 조회 -->
     <select id="selectVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
-    SELECT
-        volunteer_id AS volunteerId,
-        user_id AS userId,
-        title,
-        description,
-        location,
-        image_path AS imagePath,
-        start_time AS startTime,
-        end_time AS endTime,
-        max_participants AS maxParticipants,
-        status,
-        reject_reason AS rejectReason,
-        current_people AS currentPeople,
-        created_at AS createdAt,
-        updated_at AS updatedAt,
-		view_count AS viewCount
-    FROM volunteer
-    WHERE status = 'APPROVED'
-    ORDER BY created_at DESC
-</select>
-
+        <![CDATA[
+        SELECT
+            volunteer_id AS volunteerId,
+            user_id AS userId,
+            title,
+            description,
+            location,
+            image_path AS imagePath,
+            start_time AS startTime,
+            end_time AS endTime,
+            max_participants AS maxParticipants,
+            status,
+            reject_reason AS rejectReason,
+            current_people AS currentPeople,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount
+        FROM volunteer
+        WHERE status = 'APPROVED'
+        ORDER BY created_at DESC
+        ]]>
+    </select>
 
     <!-- 단일 봉사글 상세 조회 -->
     <select id="selectVolunteerById" resultType="com.Ignis.home.volunteer.domain.Volunteer">
+        <![CDATA[
         SELECT
-	        volunteer_id AS volunteerId,
-	        user_id AS userId,
-	        title,
-	        description,
-	        location,
-	        image_path AS imagePath,
-	        start_time AS startTime,
-	        end_time AS endTime,
-	        max_participants AS maxParticipants,
-	        status,
-	        reject_reason AS rejectReason,
-	        current_people AS currentPeople,
-	        created_at AS createdAt,
-	        updated_at AS updatedAt,
-			view_count AS viewCount
-	    FROM volunteer
-	    WHERE volunteer_id = #{id}
+            volunteer_id AS volunteerId,
+            user_id AS userId,
+            title,
+            description,
+            location,
+            image_path AS imagePath,
+            start_time AS startTime,
+            end_time AS endTime,
+            max_participants AS maxParticipants,
+            status,
+            reject_reason AS rejectReason,
+            current_people AS currentPeople,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount
+        FROM volunteer
+        WHERE volunteer_id = #{id}
+        ]]>
     </select>
 
-	<insert id="insertVolunteer" parameterType="com.Ignis.home.volunteer.domain.Volunteer">
-	    INSERT INTO volunteer (
-	        user_id,
-	        title,
-	        description,
-	        location,
-	        image_path,
-	        start_time,
-	        end_time,
-	        max_participants,
-	        status,
-	        current_people,
-	        created_at,
-			view_count
-	    )
-	    VALUES (
-	        #{userId},
-	        #{title},
-	        #{description},
-	        #{location},
-	        #{imagePath},
-	        #{startTime},
-	        #{endTime},
-	        #{maxParticipants},
-	        #{status},
-	        #{currentPeople},
-	        #{createdAt},
-	        0
-    )
-	</insert>
-	
-	<select id="selectRecentVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
-	    SELECT
-	        volunteer_id AS volunteerId,
-	        user_id AS userId,
-	        title,
-	        description,
-	        location,
-	        image_path AS imagePath,
-	        start_time AS startTime,
-	        end_time AS endTime,
-	        max_participants AS maxParticipants,
-	        current_people AS currentPeople,
-	        status,
-	        created_at AS createdAt,
-	        updated_at AS UpdatedAt,
-			view_count AS viewCount
-	    FROM volunteer
-	    WHERE status = 'APPROVED'
-	    ORDER BY created_at DESC
-	    LIMIT #{limit}
-	</select>
+    <!-- 봉사글 생성 (PK 반환 + updated_at 채움) -->
+    <insert id="insertVolunteer"
+            parameterType="com.Ignis.home.volunteer.domain.Volunteer"
+            useGeneratedKeys="true" keyProperty="volunteerId">
+        <![CDATA[
+        INSERT INTO volunteer (
+            user_id,
+            title,
+            description,
+            location,
+            image_path,
+            start_time,
+            end_time,
+            max_participants,
+            status,
+            current_people,
+            created_at,
+            updated_at,
+            view_count
+        ) VALUES (
+                     #{userId},
+                     #{title},
+                     #{description},
+                     #{location},
+                     #{imagePath},
+                     #{startTime},
+                     #{endTime},
+                     #{maxParticipants},
+                     #{status},
+                     #{currentPeople},
+                     #{createdAt},
+                     NOW(),
+                     0
+                 )
+        ]]>
+    </insert>
 
-	<update id="incrementViewCount" parameterType="Long">
-		UPDATE volunteer
-		SET view_count = view_count + 1,
-			updated_at = NOW()
-		WHERE volunteer_id = #{volunteerId}
-	</update>
+    <!-- 최신 봉사글 n개 -->
+    <select id="selectRecentVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
+        <![CDATA[
+        SELECT
+            volunteer_id AS volunteerId,
+            user_id AS userId,
+            title,
+            description,
+            location,
+            image_path AS imagePath,
+            start_time AS startTime,
+            end_time AS EndTime,
+            max_participants AS maxParticipants,
+            current_people AS currentPeople,
+            status,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount
+        FROM volunteer
+        WHERE status = 'APPROVED'
+        ORDER BY created_at DESC
+            LIMIT #{limit}
+        ]]>
+    </select>
 
-	<select id="selectMostViewedVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
-		SELECT
-			volunteer_id AS volunteerId,
-			user_id AS userId,
-			title,
-			description,
-			location,
-			image_path AS imagePath,
-			start_time AS startTime,
-			end_time AS endTime,
-			max_participants AS maxParticipants,
-			current_people AS currentPeople,
-			status,
-			created_at AS createdAt,
-			updated_at AS UpdatedAt,
-			view_count AS viewCount
-		FROM volunteer
-		WHERE status = 'APPROVED'
-		ORDER BY view_count DESC, created_at DESC
-			LIMIT #{limit}
-	</select>
+    <!-- 조회수 증가 -->
+    <update id="incrementViewCount" parameterType="long">
+        <![CDATA[
+        UPDATE volunteer
+        SET view_count = view_count + 1,
+            updated_at = NOW()
+        WHERE volunteer_id = #{volunteerId}
+        ]]>
+    </update>
+
+    <!-- 조회수 상위 n개 -->
+    <select id="selectMostViewedVolunteerList" resultType="com.Ignis.home.volunteer.domain.Volunteer">
+        <![CDATA[
+        SELECT
+            volunteer_id AS volunteerId,
+            user_id AS userId,
+            title,
+            description,
+            location,
+            image_path AS imagePath,
+            start_time AS startTime,
+            end_time AS endTime,
+            max_participants AS maxParticipants,
+            current_people AS CurrentPeople,
+            status,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount
+        FROM volunteer
+        WHERE status = 'APPROVED'
+        ORDER BY view_count DESC, created_at DESC
+            LIMIT #{limit}
+        ]]>
+    </select>
+
+    <!-- 현재 인원 +1 (정원 미만일 때만) -->
+    <update id="increaseCurrentPeople" parameterType="long">
+        <![CDATA[
+        UPDATE volunteer
+        SET current_people = current_people + 1,
+            updated_at = NOW()
+        WHERE volunteer_id = #{volunteerId}
+          AND current_people < max_participants
+        ]]>
+    </update>
+
+    <!-- 현재 인원 -1 (0 초과일 때만) -->
+    <update id="decreaseCurrentPeople" parameterType="long">
+        <![CDATA[
+        UPDATE volunteer
+        SET current_people = current_people - 1,
+            updated_at = NOW()
+        WHERE volunteer_id = #{volunteerId}
+          AND current_people > 0
+        ]]>
+    </update>
 
 </mapper>

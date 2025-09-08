@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Ignis.home.volunteer.mapper.VolunteerPeopleMapper">
+
+    <select id="exists" resultType="int">
+        SELECT COUNT(*)
+        FROM volunteer_people
+        WHERE volunteer_id = #{volunteerId}
+          AND user_id = #{userId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO volunteer_people (volunteer_id, user_id, created_at, updated_at)
+        VALUES (#{volunteerId}, #{userId}, NOW(), NOW())
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM volunteer_people
+        WHERE volunteer_id = #{volunteerId}
+          AND user_id = #{userId}
+    </delete>
+
+    <select id="selectByVolunteer" resultType="com.Ignis.home.volunteer.domain.VolunteerPeople">
+        SELECT
+            volunteer_people_id AS volunteerPeopleId,
+            volunteer_id        AS volunteerId,
+            user_id             AS userId,
+            created_at          AS createdAt,
+            updated_at          AS UpdatedAt
+        FROM volunteer_people
+        WHERE volunteer_id = #{volunteerId}
+        ORDER BY created_at ASC
+    </select>
+
+    <!-- ✅ 참여 인원 목록 -->
+    <select id="selectParticipantsByVolunteerId"
+            parameterType="long"
+            resultType="com.Ignis.home.volunteer.domain.VolunteerParticipant">
+        SELECT
+            u.name            AS name,
+            u.phone_number    AS phone,
+            u.email           AS email
+        FROM volunteer_people vp
+                 JOIN `user` u ON u.user_id = vp.user_id
+        WHERE vp.volunteer_id = #{volunteerId}
+        ORDER BY u.name ASC
+    </select>
+</mapper>

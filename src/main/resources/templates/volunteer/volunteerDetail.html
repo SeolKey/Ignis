@@ -1,100 +1,45 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-<th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <th:block th:replace="~{fragments/headerStyle :: headerStyle}" />
     <meta charset="UTF-8">
     <title>봉사 상세</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 40px;
-            background: #fff;
+        body { font-family: 'Arial', sans-serif; margin:0; padding:40px; background:#fff; }
+        .container { display:flex; gap:30px; max-width:1200px; margin:0 auto; }
+        .left-box { flex:2; }
+        .right-box { flex:1; border:1px solid #ccc; padding:20px; border-radius:10px; background:#fafafa; }
+        .main-image { width:100%; height:300px; object-fit:cover; border-radius:10px; border:1px solid #ddd; }
+        .info-row { margin-bottom:15px; }
+        .info-label { font-weight:bold; margin-right:10px; }
+        .progress { height:8px; background:#ddd; border-radius:4px; overflow:hidden; margin:8px 0; }
+        .progress-bar { height:100%; background:#4cafef; }
+        .tabs { display:flex; gap:20px; margin-top:20px; font-weight:bold; border-bottom:1px solid #ccc; padding-bottom:10px; }
+        .section-title { margin:30px 0 10px; font-size:18px; font-weight:bold; }
+        .box-gray { background:#f2f2f2; min-height:200px; border-radius:10px; padding:14px; }
+        .join-button, .cancel-button, .secondary-button {
+            display:block; width:100%; padding:12px; text-align:center; color:#fff;
+            border:none; border-radius:6px; font-weight:bold; cursor:pointer; margin-top:15px;
         }
+        .join-button { background:#3683f0; }
+        .cancel-button { background:#e74c3c; }
+        .secondary-button { background:#6c757d; }
+        .share { margin-top:15px; text-align:center; font-size:14px; color:#333; cursor:pointer; }
 
-        .container {
-            display: flex;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* ✅ 모달 스타일 */
+        .modal-backdrop {
+            position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none; align-items:center; justify-content:center; z-index:1000;
         }
-
-        .left-box {
-            flex: 2;
+        .modal {
+            width:700px; max-width:95vw; background:#fff; border-radius:10px; box-shadow:0 10px 25px rgba(0,0,0,0.25);
         }
-
-        .right-box {
-            flex: 1;
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #fafafa;
-        }
-
-        .main-image {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-        }
-
-        .info-row {
-            margin-bottom: 15px;
-        }
-
-        .info-label {
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .progress {
-            height: 8px;
-            background-color: #ddd;
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background-color: #4cafef;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 20px;
-            margin-top: 20px;
-            font-weight: bold;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 10px;
-        }
-
-        .section-title {
-            margin: 30px 0 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        .box-gray {
-            background-color: #f2f2f2;
-            height: 200px;
-            border-radius: 10px;
-        }
-
-        .join-button {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            text-align: center;
-            background-color: #3683f0;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
+        .modal-header { padding:16px 18px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+        .modal-title { font-size:18px; font-weight:bold; }
+        .modal-close { background:none; border:none; font-size:20px; cursor:pointer; line-height:1; }
+        .modal-body { padding:16px 18px; max-height:60vh; overflow:auto; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { padding:10px; border-bottom:1px solid #eee; text-align:left; }
+        .empty { text-align:center; color:#888; padding:20px 0; }
     </style>
 </head>
 <body>
@@ -118,42 +63,205 @@
         </div>
 
         <div class="section-title">내용</div>
-        <div class="box-gray"></div>
+        <div class="box-gray">
+            <!-- 필요시 상세 콘텐츠 -->
+        </div>
     </div>
 
     <!-- Right -->
     <div class="right-box">
-	    <h2 th:text="${volunteer.title}">제목</h2>
-	
-	    <div class="info-row">
-	        <span class="info-label">봉사 기간</span>
-	        <span th:text="${#temporals.format(volunteer.startTime, 'yyyy.MM.dd')} + ' ~ ' + ${#temporals.format(volunteer.endTime, 'yyyy.MM.dd')}"></span>
-	    </div>
-	
-	    <div class="progress">
-	        <div class="progress-bar"
-	             th:style="'width: ' + ${volunteer.currentPeople * 100 / volunteer.maxParticipants} + '%'">
-	        </div>
-	    </div>
-	
-	    <div class="info-row">
-	        <span th:text="${volunteer.currentPeople} + '명 참여중'"></span>
-	    </div>
-	
-	    <div class="info-row">
-	        <strong>최대 인원:</strong>
-	        <span th:text="${volunteer.maxParticipants} + '명'"></span>
-	    </div>
-	
-	    <!-- ✅ 이름 수정 -->
-	    <button class="join-button">봉사 참여하기</button>
-	
-	    <!-- ✅ 공유하기 추가 -->
-	    <div style="margin-top: 15px; text-align: center; font-size: 14px; color: #333;">
-	        <span style="cursor: pointer;">🔗 공유하기</span>
-	    </div>
-	</div>
+        <h2 th:text="${volunteer.title}">제목</h2>
+
+        <div class="info-row">
+            <span class="info-label">봉사 기간</span>
+            <span th:text="${#temporals.format(volunteer.startTime, 'yyyy.MM.dd')} + ' ~ ' + ${#temporals.format(volunteer.endTime, 'yyyy.MM.dd')}"></span>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"
+                 th:style="'width: ' + ${volunteer.currentPeople * 100 / volunteer.maxParticipants} + '%'">
+            </div>
+        </div>
+
+        <div class="info-row">
+            <span id="currentPeopleText" th:text="${volunteer.currentPeople} + '명 참여중'"></span>
+        </div>
+
+        <div class="info-row">
+            <strong>최대 인원:</strong>
+            <span id="maxParticipantsText" th:text="${volunteer.maxParticipants} + '명'"></span>
+        </div>
+
+        <!-- ✅ 참여/취소 토글 버튼 -->
+        <button id="joinBtn" class="join-button" style="display:none;">봉사 참여하기</button>
+        <button id="cancelBtn" class="cancel-button" style="display:none;">참여 취소하기</button>
+
+        <!-- ✅ 공유하기 -->
+        <div class="share">🔗 공유하기</div>
+
+        <!-- ✅ 작성자 · 관리자 전용: 참여 인원 목록 버튼 -->
+        <button id="openParticipantsBtn"
+                class="secondary-button"
+                th:if="${canViewParticipantList}">
+            참여 인원 목록
+        </button>
+    </div>
 </div>
+
+<!-- ✅ 참여 인원 목록 모달 -->
+<div id="participantsBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="participantsTitle">
+        <div class="modal-header">
+            <div id="participantsTitle" class="modal-title">참여 인원 목록</div>
+            <button id="participantsClose" class="modal-close" aria-label="닫기">×</button>
+        </div>
+        <div class="modal-body">
+            <table id="participantsTable" style="display:none;">
+                <thead>
+                <tr>
+                    <th style="width:30%;">이름</th>
+                    <th style="width:30%;">전화번호</th>
+                    <th style="width:40%;">이메일</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="participantsEmpty" class="empty" style="display:none;">참여 인원이 없습니다.</div>
+            <div id="participantsLoading" class="empty">불러오는 중...</div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ 참여여부 확인/토글 & 즉시 갱신 + 참여자 목록 -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const volId = /*[[${volunteer.volunteerId}]]*/ 0;
+    const max   = /*[[${volunteer.maxParticipants}]]*/ 0;
+    let current = /*[[${volunteer.currentPeople}]]*/ 0;
+
+    const joinBtn   = document.getElementById('joinBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const curText   = document.getElementById('currentPeopleText');
+    const bar       = document.getElementById('progressBar');
+
+    function updateProgress() {
+        const denominator = Math.max(1, max);
+        const pct = Math.min(100, Math.round((current * 100) / denominator));
+        bar.style.width = pct + '%';
+        curText.textContent = `${current}명 참여중`;
+    }
+
+    async function refreshJoined() {
+        try {
+            const res = await fetch(`/volunteer/${volId}/join/me`, { credentials: 'include' });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            joinBtn.style.display   = data.joined ? 'none' : 'block';
+            cancelBtn.style.display = data.joined ? 'block' : 'none';
+        } catch (e) {
+            joinBtn.style.display   = 'block';
+            cancelBtn.style.display = 'none';
+        }
+    }
+
+    joinBtn?.addEventListener('click', async () => {
+        joinBtn.disabled = true;
+        try {
+            const res = await fetch(`/volunteer/${volId}/join`, { method:'POST', credentials:'include' });
+            if (!res.ok) {
+                if (res.status === 401) { alert('로그인이 필요합니다.'); return; }
+                const err = await res.json().catch(() => ({ error: '오류' }));
+                alert(err.error || '참여 중 오류가 발생했습니다.');
+                return;
+            }
+            current = Math.min(max, current + 1);
+            updateProgress();
+            await refreshJoined();
+        } finally {
+            joinBtn.disabled = false;
+        }
+    });
+
+    cancelBtn?.addEventListener('click', async () => {
+        cancelBtn.disabled = true;
+        try {
+            const res = await fetch(`/volunteer/${volId}/join`, { method:'DELETE', credentials:'include' });
+            if (!res.ok) {
+                if (res.status === 401) { alert('로그인이 필요합니다.'); return; }
+                const err = await res.json().catch(() => ({ error: '오류' }));
+                alert(err.error || '취소 중 오류가 발생했습니다.');
+                return;
+            }
+            current = Math.max(0, current - 1);
+            updateProgress();
+            await refreshJoined();
+        } finally {
+            cancelBtn.disabled = false;
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        updateProgress();
+        await refreshJoined();
+    });
+
+    /* ===== ✅ 참여 인원 목록 모달 로직 ===== */
+    const openBtn = document.getElementById('openParticipantsBtn');
+    const backdrop = document.getElementById('participantsBackdrop');
+    const closeBtn = document.getElementById('participantsClose');
+    const table = document.getElementById('participantsTable');
+    const tbody = table?.querySelector('tbody');
+    const emptyView = document.getElementById('participantsEmpty');
+    const loadingView = document.getElementById('participantsLoading');
+
+    function openModal() { backdrop.style.display = 'flex'; }
+    function closeModal() { backdrop.style.display = 'none'; }
+
+    closeBtn?.addEventListener('click', closeModal);
+    backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); });
+
+    openBtn?.addEventListener('click', async () => {
+        openModal();
+        // 초기 상태
+        table.style.display = 'none';
+        emptyView.style.display = 'none';
+        loadingView.style.display = 'block';
+
+        try {
+            const res = await fetch(`/volunteer/${volId}/participants`, { credentials:'include' });
+            if (res.status === 403) { alert('권한이 없습니다.'); closeModal(); return; }
+            if (!res.ok) throw new Error('failed');
+
+            const list = await res.json(); // [{name:"홍길동", phone:"010...", email:"hong@..."}]
+            loadingView.style.display = 'none';
+
+            if (!list || list.length === 0) {
+                emptyView.style.display = 'block';
+                return;
+            }
+
+            // 테이블 렌더
+            tbody.innerHTML = '';
+            list.forEach(p => {
+                const tr = document.createElement('tr');
+                const tdName  = document.createElement('td');
+                const tdPhone = document.createElement('td');
+                const tdEmail = document.createElement('td');
+                tdName.textContent  = p.name  ?? '-';
+                tdPhone.textContent = p.phone ?? '-';
+                tdEmail.textContent = p.email ?? '-';
+                tr.appendChild(tdName);
+                tr.appendChild(tdPhone);
+                tr.appendChild(tdEmail);
+                tbody.appendChild(tr);
+            });
+            table.style.display = 'table';
+        } catch (e) {
+            loadingView.textContent = '목록을 불러오는 중 오류가 발생했습니다.';
+        }
+    });
+    /*]]>*/
+</script>
 
 </body>
 </html>

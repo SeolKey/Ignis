@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.Ignis.home.volunteer.domain.Volunteer;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface VolunteerMapper {
@@ -18,4 +19,8 @@ public interface VolunteerMapper {
 
     void incrementViewCount(Long volunteerId);
     List<Volunteer> selectMostViewedVolunteerList(int limit);
+
+    // ▼ 참여 증감용 추가
+    int increaseCurrentPeople(@Param("volunteerId") Long volunteerId);
+    int decreaseCurrentPeople(@Param("volunteerId") Long volunteerId);
 }
