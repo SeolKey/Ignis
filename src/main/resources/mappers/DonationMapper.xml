@@ -169,4 +169,11 @@
 			LIMIT #{limit}
 	</select>
 
+	<update	id="updateCurrentPrice">
+		UPDATE donation
+		SET current_price = current_price + #{delta},
+			updated_at = NOW()
+		WHERE donation_id = #{donationId}
+	</update>
+
 </mapper>

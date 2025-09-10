@@ -208,7 +208,7 @@
       <p><strong>현재 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 0)} + '원'"></span></p>
       <p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
     </div>
-    <a href="#" class="btn" id="donateBtn">기부하기</a>
+    <a th:href="@{/donation/participate-view(donationId=${donation.donationId})}" class="btn">기부하기</a>
     <div class="share-box">
       <button onclick="navigator.share ? navigator.share({ title: '기부 공유', url: window.location.href }) : alert('공유 기능을 지원하지 않는 브라우저입니다.')">공유하기</button>
     </div>

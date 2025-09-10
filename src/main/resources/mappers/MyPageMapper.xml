@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Ignis.home.mypage.mapper.MyPageMapper">
+
+    <!-- 기부는 status 컬럼이 없으므로 필터 없이 합산, 펀딩만 PAID 집계 -->
+    <select id="selectSummary" parameterType="map"
+            resultType="com.Ignis.home.mypage.dto.MyPageSummary">
+        SELECT
+            (SELECT COUNT(*) FROM volunteer_people vp WHERE vp.user_id = #{userId})
+                  AS totalVolunteerParticipations,
+            (SELECT COALESCE(SUM(dp.give_price), 0) FROM donation_price dp
+             WHERE dp.user_id = #{userId})
+                  AS totalDonationAmount,
+            (SELECT COUNT(*) FROM donation_price dp
+             WHERE dp.user_id = #{userId})
+                  AS totalDonationCount,
+            (SELECT COALESCE(SUM(fp.give_price), 0) FROM funding_price fp
+             WHERE fp.user_id = #{userId} AND fp.status='PAID')
+                  AS totalFundingAmount,
+            (SELECT COUNT(*) FROM funding_price fp
+             WHERE fp.user_id = #{userId} AND fp.status='PAID')
+                  AS totalFundingCount,
+            (
+                (SELECT COUNT(*) FROM volunteer_people vp WHERE vp.user_id = #{userId})
+                    +
+                (SELECT COUNT(*) FROM donation_price dp WHERE dp.user_id = #{userId})
+                    +
+                (SELECT COUNT(*) FROM funding_price fp WHERE fp.user_id = #{userId} AND fp.status='PAID')
+                ) AS totalParticipations
+    </select>
+
+    <!-- donation_price에는 status/영수증 컬럼이 없으니 상수/NULL로 매핑 -->
+    <select id="selectDonationHistory" parameterType="map"
+            resultType="com.Ignis.home.mypage.dto.MyDonationHistory">
+        SELECT
+            dp.donation_price_id AS donationPriceId,
+            dp.donation_id       AS donationId,
+            d.title              AS title,
+            dp.give_price        AS amount,
+            dp.created_at        AS createdAt,
+            'PAID'               AS status,     -- 표시용 상수
+            NULL                 AS receiptUrl  -- 컬럼 없음
+        FROM donation_price dp
+                 JOIN donation d ON d.donation_id = dp.donation_id
+        WHERE dp.user_id = #{userId}
+        ORDER BY dp.created_at DESC
+    </select>
+
+    <!-- onlyPaid=true면 PAID만, 아니면 전체 -->
+    <select id="selectFundingHistory" parameterType="map"
+            resultType="com.Ignis.home.mypage.dto.MyFundingHistory">
+        SELECT
+        fp.funding_price_id AS fundingPriceId,
+        fp.funding_id       AS fundingId,
+        f.title             AS title,
+        fp.give_price       AS amount,
+        fp.status           AS status,
+        fp.created_at       AS createdAt,
+        fp.receipt_url      AS receiptUrl
+        FROM funding_price fp
+        JOIN funding f ON f.funding_id = fp.funding_id
+        WHERE fp.user_id = #{userId}
+        <if test="onlyPaid == true">
+            AND fp.status = 'PAID'
+        </if>
+        ORDER BY fp.created_at DESC
+    </select>
+</mapper>

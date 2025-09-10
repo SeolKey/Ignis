@@ -38,4 +38,7 @@ public interface DonationMapper {
     void incrementViewCount(Long donationId); // 조회수 증가
 
     List<Donation> selectMostViewedDonationList(int limit); // 조회수 순으로 나열
+
+    int updateCurrentPrice(@Param("donationId") Long donationId,
+                           @Param("delta") int delta);
 }

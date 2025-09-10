@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <meta charset="UTF-8" />
+    <title>기부 참여</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- PortOne JS SDK -->
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+    <script>
+        // 펀딩에서 쓰던 같은 IMP 코드 사용
+        const IMP_CODE = "imp15650525";
+    </script>
+
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; background:#f8f9fa; }
+        .container { max-width: 640px; margin: auto; background:#fff; border-radius:12px; padding:24px; box-shadow:0 8px 24px rgba(0,0,0,.06); }
+        h1 { margin-top:0; }
+        .info p { margin: 8px 0; }
+        .row { margin: 12px 0; }
+        input[type="number"], input[type="text"], input[type="email"], input[type="tel"] { width:100%; padding:10px; border:1px solid #e5e7eb; border-radius:8px; }
+        button { padding: 12px 16px; background:#2563eb; color:#fff; border:none; border-radius:8px; cursor:pointer; width:100%; font-weight:600; }
+        button:disabled { opacity:.6; cursor:not-allowed; }
+        .muted { color:#6b7280; font-size:.9rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="container">
+    <h1 th:text="'기부 참여 - ' + ${donation.title}">기부 참여</h1>
+
+    <div class="info">
+        <p>제목: <strong th:text="${donation.title}">제목</strong></p>
+        <p>목표 금액: <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 'COMMA', 0, 'POINT')} + '원'">0원</span></p>
+        <p>현재 금액: <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 'COMMA', 0, 'POINT')} + '원'">0원</span></p>
+    </div>
+
+    <form id="donationParticipateForm">
+        <input type="hidden" id="donationId" th:value="${donation.donationId}" />
+
+        <div class="row">
+            <label for="amount">기부 금액</label>
+            <input type="number" id="amount" min="1" placeholder="예: 10000" required />
+        </div>
+
+        <div class="row">
+            <label for="buyerName">이름(선택)</label>
+            <input type="text" id="buyerName" placeholder="홍길동" />
+        </div>
+        <div class="row">
+            <label for="buyerEmail">이메일(선택)</label>
+            <input type="email" id="buyerEmail" placeholder="user@example.com" />
+        </div>
+        <div class="row">
+            <label for="buyerTel">연락처(선택)</label>
+            <input type="tel" id="buyerTel" placeholder="010-1234-5678" />
+        </div>
+
+        <button type="submit" id="submitBtn">기부하기</button>
+        <p class="muted">결제 진행 중 창을 닫지 마세요.</p>
+    </form>
+</div>
+
+<script>
+    // PortOne SDK 준비 보장
+    function ensureIMPReady(impCode) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+            (function loop() {
+                if (window.IMP && typeof window.IMP.init === 'function') {
+                    try {
+                        window.IMP.init(impCode);
+                        resolve(window.IMP);
+                    } catch (e) { reject(e); }
+                } else if (Date.now() - start > 5000) {
+                    reject(new Error('PortOne SDK not loaded'));
+                } else {
+                    setTimeout(loop, 50);
+                }
+            })();
+        });
+    }
+
+    $('#donationParticipateForm').on('submit', async function (e) {
+        e.preventDefault();
+
+        const donationId = Number($('#donationId').val());
+        const amount     = Number($('#amount').val());
+        const buyerName  = $('#buyerName').val() || '';
+        const buyerEmail = $('#buyerEmail').val() || '';
+        const buyerTel   = $('#buyerTel').val() || '';
+
+        if (!Number.isInteger(amount) || amount <= 0) {
+            alert('기부 금액을 1원 이상 정수로 입력하세요.');
+            return;
+        }
+
+        $('#submitBtn').prop('disabled', true);
+
+        try {
+            // 1) 서버 사전등록
+            const form = new URLSearchParams();
+            form.append('donationId', donationId);
+            form.append('amount', amount);
+            if (buyerName)  form.append('buyerName', buyerName);
+            if (buyerEmail) form.append('buyerEmail', buyerEmail);
+            if (buyerTel)   form.append('buyerTel', buyerTel);
+
+            const prep = await fetch('/payment/donation/prepare', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                body: form
+            }).then(r => r.json());
+
+            if (prep.code && prep.code !== 200 && prep.result !== 'success') {
+                throw new Error(prep.error_message || '사전등록 실패');
+            }
+
+            // 2) PortOne 결제창 호출
+            const IMP = await ensureIMPReady(IMP_CODE);
+            await new Promise((resolve, reject) => {
+                IMP.request_pay({
+                    pg: 'html5_inicis',          // 필요 시 PG 변경
+                    pay_method: 'card',
+                    merchant_uid: prep.merchantUid,
+                    name: prep.name,             // 기부 제목
+                    amount: prep.amount,         // 서버 사전등록 금액
+                    buyer_name: buyerName,
+                    buyer_email: buyerEmail,
+                    buyer_tel: buyerTel
+                }, function (rsp) {
+                    if (rsp.success) resolve(rsp);
+                    else reject(new Error(rsp.error_msg || '결제 실패/취소'));
+                });
+            }).then((rsp) => {
+                // 3) 완료 페이지로 이동 → 완료 페이지가 /payment/donation/complete 호출
+                const q = new URLSearchParams({
+                    imp_uid: rsp.imp_uid,
+                    merchant_uid: rsp.merchant_uid,
+                    donationId: donationId
+                }).toString();
+                window.location.href = '/donation/participate-complete?' + q;
+            });
+
+        } catch (err) {
+            console.error(err);
+            alert('결제 진행 중 오류: ' + err.message);
+            $('#submitBtn').prop('disabled', false);
+        }
+    });
+</script>
+</body>
+</html>

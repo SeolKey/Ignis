@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.Ignis.home.donation.mapper.DonationPriceMapper">
+
+    <insert id="insertDonationPriceReady"
+            parameterType="com.Ignis.home.donation.domain.DonationPrice">
+        INSERT INTO donation_price (
+            donation_id, user_id, give_price,
+            merchant_uid, status, currency,
+            created_at, updated_at
+        ) VALUES (
+                     #{donationId}, #{userId}, #{givePrice},
+                     #{merchantUid}, #{status}, #{currency},
+                     NOW(), NOW()
+                 )
+    </insert>
+
+    <select id="selectByMerchantUid" parameterType="string"
+            resultType="com.Ignis.home.donation.domain.DonationPrice">
+        SELECT
+            donation_price_id AS donationPriceId,
+            donation_id       AS donationId,
+            user_id           AS userId,
+            give_price        AS givePrice,
+            created_at        AS createdAt,
+            updated_at        AS UpdatedAt,
+            imp_uid           AS impUid,
+            merchant_uid      AS merchantUid,
+            pg_provider       AS pgProvider,
+            pg_tid            AS pgTid,
+            pay_method        AS payMethod,
+            currency          AS currency,
+            status            AS status,
+            receipt_url       AS receiptUrl,
+            paid_at           AS paidAt,
+            deposit_name      AS depositName,
+            account_number    AS accountNumber,
+            bank_name         AS bankName
+        FROM donation_price
+        WHERE merchant_uid = #{merchantUid}
+            LIMIT 1
+    </select>
+
+    <update id="updatePaidByMerchantUid">
+        UPDATE donation_price
+        SET
+            status      = 'PAID',
+            imp_uid     = #{impUid},
+            pg_provider = #{pgProvider},
+            pg_tid      = #{pgTid},
+            pay_method  = #{payMethod},
+            receipt_url = #{receiptUrl},
+            paid_at     = NOW(),
+            updated_at  = NOW()
+        WHERE merchant_uid = #{merchantUid}
+          AND status IN ('READY','FAILED')
+    </update>
+
+    <update id="updateStatusByMerchantUid">
+        UPDATE donation_price
+        SET status = #{status}, updated_at = NOW()
+        WHERE merchant_uid = #{merchantUid}
+    </update>
+</mapper>

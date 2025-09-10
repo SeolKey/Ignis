@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <meta charset="UTF-8" />
+    <title>참여 완료</title>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; padding: 24px; background:#f7f7f9; }
+        .wrap { max-width: 720px; margin: 40px auto; background:#fff; border-radius:12px; padding:28px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+        h1 { margin: 0 0 16px; font-size: 24px; }
+        .info { margin: 16px 0 28px; line-height: 1.8; }
+        .info span { font-weight: 600; }
+        .btns { display:flex; gap:10px; }
+        .btn {
+            display:inline-block; padding:10px 16px; border-radius:8px; text-decoration:none;
+            font-weight:600; border:1px solid #d0d7de; background:#0d6efd; color:#fff;
+        }
+        .btn.secondary { background:#fff; color:#0d6efd; border-color:#0d6efd; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div class="wrap">
+    <h1>기부 참여가 완료되었습니다! 🎉</h1>
+
+    <div class="info">
+        <div>로그인한 사용자 ID: <span th:text="${userId}">-</span></div>
+        <div>참여한 기부 ID: <span th:text="${donationId}">-</span></div>
+        <div>참여 금액:
+            <strong th:text="${#numbers.formatDecimal(givePrice, 0, 'COMMA', 0, 'POINT')} + '원'">0원</strong>
+        </div>
+    </div>
+
+    <div class="btns">
+        <a class="btn" href="/donation/donation-list-view">목록으로 돌아가기</a>
+        <a class="btn secondary" th:href="@{'/donation/donation-detail-view'(donationId=${donationId})}">상세로 돌아가기</a>
+    </div>
+</div>
+</body>
+</html>
