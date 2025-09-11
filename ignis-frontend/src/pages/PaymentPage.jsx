@@ -166,7 +166,7 @@ export default function PaymentPage() {
             >
               <Space direction="vertical" style={{ width: "100%", marginTop: 12 }}>
                 <Card className="payment-option" bordered>
-                  <Radio value="kakaopay">카카오페이/카드 (포트원)</Radio>
+                  <Radio value="kakaopay">KC 결제하기</Radio>
                 </Card>
                 <Card className="payment-option" bordered>
                   <Radio value="account" disabled>
