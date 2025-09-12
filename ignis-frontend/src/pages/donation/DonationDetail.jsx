@@ -179,7 +179,7 @@ export default function DonationDetail() {
         setPhoneModalOpen(true);
       } else {
         message.success('연락처 확인 완료! 결제 페이지로 이동합니다.');
-        navigate('/payment');
+        navigate(`/donation-payment?id=${id}&amount=${donation?.minPrice || 0}`);
       }
     } catch {
       message.error('전화번호 확인 중 오류가 발생했어.');
@@ -187,7 +187,6 @@ export default function DonationDetail() {
   };
 
   // 공유하기
-
   const share = async () => {
     try {
       if (navigator.share) {
@@ -201,12 +200,11 @@ export default function DonationDetail() {
     }
   };
 
-
   // 로딩 중
   if (loading) {
     return (
       <Layout>
-        <div className="donation-content" style={{ padding: 40, display: 'flex', justifyContent: 'center' }}>
+        <div className="donation-content donation-loading-center">
           <Spin />
         </div>
       </Layout>
@@ -217,7 +215,7 @@ export default function DonationDetail() {
   if (!donation) {
     return (
       <Layout>
-        <div className="donation-content" style={{ padding: 24 }}>
+        <div className="donation-content donation-empty">
           <Paragraph>해당 프로젝트를 찾을 수 없습니다.</Paragraph>
         </div>
       </Layout>
@@ -236,15 +234,9 @@ export default function DonationDetail() {
                 {imagesForCarousel.map((src, idx) => (
                   <div key={idx}>
                     <img
+                      className="thumbnail-image"
                       src={src || testImage}
                       alt={`이미지-${idx}`}
-                      style={{
-                        width: '100%',
-                        height: 300,
-                        objectFit: 'cover',
-                        borderRadius: 8,
-                        background: '#f0f0f0'
-                      }}
                       onError={(e) => { e.currentTarget.src = testImage; }}
                     />
                   </div>
@@ -263,7 +255,7 @@ export default function DonationDetail() {
                 <Card className="content-card" bordered={false}>
                   <Paragraph>{donation.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
-                <Paragraph style={{ marginTop: 24 }}>계좌 정보</Paragraph>
+                <Paragraph className="mt-24">계좌 정보</Paragraph>
                 <Card className="content-card" bordered={false}>
                   <Paragraph>{donation.accountInfo || '계좌 정보가 등록되지 않았습니다.'}</Paragraph>
                 </Card>
@@ -282,33 +274,32 @@ export default function DonationDetail() {
 
               {/* 댓글 */}
               <TabPane tab="댓글" key="3">
-                <Card bordered={false} style={{ marginBottom: 12 }}>
-                  <div style={{ display: 'flex', gap: 12 }}>
+                <Card bordered={false} className="comment-editor-card">
+                  <div className="comment-editor">
                     <TextArea
                       value={commentInput}
                       onChange={(e) => setCommentInput(e.target.value)}
                       placeholder="댓글을 입력하세요"
                       autoSize={{ minRows: 3, maxRows: 6 }}
                     />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div className="comment-actions">
                       <Button type="primary" htmlType="button" onClick={submitComment} loading={commentLoading}>
                         발송
                       </Button>
                     </div>
                   </div>
                 </Card>
+
                 <List
                   loading={commentLoading}
                   locale={{ emptyText: '아직 댓글이 없습니다.' }}
                   dataSource={comments}
                   renderItem={(c) => (
                     <List.Item>
-                      <div style={{ width: '100%' }}>
-                        <div style={{ fontWeight: 'bold' }}>{c?.userName || '익명 사용자'}</div>
-                        <div style={{ whiteSpace: 'pre-wrap' }}>{c?.content}</div>
-                        <div style={{ fontSize: 12, color: '#999' }}>
-                          {fmtDateTime(c?.createdAt || '')}
-                        </div>
+                      <div className="comment-item-inner">
+                        <div className="comment-author">{c?.userName || '익명 사용자'}</div>
+                        <div className="comment-content">{c?.content}</div>
+                        <div className="comment-time">{fmtDateTime(c?.createdAt || '')}</div>
                       </div>
                     </List.Item>
                   )}
@@ -322,15 +313,15 @@ export default function DonationDetail() {
             <Card className="info-card" variant="borderless">
               <Title level={5}>{donation.title}</Title>
               <div className="project-period">
-                <CalendarOutlined style={{ marginRight: 8 }} />
+                <CalendarOutlined className="calendar-icon" />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
               </div>
 
-              <Divider style={{ margin: '16px 0' }} />
+              <Divider className="divider-tight" />
 
               <Text strong>{progress}% 달성</Text>
               <Progress percent={progress} showInfo={false} status="active" />
-              {end && <Text type="secondary" style={{ float: 'right' }}>{end} 종료</Text>}
+              {end && <Text type="secondary" className="end-text">{end} 종료</Text>}
 
               <div className="stats">
                 <Paragraph>
@@ -344,9 +335,9 @@ export default function DonationDetail() {
               </div>
 
               <Button type="primary" block onClick={handleParticipate}>
-                프로젝트 참여하기
+                기부하기
               </Button>
-              <Button icon={<ShareAltOutlined />} block style={{ marginTop: 12 }} onClick={share}>
+              <Button icon={<ShareAltOutlined />} block className="share-btn" onClick={share}>
                 공유하기
               </Button>
             </Card>
@@ -377,7 +368,7 @@ export default function DonationDetail() {
             if (out?.result === 'success') {
               message.success('감사합니다! 결제 페이지로 이동합니다.');
               setPhoneModalOpen(false);
-              navigate('/payment');
+              navigate(`/donation-payment?id=${id}&amount=${donation?.minPrice || 0}`);
             } else {
               message.error(out?.error_message || '전화번호 저장에 실패했어.');
             }
@@ -401,7 +392,7 @@ export default function DonationDetail() {
               maxLength={13}
             />
           </Form.Item>
-          <div style={{ color: '#999' }}>예: 010-1234-5678</div>
+          <div className="phone-hint">예: 010-1234-5678</div>
         </Form>
       </Modal>
     </Layout>

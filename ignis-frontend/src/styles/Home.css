@@ -187,3 +187,49 @@
   }
 }
 
+/* ========= 카테고리 버튼 ========= */
+.category-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin: 40px 0;
+  flex-wrap: wrap;
+}
+
+.category-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  transition: transform .2s ease, box-shadow .2s ease;
+  text-align: center;
+}
+
+.category-btn span {
+  font-size: 36px;   /* 이모지 크기 */
+  margin-bottom: 8px;
+}
+
+.category-btn:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.22);
+}
+
+.category-btn:active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* 색상별 카드형 버튼 */
+.category-btn.donation { background: linear-gradient(135deg, #91d5ff, #1677ff); }
+.category-btn.volunteer { background: linear-gradient(135deg, #95de64, #52c41a); }
+.category-btn.funding { background: linear-gradient(135deg, #ffd591, #fa8c16); }

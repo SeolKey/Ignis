@@ -196,6 +196,22 @@ export default function MainPage() {
 
           <button className="banner-arrow outside right" onClick={goNext} aria-label="다음">›</button>
         </div>
+        {/* 카테고리 버튼 영역 */}
+        <div className="category-buttons">
+          <button onClick={() => navigate('/donation-list')} className="category-btn donation">
+            <span>❤️</span>
+            기부
+          </button>
+          <button onClick={() => navigate('/volunteer')} className="category-btn volunteer">
+            <span>🤝</span>
+            봉사
+          </button>
+          <button onClick={() => navigate('/funding')} className="category-btn funding">
+            <span>📦</span>
+            펀딩
+          </button>
+        </div>
+
 
 
         {/* 기부 */}

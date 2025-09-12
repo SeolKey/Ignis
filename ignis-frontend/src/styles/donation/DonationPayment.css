@@ -1,0 +1,37 @@
+.donation-payment-content {
+  padding: 32px 20px;
+  max-width: 840px;
+  margin: 0 auto;
+}
+
+.donation-payment-card {
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.06);
+}
+
+.section { margin: 12px 0; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+
+.donation-payment-option { border-radius: 12px; }
+
+.total-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.total-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1677ff;
+}
+
+.donation-payment-button {
+  height: 44px;
+  font-weight: 600;
+}

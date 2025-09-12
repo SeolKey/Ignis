@@ -1,7 +1,7 @@
 package com.Ignis.home.funding;
 
 import com.Ignis.common.enums.Status;
-import com.Ignis.home.funding.bo.FundingPriceBO;
+// import com.Ignis.home.funding.bo.FundingPriceBO;
 import com.Ignis.home.funding.bo.FundingBO;
 import com.Ignis.home.funding.domain.Funding;
 

@@ -70,7 +70,7 @@ const DonationCreate = () => {
 
   return (
     <Layout>
-      <div className="donation-content">
+      <div className="donation-content-create">
         <Card className="form-card">
           <div className="form-header">
             <Title level={3}>새 기부 프로젝트 등록</Title>

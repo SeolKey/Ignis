@@ -14,6 +14,7 @@ import SignupPage from './pages/SignupPage';
 import DonationList from './pages/donation/DonationList';
 import DonationDetail from './pages/donation/DonationDetail';
 import DonationCreate from './pages/donation/DonationCreate';
+import DonationPayment from './pages/donation/DonationPayment';
 
 /* ========== 공지사항( Notice ) ========== */
 import NoticeList from './pages/noticeboard/NoticeList';
@@ -54,6 +55,7 @@ function App() {
       <Route path="/donation-list" element={<DonationList />} />
       <Route path="/donation-detail/:id" element={<DonationDetail />} />
       <Route path="/donation-create" element={<DonationCreate />} />
+      <Route path="/donation-payment" element={<DonationPayment />} />
 
       {/* ===== 공지사항( Notice ) ===== */}
       <Route path="/board/notice" element={<NoticeList />} />
