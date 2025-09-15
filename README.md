@@ -2,7 +2,9 @@
 
 설치파일
 npm install
+
 npm i @ant-design/compatible
+
 npm i react-router-dom
 
 프론트
