@@ -39,13 +39,33 @@ export default function MyPage() {
   useEffect(() => {
     async function fetchUserData() {
       const res = await fetch('/api/user', { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // ✅ 키 이름 정규화 (소셜/로컬 모두 커버)
+      const normalized = {
+        userName:
+          data.userName ??
+          data.username ??
+          data.name ??
+          data.nickname ??
+          data.displayName ??
+          '',
+
+        email: data.email ?? data.userEmail ?? '',
+        grade: data.grade ?? data.role ?? '',
+      };
+
+      // 이름이 비어있으면 이메일 아이디로 대체
+      if (!normalized.userName && normalized.email) {
+        normalized.userName = normalized.email.split('@')[0];
       }
+
+      setUser(normalized);
     }
     fetchUserData();
   }, []);
+
 
   const stats = [
     { title: '총 참여 수', value: 128, icon: <GiftTwoTone twoToneColor="#1677ff" /> },
@@ -112,7 +132,13 @@ export default function MyPage() {
       <>
         <div className="greeting-bar">
           <div>
-            <Title level={3} style={{ marginBottom: 4 }}>안녕하세요, {user.userName}님!</Title>
+            <Avatar size={88} style={{ background: '#1677ff' }}>
+              {(user.userName || user.email || 'U').charAt(0).toUpperCase()}
+            </Avatar>
+
+            <Title level={3} style={{ marginBottom: 4 }}>
+              안녕하세요, {(user.userName || '사용자')}님!
+            </Title>
             <Text type="secondary">오늘도 좋은 하루 되세요.</Text>
           </div>
         </div>
@@ -170,7 +196,7 @@ export default function MyPage() {
           <Col xs={24} lg={12}>
             <Card title="비밀번호 변경" bordered={false}>
               <Form layout="vertical" onFinish={handleChangePassword}>
-                <Form.Item label="현재 비밀번호" name="currentPassword" rules={[{ required: true, message: '현재 비밀번호를 입력하세요.' }]}> 
+                <Form.Item label="현재 비밀번호" name="currentPassword" rules={[{ required: true, message: '현재 비밀번호를 입력하세요.' }]}>
                   <Input.Password placeholder="현재 비밀번호" autoComplete="current-password" />
                 </Form.Item>
                 <Form.Item label="새 비밀번호" name="newPassword" rules={[{ required: true, message: '새 비밀번호를 입력하세요.' }, { min: 8, message: '8자 이상으로 설정하세요.' }]}>
@@ -219,8 +245,8 @@ export default function MyPage() {
 
             <Card className="menu-card" bordered={false}>
               <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                <Button type="text" icon={<HomeOutlined />} className={`menu-btn ${activeMenu==='dashboard' ? 'active' : ''}`} onClick={() => setActiveMenu('dashboard')}>대시보드</Button>
-                <Button type="text" icon={<UserOutlined />} className={`menu-btn ${activeMenu==='profile' ? 'active' : ''}`} onClick={() => setActiveMenu('profile')}>프로필 관리</Button>
+                <Button type="text" icon={<HomeOutlined />} className={`menu-btn ${activeMenu === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveMenu('dashboard')}>대시보드</Button>
+                <Button type="text" icon={<UserOutlined />} className={`menu-btn ${activeMenu === 'profile' ? 'active' : ''}`} onClick={() => setActiveMenu('profile')}>프로필 관리</Button>
                 <Button type="text" icon={<HistoryOutlined />} className="menu-btn" onClick={() => setActiveMenu('history')}>활동 내역</Button>
                 <Button type="text" icon={<HeartOutlined />} className="menu-btn" onClick={() => setActiveMenu('favorites')}>관심 프로젝트</Button>
                 <Button type="text" icon={<SettingOutlined />} className="menu-btn" onClick={() => setActiveMenu('settings')}>설정</Button>

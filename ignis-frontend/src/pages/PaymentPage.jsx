@@ -1,6 +1,6 @@
 // src/pages/PaymentPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Typography,
   Input,
@@ -65,7 +65,7 @@ export default function PaymentPage() {
 
       // 1) 서버 사전등록: 주문번호(merchantUid) 생성 + 금액 검증 + READY 저장
       //    엔드포인트: POST /api/funding/react/{fundingId}/payments/ready
-      const readyRes = await fetch(`http://localhost/api/payments/prepare`, {
+      const readyRes = await fetch(`/api/payments/prepare`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetType: "FUNDING", targetId: Number(idParam), amount }),
@@ -92,24 +92,9 @@ export default function PaymentPage() {
             return;
           }
 
-          // 3) 서버 승인/검증: impUid/merchantUid 전달 → 승인 성공 시 DB PAID 처리
-          const confirmRes = await fetch(`http://localhost/api/payment/react/confirm`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              impUid: rsp.imp_uid,
-              merchantUid: rsp.merchant_uid,
-            }),
-            credentials: "include", // (세션 사용 시 권장)
-          });
-          if (!confirmRes.ok) {
-            message.error("결제 승인에 실패했습니다.");
-            setLoading(false);
-            return;
-          }
-
-          // 4) 성공 이동 (상세페이지 복귀)
-          navigate(`/funding/detail/${idParam}?paid=1`, { replace: true });
+          message.success("결제 요청 완료! 승인 처리 중이에요.");
+          setLoading(false);
+          navigate(`/funding/${idParam}`);
         }
       );
     } catch (e) {

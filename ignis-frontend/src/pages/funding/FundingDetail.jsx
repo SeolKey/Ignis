@@ -77,20 +77,23 @@ export default function FundingDetail() {
 
   const contentId = item?.fundingId ?? item?.id ?? Number(id);
 
-  // 진행률 (현재 모금액 / 목표)
-  const progress = useMemo(() => {
-    const cur = Number(item?.currentPrice || 0);
-    const max = Number(item?.maxPrice || 0);
-    if (!max) return 0;
-    return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
+  // 진행률 (텍스트용: 초과 허용, 게이지용: 0~100 클램핑)
+  const { progressText, progressForBar } = useMemo(() => {
+    const cur = Number(item?.currentPrice ?? 0);
+    const max = Number(item?.maxPrice ?? 0);
+    if (!max) return { progressText: 0, progressForBar: 0 };
+    const raw = (cur * 100) / max;            // 412% 같은 초과값도 포함
+    const text = Math.floor(raw);             // 텍스트로는 412% 등 그대로 표시
+    const bar = Math.max(0, Math.min(100, raw)); // 게이지는 0~100으로 제한
+    return { progressText: text, progressForBar: bar };
   }, [item]);
 
   // 캐러셀 이미지 (배열 지원 시 사용, 아니면 대표 1장 반복)
   const imagesForCarousel = useMemo(() => {
     const arr = Array.isArray(item?.images)
       ? item.images
-          .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
-          .filter(Boolean)
+        .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
+        .filter(Boolean)
       : [];
     if (arr.length >= 2) return arr.map(toImageUrl);
     const one = toImageUrl(item?.imagePath);
@@ -303,8 +306,8 @@ export default function FundingDetail() {
 
               <Divider style={{ margin: '16px 0' }} />
 
-              <Text strong>{progress}% 달성</Text>
-              <Progress percent={progress} showInfo={false} status="active" />
+              <Text strong>{progressText}% 달성</Text>
+              <Progress percent={progressForBar} showInfo={false} status="active" />
               {end && <Text type="secondary" style={{ float: 'right' }}>{end} 종료</Text>}
 
               <div className="stats">

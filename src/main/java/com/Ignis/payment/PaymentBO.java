@@ -22,12 +22,14 @@ public class PaymentBO {
     private final PortOneClient portOneClient;
 
     private String newMerchantUid(Long fundingId) {
-        return "FUNDING-" + fundingId + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0,8);
+        return "FUNDING-" + fundingId + "-" + System.currentTimeMillis() + "-"
+                + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    //사전등록 + READY 행 생성
+    // 사전등록 + READY 행 생성
     @Transactional
-    public PrepareResult prepareFunding(Long userId, Long fundingId, int amount, String buyerName, String buyerEmail, String buyerTel) {
+    public PrepareResult prepareFunding(Long userId, Long fundingId, int amount, String buyerName, String buyerEmail,
+            String buyerTel) {
         if (amount <= 0) {
             throw new IllegalArgumentException("amount는 1 이상 정수여야 합니다.");
         }
@@ -69,7 +71,7 @@ public class PaymentBO {
     public CompletedPayment completeFunding(String impUid, String merchantUid, Long fundingId) {
         // PortOne 결제 단건조회
         Map pay = portOneClient.getPaymentByImpUid(impUid);
-        String status = (String) pay.get("status");      // paid, ready, failed
+        String status = (String) pay.get("status"); // paid, ready, failed
         Integer amount = (Integer) pay.get("amount");
         String pgProvider = (String) pay.get("pg_provider");
         String pgTid = (String) pay.get("pg_tid");
@@ -96,8 +98,7 @@ public class PaymentBO {
 
         // 결제 성공 반영 (PAID)
         int updated = fundingPriceMapper.updatePaidByMerchantUid(
-                merchantUid, impUid, pgProvider, pgTid, payMethod, receiptUrl
-        );
+                merchantUid, impUid, pgProvider, pgTid, payMethod, receiptUrl);
         if (updated == 0) {
             // 이미 처리되었을 수 있음 (중복콜백). idempotent
         }
@@ -129,5 +130,19 @@ public class PaymentBO {
         private Integer amount;
         private String impUid;
         private String merchantUid;
+    }
+
+    public class PaymentConfirmReq {
+        private String impUid;
+        private String merchantUid;
+        // getter/setter
+    }
+
+    public class PaymentConfirmRes {
+        private String result; // success/fail
+        private String status; // PAID / CANCELLED ...
+        private String merchantUid;
+        private Integer amount;
+        // getter/setter
     }
 }
