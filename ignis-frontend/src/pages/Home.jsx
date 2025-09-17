@@ -66,32 +66,42 @@ export default function MainPage() {
         <div className="main-content">
           {/* 임시 배너 */}
           <div className="simple-banner">
-            <h2>✨ IGNIS에 오신 것을 환영합니다</h2>
-            <p>기부 · 봉사 · 펀딩을 통해 세상을 더 밝게 만들어보세요!</p>
+            <h2>세상에 불을 밝히는 작은 불꽃, IGNIS</h2>
+            <p>당신의 작은 선택이 세상을 바꿉니다, IGNIS에서 시작하세요.</p>
+            <p className="banner-sub">작은 참여가 큰 희망을 만듭니다 </p>
           </div>
+
           {/* 카테고리 버튼 */}
           <div className="category-buttons">
-            <button
-              onClick={() => navigate('/donation-list')}
-              className="category-btn donation"
-            >
-              <span>❤️</span>
-              기부
-            </button>
-            <button
-              onClick={() => navigate('/volunteer')}
-              className="category-btn volunteer"
-            >
-              <span>🤝</span>
-              봉사
-            </button>
-            <button
-              onClick={() => navigate('/funding')}
-              className="category-btn funding"
-            >
-              <span>📦</span>
-              펀딩
-            </button>
+            <div className="category-item">
+              <button
+                onClick={() => navigate('/donation-list')}
+                className="category-btn donation"
+              >
+                ❤️
+              </button>
+              <p className="category-label">기부</p>
+            </div>
+
+            <div className="category-item">
+              <button
+                onClick={() => navigate('/volunteer')}
+                className="category-btn volunteer"
+              >
+                🤝
+              </button>
+              <p className="category-label">봉사</p>
+            </div>
+
+            <div className="category-item">
+              <button
+                onClick={() => navigate('/funding')}
+                className="category-btn funding"
+              >
+                📦
+              </button>
+              <p className="category-label">펀딩</p>
+            </div>
           </div>
 
           {/* 기부 */}

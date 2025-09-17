@@ -6,29 +6,45 @@
 }
 
 /* 섹션 / 카드 그리드 */
-.section { margin-bottom: 48px; }
-.section-header { margin-bottom: 16px; }
-.section-title { margin: 0; }
+.section {
+  margin-bottom: 48px;
+}
+
+.section-header {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+}
 
 .card-container {
   display: grid;
   gap: 24px;
   grid-template-columns: repeat(2, 1fr);
 }
+
 @media (min-width: 768px) {
-  .card-container { grid-template-columns: repeat(3, 1fr); }
+  .card-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
+
 @media (min-width: 1200px) {
-  .card-container { grid-template-columns: repeat(4, 1fr); }
+  .card-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
+
 .card {
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   min-height: 260px;
 }
+
 .donation-image {
   width: 100%;
   height: 200px;
@@ -36,6 +52,7 @@
   display: block;
   background: #f3f4f6;
 }
+
 .card p {
   margin: 12px 14px 14px;
   font-weight: 600;
@@ -60,55 +77,66 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 20px;
-  font-size: 15px;
+  font-size: 50px;
   font-weight: 600;
   color: #fff;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   transition: transform .2s ease, box-shadow .2s ease;
   text-align: center;
 }
 
 .category-btn span {
-  font-size: 36px;   /* 이모지 크기 */
+  font-size: 36px;
+  /* 이모지 크기 */
   margin-bottom: 8px;
 }
 
 .category-btn:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(0,0,0,0.22);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
 }
 
 .category-btn:active {
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
-/* 색상별 카드형 버튼 */
-.category-btn.donation { background: linear-gradient(135deg, #91d5ff, #1677ff); }
-.category-btn.volunteer { background: linear-gradient(135deg, #95de64, #52c41a); }
-.category-btn.funding { background: linear-gradient(135deg, #ffd591, #fa8c16); }
+.category-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.category-label {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
 
 /* ========= 레이아웃 2열 ========= */
 .home-layout {
   display: grid;
-  grid-template-columns: 3fr 1fr; /* 왼쪽 크게, 오른쪽 좁게 */
+  grid-template-columns: 3fr 1fr;
+  /* 왼쪽 크게, 오른쪽 좁게 */
   gap: 32px;
 }
 
 .main-content {
-  min-width: 0; /* 카드 영역 줄바꿈 방지 */
+  min-width: 0;
+  /* 카드 영역 줄바꿈 방지 */
 }
 
 .recommend-box {
   background: #fff;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   height: fit-content;
 }
 
@@ -131,15 +159,18 @@
   cursor: pointer;
   transition: transform .18s ease;
 }
+
 .recommend-item:hover {
   transform: translateY(-3px);
 }
+
 .recommend-item img {
   width: 60px;
   height: 60px;
   object-fit: cover;
   border-radius: 8px;
 }
+
 .recommend-item p {
   margin: 0;
   font-size: 14px;
@@ -150,22 +181,56 @@
 .simple-banner {
   background: linear-gradient(135deg, #91d5ff, #1677ff);
   color: #fff;
-  padding: 32px 24px;   
-  max-width: 100%;       
-  height: 200px;
-  margin-bottom: 32px;  
-  border-radius: 16px;
+  padding: 40px 24px;
+  max-width: 100%;
+  height: auto;
+  /* 고정 높이 대신 내용에 맞게 */
+  margin-bottom: 32px;
+  border-radius: 20px;
   text-align: center;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  position: relative;
+  overflow: hidden;
 }
+
+/* 반짝이는 효과용 가상요소 */
+.simple-banner::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+  animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+
+  100% {
+    transform: rotate(360deg) translate(0, 0);
+  }
+}
+
 .simple-banner h2 {
-  margin: 0 0 8px;
-  font-size: 30px;
-  font-weight: 700;
+  margin: 0 0 12px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .simple-banner p {
-  margin: 10px;
-  font-size: 20px;
+  margin: 6px 0;
+  font-size: 18px;
+  font-weight: 500;
   opacity: 0.95;
+}
+
+.simple-banner .banner-sub {
+  font-size: 16px;
+  font-style: italic;
+  opacity: 0.9;
 }
