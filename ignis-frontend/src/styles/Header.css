@@ -10,29 +10,19 @@
 .logo {
   display: flex;
   align-items: center;
-  margin-left: 50px; /* 🔥 오른쪽 끝으로 밀림 */
+  margin-left: 50px;
 }
-
 
 .logo img {
   height: 80px;
-  margin-top: 10px;      /* 위쪽 여백 */
-  margin-bottom: 15px;    /* 아래쪽 여백 */
+  margin-top: 10px;
+  margin-bottom: 15px;
   vertical-align: middle;
 }
 
-
-.nav-links {
-  display: flex;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #555;
-}
-
-.nav-links a:hover {
-  color: #2979ff;
+.menu {
+  flex-grow: 1;
+  justify-content: flex-end;
+  background: none;
+  border-bottom: none;
 }

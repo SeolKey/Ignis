@@ -2,9 +2,14 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Row, Col, Card, Typography, Progress,
-  Button, Tabs, Divider, message, Spin, List, Input
+  Button, Tabs, Divider, message, List, Input, Tooltip
 } from 'antd';
-import { CalendarOutlined, ShareAltOutlined } from '@ant-design/icons';
+import {
+  CalendarOutlined,
+  ShareAltOutlined,
+  HeartOutlined,
+  HeartFilled,
+} from '@ant-design/icons';
 import "../../styles/donation/DonationDetail.css";
 import Layout from '../../components/Layout';
 import testImage from '../../assets/testImage.png';
@@ -36,8 +41,6 @@ export default function DonationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // 상태 정의
-  const [loading, setLoading] = useState(true);
   const [donation, setDonation] = useState(null);
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -46,6 +49,9 @@ export default function DonationDetail() {
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
 
+  // ❤️ 좋아요 상태
+  const [liked, setLiked] = useState(false);
+
   const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
 
   // 기부 상세 데이터 불러오기
@@ -53,15 +59,16 @@ export default function DonationDetail() {
     let ignore = false;
     (async () => {
       try {
-        setLoading(true);
         const res = await fetch(`/donation/api/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!ignore) setDonation(data);
+        if (!ignore) {
+          setDonation(data);
+          // 초기 좋아요 상태(선택) — API가 있다면 주석 해제해서 사용
+          // setLiked(Boolean(data?.liked));
+        }
       } catch {
         message.error('기부 상세 정보를 불러오지 못했어요.');
-      } finally {
-        if (!ignore) setLoading(false);
       }
     })();
     return () => { ignore = true; };
@@ -146,8 +153,8 @@ export default function DonationDetail() {
   const imagesForCarousel = useMemo(() => {
     const raw = Array.isArray(donation?.images)
       ? donation.images
-        .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
-        .filter(Boolean)
+          .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
+          .filter(Boolean)
       : [];
     if (raw.length < 2) return [testImage, testImage, testImage];
     return raw;
@@ -156,7 +163,7 @@ export default function DonationDetail() {
   const start = fmtDate(donation?.createdAt);
   const end = donation?.endAt ? fmtDate(donation.endAt) : '';
 
-  // 참여하기 버튼 (전화번호 확인 → 결제 이동)
+  // 참여하기 버튼
   const handleParticipate = async () => {
     try {
       const res = await fetch('/user/me/phone', {
@@ -172,10 +179,10 @@ export default function DonationDetail() {
       const data = isJson ? await res.json() : null;
       const phoneRaw =
         data?.phone || data?.phoneNumber || data?.user?.phone || '';
-      const digits = phoneRaw.replace(/\D/g, '');
+      const digits = (phoneRaw || '').replace(/\D/g, '');
       const isUnset = digits.length === 0 || /^0+$/.test(digits);
       if (isUnset) {
-        setPhoneInput(phoneRaw);
+        setPhoneInput(phoneRaw || '');
         setPhoneModalOpen(true);
       } else {
         message.success('연락처 확인 완료! 결제 페이지로 이동합니다.');
@@ -200,32 +207,20 @@ export default function DonationDetail() {
     }
   };
 
-  // 로딩 중
-  if (loading) {
-    return (
-      <Layout>
-        <div className="donation-content donation-loading-center">
-          <Spin />
-        </div>
-      </Layout>
-    );
-  }
+  // 좋아요 토글
+  const toggleLike = async () => {
+    try {
+      // 서버 연동이 있으면 아래 예시 사용
+      // await fetch(`/like/toggle?contentType=donation&contentId=${contentId}`, { method: 'POST', credentials: 'include' });
+      setLiked((v) => !v);
+    } catch {
+      message.error('좋아요 처리 중 오류가 발생했어요.');
+    }
+  };
 
-  // 데이터 없음
-  if (!donation) {
-    return (
-      <Layout>
-        <div className="donation-content donation-empty">
-          <Paragraph>해당 프로젝트를 찾을 수 없습니다.</Paragraph>
-        </div>
-      </Layout>
-    );
-  }
-
-  // 화면 렌더링
   return (
     <Layout>
-      <div className="donation-content">
+      <div className="detail-content">
         <Row gutter={[24, 24]}>
           {/* 메인 상세 영역 */}
           <Col xs={24} md={16}>
@@ -251,13 +246,9 @@ export default function DonationDetail() {
             >
               {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
-                <Title level={4}>{donation.title}</Title>
+                <Title level={4}>{donation?.title}</Title>
                 <Card className="content-card" bordered={false}>
-                  <Paragraph>{donation.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
-                </Card>
-                <Paragraph className="mt-24">계좌 정보</Paragraph>
-                <Card className="content-card" bordered={false}>
-                  <Paragraph>{donation.accountInfo || '계좌 정보가 등록되지 않았습니다.'}</Paragraph>
+                  <Paragraph>{donation?.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
               </TabPane>
 
@@ -311,7 +302,7 @@ export default function DonationDetail() {
           {/* 사이드 정보 영역 */}
           <Col xs={24} md={8}>
             <Card className="info-card" variant="borderless">
-              <Title level={5}>{donation.title}</Title>
+              <Title level={5}>{donation?.title}</Title>
               <div className="project-period">
                 <CalendarOutlined className="calendar-icon" />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
@@ -326,20 +317,42 @@ export default function DonationDetail() {
               <div className="stats">
                 <Paragraph>
                   <Text>목표 금액</Text><br />
-                  <Text>{Number(donation.maxPrice || 0).toLocaleString()}원</Text>
+                  <Text>{Number(donation?.maxPrice || 0).toLocaleString()}원</Text>
                 </Paragraph>
                 <Paragraph>
                   <Text>현재 금액</Text><br />
-                  <Text>{Number(donation.currentPrice || 0).toLocaleString()}원</Text>
+                  <Text>{Number(donation?.currentPrice || 0).toLocaleString()}원</Text>
                 </Paragraph>
               </div>
 
-              <Button type="primary" block onClick={handleParticipate}>
-                기부하기
-              </Button>
-              <Button icon={<ShareAltOutlined />} block className="share-btn" onClick={share}>
-                공유하기
-              </Button>
+              {/* 하단 액션 */}
+              <div className="action-row">
+                <div className="icon-group">
+                  <Tooltip title={liked ? '좋아요 취소' : '좋아요'}>
+                    <button
+                      type="button"
+                      className={`icon-btn ${liked ? 'active' : ''}`}
+                      aria-label="좋아요"
+                      onClick={toggleLike}
+                    >
+                      {liked ? <HeartFilled /> : <HeartOutlined />}
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="공유하기">
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label="공유하기"
+                      onClick={share}
+                    >
+                      <ShareAltOutlined />
+                    </button>
+                  </Tooltip>
+                </div>
+                <Button type="primary" size="large" className="cta-btn" onClick={handleParticipate}>
+                  기부하기
+                </Button>
+              </div>
             </Card>
           </Col>
         </Row>

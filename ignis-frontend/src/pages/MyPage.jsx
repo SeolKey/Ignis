@@ -32,7 +32,9 @@ const { Title, Text } = Typography;
 
 export default function MyPage() {
   const [user, setUser] = useState({});
-  const [activeMenu, setActiveMenu] = useState('dashboard'); // 'dashboard' | 'profile' | others
+  const [stats, setStats] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [activeMenu, setActiveMenu] = useState('dashboard');
   const [changingPwd, setChangingPwd] = useState(false);
   const [changingEmail, setChangingEmail] = useState(false);
 
@@ -41,46 +43,35 @@ export default function MyPage() {
       const res = await fetch('/api/user', { credentials: 'include' });
       if (!res.ok) return;
       const data = await res.json();
-
-      // ✅ 키 이름 정규화 (소셜/로컬 모두 커버)
       const normalized = {
-        userName:
-          data.userName ??
-          data.username ??
-          data.name ??
-          data.nickname ??
-          data.displayName ??
-          '',
-
+        userName: data.userName ?? data.username ?? '',
         email: data.email ?? data.userEmail ?? '',
         grade: data.grade ?? data.role ?? '',
       };
-
-      // 이름이 비어있으면 이메일 아이디로 대체
-      if (!normalized.userName && normalized.email) {
-        normalized.userName = normalized.email.split('@')[0];
-      }
-
       setUser(normalized);
     }
+
+    async function fetchStats() {
+      try {
+        const statsRes = await fetch('/mypage/summary');
+        const statsData = await statsRes.json();
+        setStats([
+          { title: '총 참여 수', value: statsData.totalParticipations, icon: <GiftTwoTone twoToneColor="#1677ff" /> },
+          { title: '총 기부 내역', value: statsData.totalDonationAmount, money: true },
+          { title: '총 펀딩 내역', value: statsData.totalFundingAmount, money: true },
+        ]);
+        setActivities(statsData.activities || []);
+      } catch (err) {
+        console.error('Failed to load stats:', err);
+      }
+    }
+
     fetchUserData();
+    fetchStats();
   }, []);
 
-
-  const stats = [
-    { title: '총 참여 수', value: 128, icon: <GiftTwoTone twoToneColor="#1677ff" /> },
-    { title: '총 기부 내역', value: 2450000, money: true },
-    { title: '총 펀딩 내역', value: 450000, money: true },
-  ];
-
-  const activities = [
-    { icon: <CheckCircleTwoTone twoToneColor="#52c41a" />, title: '게시물 등록이 승인되었습니다', hint: '게시물 링크 바로가기', time: '2시간 전' },
-    { icon: <CheckCircleTwoTone twoToneColor="#52c41a" />, title: '참여 신청이 완료되었습니다', hint: '참여 링크 바로가기', time: '1일 전' },
-    { icon: <StarTwoTone twoToneColor="#faad14" />, title: '리뷰를 작성해주세요', hint: '구매하신 상품에 대한 후기를 남겨주세요', time: '3일 전' },
-  ];
-
-  // 비밀번호 변경 (폼 파라미터 방식 — 컨트롤러 @RequestParam 매핑)
-  async function handleChangePassword(values) {
+  // 비밀번호 변경 처리 함수
+  const handleChangePassword = async (values) => {
     const { currentPassword, newPassword, confirmPassword } = values;
     if (newPassword !== confirmPassword) {
       message.warning('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.');
@@ -102,10 +93,10 @@ export default function MyPage() {
     } finally {
       setChangingPwd(false);
     }
-  }
+  };
 
-  // 이메일 변경 (폼 파라미터 방식 — 컨트롤러 @RequestParam 매핑)
-  async function handleChangeEmail(values) {
+  // 이메일 변경 처리 함수
+  const handleChangeEmail = async (values) => {
     const { newEmail } = values;
     try {
       setChangingEmail(true);
@@ -118,14 +109,13 @@ export default function MyPage() {
       const data = await res.json();
       if (!res.ok || data.code) throw new Error(data.error_message || '이메일 변경 실패');
       message.success(data.result || '이메일이 변경되었습니다.');
-      // 성공 시 화면의 사용자 이메일도 업데이트
       setUser(prev => ({ ...prev, email: newEmail }));
     } catch (e) {
       message.error(e.message || '이메일 변경 중 오류가 발생했습니다.');
     } finally {
       setChangingEmail(false);
     }
-  }
+  };
 
   function renderDashboard() {
     return (
@@ -135,7 +125,6 @@ export default function MyPage() {
             <Avatar size={88} style={{ background: '#1677ff' }}>
               {(user.userName || user.email || 'U').charAt(0).toUpperCase()}
             </Avatar>
-
             <Title level={3} style={{ marginBottom: 4 }}>
               안녕하세요, {(user.userName || '사용자')}님!
             </Title>

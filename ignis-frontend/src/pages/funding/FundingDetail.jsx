@@ -2,13 +2,19 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Row, Col, Card, Typography, Progress,
-  Button, Tabs, Divider, message, Spin, List, Input
+  Button, Tabs, Divider, message, Spin, List, Input, Tooltip
 } from 'antd';
-import { CalendarOutlined, ShareAltOutlined } from '@ant-design/icons';
+import {
+  CalendarOutlined,
+  ShareAltOutlined,
+  HeartOutlined,
+  HeartFilled
+} from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import { Carousel } from 'antd';
 import '../../styles/funding/FundingDetail.css';
 import testImage from '../../assets/testImage.png';
+// import RewardSelector from "../funding/RewardSelector";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -49,6 +55,9 @@ export default function FundingDetail() {
   const [comments, setComments] = useState([]);
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentInput, setCommentInput] = useState('');
+  const [liked, setLiked] = useState(false);
+
+  const toggleLike = () => setLiked((v) => !v);
 
   // 상세 불러오기
   useEffect(() => {
@@ -77,18 +86,18 @@ export default function FundingDetail() {
 
   const contentId = item?.fundingId ?? item?.id ?? Number(id);
 
-  // 진행률 (텍스트용: 초과 허용, 게이지용: 0~100 클램핑)
+  // 진행률
   const { progressText, progressForBar } = useMemo(() => {
     const cur = Number(item?.currentPrice ?? 0);
     const max = Number(item?.maxPrice ?? 0);
     if (!max) return { progressText: 0, progressForBar: 0 };
-    const raw = (cur * 100) / max;            // 412% 같은 초과값도 포함
-    const text = Math.floor(raw);             // 텍스트로는 412% 등 그대로 표시
-    const bar = Math.max(0, Math.min(100, raw)); // 게이지는 0~100으로 제한
+    const raw = (cur * 100) / max;
+    const text = Math.floor(raw);
+    const bar = Math.max(0, Math.min(100, raw));
     return { progressText: text, progressForBar: bar };
   }, [item]);
 
-  // 캐러셀 이미지 (배열 지원 시 사용, 아니면 대표 1장 반복)
+  // 캐러셀 이미지
   const imagesForCarousel = useMemo(() => {
     const arr = Array.isArray(item?.images)
       ? item.images
@@ -103,7 +112,7 @@ export default function FundingDetail() {
   const start = fmtDate(item?.createdAt);
   const end = item?.endAt ? fmtDate(item.endAt) : '';
 
-  // 댓글 목록
+  // 댓글 불러오기
   const loadComments = useCallback(async () => {
     if (!contentId) return;
     try {
@@ -182,13 +191,13 @@ export default function FundingDetail() {
     }
   };
 
-  // 참여(결제) 이동
+  // 결제 이동
   const goPayment = () => {
     const amount = Number(item?.maxPrice || 0);
     navigate(`/payment?type=funding&id=${contentId}&amount=${amount}`);
   };
 
-  // 로딩/없음
+  // 로딩/없음 처리
   if (loading) {
     return (
       <Layout>
@@ -213,7 +222,7 @@ export default function FundingDetail() {
     <Layout>
       <div className="funding-content">
         <Row gutter={[24, 24]}>
-          {/* 메인 상세 영역 */}
+          {/* 메인 상세 */}
           <Col xs={24} md={16}>
             <Card bordered={false} className="thumbnail-card">
               <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
@@ -236,7 +245,6 @@ export default function FundingDetail() {
               className="custom-tabs"
               onChange={(key) => { if (key === '3') loadComments(); }}
             >
-              {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{item?.title || '펀딩 상세'}</Title>
                 <Card className="content-card" bordered={false}>
@@ -245,8 +253,6 @@ export default function FundingDetail() {
                   </Paragraph>
                 </Card>
               </TabPane>
-
-              {/* 안내사항 */}
               <TabPane tab="안내사항" key="2">
                 <Paragraph>
                   - 본 프로젝트는 <strong>모금형 펀딩</strong>이며, 목표 금액 달성도에 따라 보상이 달라질 수 있습니다.<br />
@@ -255,8 +261,6 @@ export default function FundingDetail() {
                   - 문의는 댓글 또는 고객센터를 이용해주세요.
                 </Paragraph>
               </TabPane>
-
-              {/* 댓글 */}
               <TabPane tab="댓글" key="3">
                 <Card bordered={false} style={{ marginBottom: 12 }}>
                   <div style={{ display: 'flex', gap: 12 }}>
@@ -273,7 +277,6 @@ export default function FundingDetail() {
                     </div>
                   </div>
                 </Card>
-
                 <List
                   loading={commentLoading}
                   locale={{ emptyText: '아직 댓글이 없습니다.' }}
@@ -294,40 +297,69 @@ export default function FundingDetail() {
             </Tabs>
           </Col>
 
-          {/* 사이드 정보 영역 */}
+          {/* 사이드 정보 */}
           <Col xs={24} md={8}>
             <Card className="info-card" variant="borderless">
               <Title level={5}>{item?.title || '펀딩 상세'}</Title>
-
               <div className="project-period">
                 <CalendarOutlined style={{ marginRight: 8 }} />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
               </div>
-
               <Divider style={{ margin: '16px 0' }} />
-
-              <Text strong>{progressText}% 달성</Text>
+              <Text className="progress-text">{progressText}% 달성</Text>
               <Progress percent={progressForBar} showInfo={false} status="active" />
-              {end && <Text type="secondary" style={{ float: 'right' }}>{end} 종료</Text>}
+              <div className="stats stats-v2">
+                <div className="current-amount">
+                  <span className="amount">
+                    {Number(item?.currentPrice || 0).toLocaleString()}원
+                  </span>
+                  <span className="amount-label"> 달성</span>
+                </div>
 
-              <div className="stats">
-                <Paragraph>
-                  <Text>목표 금액</Text><br />
-                  <Text>{Number(item?.maxPrice || 0).toLocaleString()}원</Text>
-                </Paragraph>
-                <Paragraph>
-                  <Text>현재 금액</Text><br />
-                  <Text>{Number(item?.currentPrice || 0).toLocaleString()}원</Text>
-                </Paragraph>
+                <div className="goal-pill">
+                  {Number(item?.maxPrice || 0).toLocaleString()}원 목표금액
+                </div>
               </div>
-
-              <Button type="primary" block onClick={goPayment}>
-                프로젝트 참여하기
-              </Button>
-              <Button icon={<ShareAltOutlined />} block style={{ marginTop: 12 }} onClick={share}>
-                공유하기
-              </Button>
+              {/* 하단 액션 */}
+              <div className="action-row">
+                <div className="icon-group">
+                  <Tooltip title={liked ? '좋아요 취소' : '좋아요'}>
+                    <button
+                      type="button"
+                      className={`icon-btn ${liked ? 'active' : ''}`}
+                      aria-label="좋아요"
+                      onClick={toggleLike}
+                    >
+                      {liked ? <HeartFilled /> : <HeartOutlined />}
+                    </button>
+                  </Tooltip>
+                  <Tooltip title="공유하기">
+                    <button
+                      type="button"
+                      className="icon-btn"
+                      aria-label="공유하기"
+                      onClick={share}
+                    >
+                      <ShareAltOutlined />
+                    </button>
+                  </Tooltip>
+                </div>
+                <Button type="primary" size="large" className="cta-btn" onClick={goPayment}>
+                  펀딩하기
+                </Button>
+              </div>
             </Card>
+            {/* <RewardSelector
+              title="리워드 선택"
+              periodText={`${start} ~ ${end || "진행중"}`}
+              rewards={item?.rewards}
+              onSelect={(r) => { console.log("선택된 리워드:", r); }}
+              onShare={share}
+              onClickFund={(r) => {
+                navigate(`/payment?type=funding&id=${contentId}&rewardId=${r.id}&amount=${r.price}`);
+              }}
+              className="sticky"
+            /> */}
           </Col>
         </Row>
       </div>

@@ -1,48 +1,217 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-<th:block th:replace="fragments/headerStyle :: headerStyle" />
+    <th:block th:replace="fragments/headerStyle :: headerStyle" />
     <meta charset="UTF-8">
     <title>마이페이지</title>
-    <script>
-        function changePassword() {
-            const currentPassword = document.getElementById("currentPassword").value;
-            const newPassword = document.getElementById("newPassword").value;
-
-            fetch("/mypage/change-password", {
-                method: "POST",
-                headers: {"Content-Type": "application/x-www-form-urlencoded"},
-                body: new URLSearchParams({ currentPassword, newPassword })
-            }).then(res => res.json()).then(data => {
-                alert(data.result || data.error_message);
-            });
-        }
-
-        function changeEmail() {
-            const newEmail = document.getElementById("newEmail").value;
-
-            fetch("/mypage/change-email", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ newEmail })
-            }).then(res => res.json()).then(data => {
-                alert(data.result || data.error_message);
-            });
-        }
-    </script>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background:#f7f7f7; margin:0; }
+        .container { max-width: 1100px; margin: 24px auto; background:#fff; padding:24px; border-radius:12px; box-shadow:0 4px 18px rgba(0,0,0,.06) }
+        h1 { margin:0 0 8px 0; }
+        .sub { color:#666; margin-bottom:20px; }
+        .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; }
+        .card { background:#fafafa; border:1px solid #eee; border-radius:10px; padding:16px; }
+        .card .label { color:#666; font-size:13px; margin-bottom:6px; }
+        .card .value { font-size:22px; font-weight:700; }
+        .muted { color:#666; font-size:13px; margin-top:4px; }
+        table { width:100%; border-collapse:collapse; background:#fff; }
+        th, td { text-align:left; padding:10px 12px; border-bottom:1px solid #eee; }
+        th { background:#fafafa; }
+        .controls { display:flex; align-items:center; gap:12px; margin:8px 0 14px; }
+        .section-title { display:flex; align-items:center; justify-content:space-between; margin-top:28px; }
+        .btn { padding:8px 12px; border:1px solid #e5e7eb; background:#fff; border-radius:8px; cursor:pointer; }
+        .btn:hover { background:#f3f4f6; }
+        .receipt a { text-decoration: none; }
+        .empty { color:#888; padding:16px; text-align:center; }
+    </style>
 </head>
 <body>
-<h1 th:text="'[ ' + ${userName} + ' ] 님의 마이페이지'">마이페이지</h1>
+<div th:replace="~{fragments/header :: commonHeader}"></div>
 
-<hr>
+<div class="container">
+    <h1><span th:text="${userName} ?: '회원'"></span>님의 마이페이지</h1>
+    <div class="sub">나의 참여/기부/펀딩 내역을 확인할 수 있어요.</div>
 
-<h3>비밀번호 변경</h3>
-<input type="password" id="currentPassword" placeholder="현재 비밀번호">
-<input type="password" id="newPassword" placeholder="새 비밀번호">
-<button onclick="changePassword()">변경</button>
+    <!-- 요약 카드 -->
+    <div class="grid">
+        <div class="card">
+            <div class="label">총 참여 수</div>
+            <div id="totalParticipations" class="value">-</div>
+            <div class="muted">봉사 + (PAID)기부 + (PAID)펀딩</div>
+        </div>
+        <div class="card">
+            <div class="label">기부 합계 (PAID)</div>
+            <div id="totalDonationAmount" class="value">-</div>
+            <div id="totalDonationCount" class="muted">건수: -</div>
+        </div>
+        <div class="card">
+            <div class="label">펀딩 합계 (PAID)</div>
+            <div id="totalFundingAmount" class="value">-</div>
+            <div id="totalFundingCount" class="muted">건수: -</div>
+        </div>
+    </div>
 
-<h3>이메일 변경</h3>
-<input type="email" id="newEmail" placeholder="새 이메일">
-<button onclick="changeEmail()">변경</button>
+    <!-- 기부 내역 -->
+    <div class="section-title">
+        <h2>기부 내역</h2>
+        <div class="controls">
+            <label><input type="checkbox" id="donationOnlyPaid" checked> PAID만 보기</label>
+            <button class="btn" onclick="reloadDonations()">새로고침</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>제목</th>
+            <th>금액</th>
+            <th>상태</th>
+            <th>일시</th>
+            <th>영수증</th>
+        </tr>
+        </thead>
+        <tbody id="donationBody">
+        <tr><td class="empty" colspan="5">불러오는 중...</td></tr>
+        </tbody>
+    </table>
+
+    <!-- 펀딩 내역 -->
+    <div class="section-title">
+        <h2>펀딩 내역</h2>
+        <div class="controls">
+            <label><input type="checkbox" id="fundingOnlyPaid" checked> PAID만 보기</label>
+            <button class="btn" onclick="reloadFundings()">새로고침</button>
+        </div>
+    </div>
+    <table>
+        <thead>
+        <tr>
+            <th>제목</th>
+            <th>금액</th>
+            <th>상태</th>
+            <th>일시</th>
+            <th>영수증</th>
+        </tr>
+        </thead>
+        <tbody id="fundingBody">
+        <tr><td class="empty" colspan="5">불러오는 중...</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // ---------- 유틸 ----------
+    const fmt = n => (n == null ? '-' : n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+    const fmtKRW = n => n == null ? '-' : `${fmt(n)}원`;
+    const fmtDate = s => {
+        if (!s) return '-';
+        // ISO '2025-08-26T12:34:56' -> '2025-08-26 12:34:56'
+        return s.replace('T',' ').substring(0,19);
+    };
+
+    // 공통 fetch 래퍼: 401 처리 & 서버의 error_message 전달
+    async function fetchJson(url, options = {}) {
+        const res = await fetch(url, options);
+        let data;
+        try { data = await res.json(); } catch(e) { /* noop */ }
+
+        if (!res.ok) {
+            const msg = data?.error_message || '요청 실패';
+            if (res.status === 401) {
+                alert(msg || '로그인이 필요합니다.');
+                location.href = '/user/sign-in-view';
+                throw new Error('Unauthorized');
+            }
+            throw new Error(msg);
+        }
+        return data;
+    }
+
+    // ---------- 요약 ----------
+    async function loadSummary() {
+        const d = await fetchJson('/mypage/summary');
+        document.getElementById('totalParticipations').textContent = fmt(d.totalParticipations);
+        document.getElementById('totalDonationAmount').textContent = fmtKRW(d.totalDonationAmount);
+        document.getElementById('totalDonationCount').textContent = `건수: ${fmt(d.totalDonationCount)}건`;
+        document.getElementById('totalFundingAmount').textContent = fmtKRW(d.totalFundingAmount);
+        document.getElementById('totalFundingCount').textContent = `건수: ${fmt(d.totalFundingCount)}건`;
+    }
+
+    // ---------- 기부 내역 ----------
+    async function loadDonations(onlyPaid = true) {
+        const body = document.getElementById('donationBody');
+        body.innerHTML = `<tr><td class="empty" colspan="5">불러오는 중...</td></tr>`;
+        try {
+            const rows = await fetchJson(`/mypage/donations?onlyPaid=${onlyPaid}`);
+            if (!rows.length) {
+                body.innerHTML = `<tr><td class="empty" colspan="5">내역이 없습니다.</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.title ?? '-'}</td>
+          <td>${fmtKRW(r.amount)}</td>
+          <td>${r.status ?? '-'}</td>
+          <td>${fmtDate(r.createdAt)}</td>
+          <td class="receipt">${r.receiptUrl ? `<a href="${r.receiptUrl}" target="_blank">보기</a>` : '-'}</td>
+        </tr>
+      `).join('');
+        } catch (e) {
+            console.error(e);
+            body.innerHTML = `<tr><td class="empty" colspan="5">불러오기 실패</td></tr>`;
+        }
+    }
+    function reloadDonations() {
+        const onlyPaid = !!document.getElementById('donationOnlyPaid')?.checked;
+        loadDonations(onlyPaid);
+    }
+
+    // ---------- 펀딩 내역 ----------
+    async function loadFundings(onlyPaid = true) {
+        const body = document.getElementById('fundingBody');
+        body.innerHTML = `<tr><td class="empty" colspan="5">불러오는 중...</td></tr>`;
+        try {
+            const rows = await fetchJson(`/mypage/fundings?onlyPaid=${onlyPaid}`);
+            if (!rows.length) {
+                body.innerHTML = `<tr><td class="empty" colspan="5">내역이 없습니다.</td></tr>`;
+                return;
+            }
+            body.innerHTML = rows.map(r => `
+        <tr>
+          <td>${r.title ?? '-'}</td>
+          <td>${fmtKRW(r.amount)}</td>
+          <td>${r.status ?? '-'}</td>
+          <td>${fmtDate(r.createdAt)}</td>
+          <td class="receipt">${r.receiptUrl ? `<a href="${r.receiptUrl}" target="_blank">보기</a>` : '-'}</td>
+        </tr>
+      `).join('');
+        } catch (e) {
+            console.error(e);
+            body.innerHTML = `<tr><td class="empty" colspan="5">불러오기 실패</td></tr>`;
+        }
+    }
+    function reloadFundings() {
+        const onlyPaid = !!document.getElementById('fundingOnlyPaid')?.checked;
+        loadFundings(onlyPaid);
+    }
+
+    // ---------- 초기화 ----------
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSummary().catch(e => {
+            console.error(e);
+            alert('요약 정보를 불러오지 못했습니다.');
+        });
+        reloadDonations();
+        reloadFundings();
+
+        const donationOnlyPaid = document.getElementById('donationOnlyPaid');
+        const fundingOnlyPaid = document.getElementById('fundingOnlyPaid');
+        donationOnlyPaid && donationOnlyPaid.addEventListener('change', reloadDonations);
+        fundingOnlyPaid && fundingOnlyPaid.addEventListener('change', reloadFundings);
+    });
+
+    // 전역 공개 함수 (변경/삭제된 계정 관련 함수는 제거)
+    window.reloadDonations = reloadDonations;
+    window.reloadFundings = reloadFundings;
+</script>
 </body>
 </html>

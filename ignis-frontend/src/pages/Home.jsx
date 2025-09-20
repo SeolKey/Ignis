@@ -343,7 +343,7 @@ export default function MainPage() {
                           <>현재 {Number(item.currentPrice).toLocaleString()}원</>
                         )}
                         {item.maxPrice != null && (
-                          <> / 목표 {Number(item.maxPrice).toLocaleString()}원</>
+                          <> 목표 금액 {Number(item.maxPrice).toLocaleString()}원</>
                         )}
                       </p>
                     )}

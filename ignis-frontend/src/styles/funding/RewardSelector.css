@@ -1,0 +1,139 @@
+.reward-wrap {
+  margin-top: 16px;
+}
+
+/* 헤더 */
+.reward-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.reward-title { margin: 0; }
+.reward-period { font-size: 13px; color: #999; }
+
+/* 상단 요약 카드 */
+.reward-topcard {
+  border: 1px solid #dff5f5 !important;
+  background: #f6fffe;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.reward-toprow {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 0.7fr;
+  gap: 12px;
+}
+.reward-toprow-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #eaf6f6;
+}
+.reward-toprow-item:last-child { border-bottom: 0; }
+.reward-toprow-label { color: #6aa8a5; font-weight: 600; }
+.reward-toprow-value { color: #000; font-weight: 600; }
+
+/* 스크롤 리스트 */
+.reward-list {
+  max-height: 420px;       /* 와디즈 느낌의 스크롤 영역 */
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+/* 리워드 카드 */
+.reward-card {
+  border: 1px solid #f0f0f0 !important;
+  border-radius: 8px;
+  transition: box-shadow .15s ease, border-color .15s ease;
+}
+.reward-card:hover {
+  border-color: #e6f4ff !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+.reward-card.is-selected {
+  border-color: #91d5ff !important;
+  box-shadow: 0 0 0 2px rgba(24,144,255,0.15);
+}
+
+/* 카드 상단 라인 */
+.reward-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reward-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000;
+}
+.reward-left-badge { border-radius: 12px; }
+.reward-selected-icon { margin-left: auto; font-size: 18px; }
+
+/* 카드 텍스트 */
+.reward-title-2 { margin-top: 4px; font-weight: 700; }
+.reward-desc { margin-top: 12px; color: #444; }
+
+/* 카드 내 미니 테이블 */
+.reward-meta-table { margin-top: 12px; border-top: 1px solid #f2f2f2; }
+.reward-meta-table .row {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.reward-meta-table .row:last-child { border-bottom: none; }
+.reward-meta-table .col.label { color: #777; }
+.reward-meta-table .col.value { color: #000; font-weight: 500; }
+
+/* 하단 액션 */
+.reward-bottom {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 16px;
+}
+.reward-bottom-left { display: flex; gap: 8px; }
+.rb-icon {
+  width: 56px;
+  height: 56px;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all .18s ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  padding: 0;
+  position: relative;
+}
+.rb-icon:hover { background: #f7f8fa; border-color: #e1e1e1; }
+.rb-icon.active { color: #ff4d4f; background: #fff7f7; border-color: rgba(255,77,79,.25); }
+.rb-count {
+  position: absolute;
+  bottom: -18px;
+  font-size: 12px;
+  color: #888;
+}
+.rb-cta {
+  flex: 1;
+  height: 56px;
+  font-weight: 700;
+  border-radius: 10px;
+}
+
+/* 반응형 */
+@media (max-width: 767px) {
+  .reward-toprow { grid-template-columns: 1fr; }
+  .reward-list   { max-height: 360px; }
+  .rb-icon { width: 50px; height: 50px; }
+  .rb-cta  { height: 50px; }
+}

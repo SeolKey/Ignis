@@ -103,15 +103,23 @@ const FundingCreate = () => {
                         <Form.Item
                             label="설명"
                             name="description"
-                            rules={[{ required: true, message: "설명을 입력해줘." }]}
+                            rules={[{ required: true, message: "설명을 입력해주세요." }]}
                         >
                             <Input.TextArea rows={4} placeholder="펀딩 설명을 입력하세요" />
                         </Form.Item>
+                        <Form.Item
+                            label="계좌번호"
+                            name="accountNumber"
+                            rules={[{ required: true, message: "계좌번호를 입력해주세요." }]}
+                        >
+                            <Input placeholder="계좌번호를 입력하세요" />
+                        </Form.Item>
+
 
                         <Form.Item
                             label="목표 금액"
                             name="maxPrice"
-                            rules={[{ required: true, message: "목표 금액을 입력해줘." }]}
+                            rules={[{ required: true, message: "목표 금액을 입력해주세요." }]}
                         >
                             <Input inputMode="numeric" placeholder="숫자만 입력하세요" />
                         </Form.Item>

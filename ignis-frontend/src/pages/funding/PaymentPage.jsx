@@ -1,4 +1,3 @@
-// src/pages/PaymentPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
@@ -12,8 +11,8 @@ import {
   Divider,
   message,
 } from "antd";
-import "../styles/PaymentPage.css";
-import Layout from "../components/Layout";
+import "../../styles/funding/PaymentPage.css";
+import Layout from "../../components/Layout";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -22,7 +21,6 @@ export default function PaymentPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  // URL 파라미터에서 기본값 주입 (예: /payment?type=funding&id=123&amount=10000)
   const typeParam = params.get("type") || "funding";
   const idParam = params.get("id");
   const amountParam = Number(params.get("amount") || 0);
@@ -32,21 +30,22 @@ export default function PaymentPage() {
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // PortOne init (한 번만)
   useEffect(() => {
     if (window.IMP && !window.__impInited) {
-      window.IMP.init(import.meta.env.VITE_IAMPORT_ID); // .env의 VITE_IAMPORT_ID 사용
+      window.IMP.init(import.meta.env.VITE_IAMPORT_ID);
       window.__impInited = true;
     }
   }, []);
 
+  // 결제 금액에 값 추가하기 (버튼 클릭 시)
   const addAmount = (value) => setAmount((prev) => prev + value);
 
+  // 버튼 비활성화 조건
   const disabled = useMemo(() => {
     return !idParam || amount <= 0 || !agree || loading;
   }, [idParam, amount, agree, loading]);
 
-  // PortOne 결제 요청
+  // 결제 요청 함수
   const requestPay = async () => {
     if (paymentMethod !== "kakaopay") {
       message.info("현재는 카드/카카오페이(포트원)만 지원합니다.");
@@ -60,43 +59,93 @@ export default function PaymentPage() {
       message.error("결제 금액을 입력해주세요.");
       return;
     }
+
     try {
       setLoading(true);
 
-      // 1) 서버 사전등록: 주문번호(merchantUid) 생성 + 금액 검증 + READY 저장
-      //    엔드포인트: POST /api/funding/react/{fundingId}/payments/ready
+      // 결제 준비 요청
       const readyRes = await fetch(`/api/payments/prepare`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetType: "FUNDING", targetId: Number(idParam), amount }),
-        credentials: "include", // (세션 사용 시 권장)
+        body: JSON.stringify({
+          targetType: "FUNDING",  // 펀딩
+          targetId: Number(idParam),  // 펀딩 ID
+          amount: amount,  // 결제 금액
+          buyerName: "구매자 이름",  // 예시로 넣은 값
+          buyerEmail: "buyer@example.com",  // 예시로 넣은 값
+          buyerTel: "010-1234-5678",  // 예시로 넣은 값
+        }),
+        credentials: "include",  // 세션 사용 시
       });
+
       if (!readyRes.ok) throw new Error("결제 준비에 실패했습니다.");
       const ready = await readyRes.json(); // { merchantUid, amount, name, ... }
 
-      // 2) 포트원 결제창 호출
       const IMP = window.IMP;
       IMP.request_pay(
-        {
-          pg: "html5_inicis",         // KG 이니시스(포트원)
-          pay_method: "card",         // 또는 'kakaopay' 등
-          merchant_uid: ready.merchantUid,
-          name: ready.name || `[Funding] ${idParam}`,
-          amount: ready.amount,       // 반드시 서버 금액 그대로
-          // 모바일 환경이면 m_redirect_url 추가 가능
-        },
-        async (rsp) => {
-          if (!rsp.success) {
-            message.error(rsp.error_msg || "결제가 실패/취소되었습니다.");
-            setLoading(false);
-            return;
-          }
+  {
+    pg: "html5_inicis",       // PG사
+    pay_method: "card",       // 결제 방법 (카드)
+    merchant_uid: ready.merchantUid,  // 주문 고유 ID
+    name: ready.name || `[Funding] ${idParam}`,  // 펀딩 이름
+    amount: ready.amount,     // 결제 금액
+    buyer_name: ready.buyerName || '',
+    buyer_email: ready.buyerEmail || '',
+    buyer_tel: ready.buyerTel || ''
+  },
+  async (rsp) => {  // 결제 성공/실패 후 호출되는 콜백 함수
+    if (rsp.success) {
+      // 결제 성공 후 결제 정보 콘솔에 출력
+      console.log("결제 성공!");
+      console.log("결제 정보:", rsp);  // 결제 정보 전체 출력
+      console.log("imp_uid:", rsp.imp_uid);
+      console.log("merchant_uid:", rsp.merchant_uid);
+      console.log("결제 금액:", rsp.paid_amount);  // 금액 확인
+      console.log("결제 수단:", rsp.pay_method);  // 결제 수단 확인
 
-          message.success("결제 요청 완료! 승인 처리 중이에요.");
-          setLoading(false);
-          navigate(`/funding/${idParam}`);
+      // 결제 성공 후, 결제 정보를 서버로 보내는 부분
+      const payload = {
+        imp_uid: rsp.imp_uid,               // 결제 고유 ID
+        merchant_uid: rsp.merchant_uid,     // 주문 고유 ID
+        fundingId: idParam,                  // 펀딩 ID
+        paidAmount: rsp.paid_amount,         // 실제 결제 금액
+        payMethod: rsp.pay_method            // 결제 수단
+      };
+
+      try {
+        // 서버에 결제 정보를 전달하여 금액을 반영
+        const completeRes = await fetch(`/api/payments/webhook`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          credentials: "include", // 세션 사용 시
+        });
+
+        if (completeRes.ok) {
+          message.success("결제 완료! 금액이 반영되었습니다.");
+          // 결제 성공 후, 결제 완료 페이지로 리디렉션 (결제 정보와 함께)
+          const queryParams = new URLSearchParams({
+            imp_uid: rsp.imp_uid,
+            merchant_uid: rsp.merchant_uid,
+            fundingId: idParam,
+            paidAmount: rsp.paid_amount,  // 결제 금액
+            payMethod: rsp.pay_method    // 결제 수단
+          }).toString();
+          navigate(`/funding/participate-complete?${queryParams}`);
+        } else {
+          message.error("서버에서 결제 완료 처리가 실패했습니다.");
         }
-      );
+      } catch (error) {
+        console.error(error);
+        message.error("결제 완료 처리가 실패했습니다.");
+      }
+    } else {
+      message.error(rsp.error_msg || "결제가 실패/취소되었습니다.");
+    }
+  }
+);
+
+
     } catch (e) {
       console.error(e);
       message.error(e.message || "결제 요청 중 오류가 발생했습니다.");
@@ -190,7 +239,7 @@ export default function PaymentPage() {
             loading={loading}
             disabled={disabled}
             style={{ marginTop: 24 }}
-            onClick={requestPay}
+            onClick={requestPay} // 버튼 클릭 시 함수 호출
           >
             {loading ? "결제 준비 중..." : "결제하기"}
           </Button>
