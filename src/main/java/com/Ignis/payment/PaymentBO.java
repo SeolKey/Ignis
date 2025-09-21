@@ -22,14 +22,12 @@ public class PaymentBO {
     private final PortOneClient portOneClient;
 
     private String newMerchantUid(Long fundingId) {
-        return "FUNDING-" + fundingId + "-" + System.currentTimeMillis() + "-"
-                + UUID.randomUUID().toString().substring(0, 8);
+        return "FUNDING-" + fundingId + "-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0,8);
     }
 
-    // 사전등록 + READY 행 생성
+    /** 사전등록 + READY 행 생성 */
     @Transactional
-    public PrepareResult prepareFunding(Long userId, Long fundingId, int amount, String buyerName, String buyerEmail,
-            String buyerTel) {
+    public PrepareResult prepareFunding(Long userId, Long fundingId, int amount, String buyerName, String buyerEmail, String buyerTel) {
         if (amount <= 0) {
             throw new IllegalArgumentException("amount는 1 이상 정수여야 합니다.");
         }
@@ -40,7 +38,7 @@ public class PaymentBO {
 
         String merchantUid = newMerchantUid(fundingId);
 
-        // READY 행 insert
+        // 1) READY 행 insert
         FundingPrice fp = new FundingPrice();
         fp.setFundingId(fundingId);
         fp.setUserId(userId);
@@ -52,7 +50,7 @@ public class PaymentBO {
         fp.setUpdatedAt(LocalDateTime.now());
         fundingPriceMapper.insertFundingPriceReady(fp);
 
-        // PortOne 사전등록
+        // 2) PortOne 사전등록
         portOneClient.prepare(merchantUid, amount);
 
         // 응답: 프론트 결제창 호출용
@@ -66,19 +64,30 @@ public class PaymentBO {
         return result;
     }
 
-    // 결제 검증 + DB 반영 + 누적금액 증가
+
+    @Transactional
+    public CompletedPayment completeFunding(String impUid, String merchantUid) {
+        FundingPrice fp = fundingPriceMapper.selectByMerchantUid(merchantUid);
+        if (fp == null) {
+            throw new IllegalStateException("사전등록 이력이 없습니다. merchantUid=" + merchantUid);
+        }
+        return completeFunding(impUid, merchantUid, fp.getFundingId());
+    }
+
+    /** 결제 검증 + DB 반영 + 누적금액 증가 */
     @Transactional
     public CompletedPayment completeFunding(String impUid, String merchantUid, Long fundingId) {
-        // PortOne 결제 단건조회
+        // 1) PortOne 결제 단건조회
         Map pay = portOneClient.getPaymentByImpUid(impUid);
-        String status = (String) pay.get("status"); // paid, ready, failed
-        Integer amount = (Integer) pay.get("amount");
+        String status = (String) pay.get("status");      // paid, ready, failed...
+        Object amtObj = pay.get("amount");
+        int amount = Integer.parseInt(String.valueOf(amtObj));
         String pgProvider = (String) pay.get("pg_provider");
         String pgTid = (String) pay.get("pg_tid");
         String payMethod = (String) pay.get("pay_method");
         String receiptUrl = (String) pay.get("receipt_url");
 
-        // 사전등록 행 조회
+        // 2) 사전등록 행 조회
         FundingPrice fp = fundingPriceMapper.selectByMerchantUid(merchantUid);
         if (fp == null) {
             throw new IllegalStateException("사전등록 이력이 없습니다. merchantUid=" + merchantUid);
@@ -96,14 +105,15 @@ public class PaymentBO {
             throw new IllegalStateException("결제가 완료 상태가 아닙니다. status=" + status);
         }
 
-        // 결제 성공 반영 (PAID)
+        // 3) 결제 성공 반영 (PAID)
         int updated = fundingPriceMapper.updatePaidByMerchantUid(
-                merchantUid, impUid, pgProvider, pgTid, payMethod, receiptUrl);
+                merchantUid, impUid, pgProvider, pgTid, payMethod, receiptUrl
+        );
         if (updated == 0) {
             // 이미 처리되었을 수 있음 (중복콜백). idempotent
         }
 
-        // 펀딩 누적금액 증가
+        // 4) 펀딩 누적금액 증가
         fundingMapper.updateCurrentPrice(fundingId, amount);
 
         CompletedPayment done = new CompletedPayment();
@@ -130,19 +140,5 @@ public class PaymentBO {
         private Integer amount;
         private String impUid;
         private String merchantUid;
-    }
-
-    public class PaymentConfirmReq {
-        private String impUid;
-        private String merchantUid;
-        // getter/setter
-    }
-
-    public class PaymentConfirmRes {
-        private String result; // success/fail
-        private String status; // PAID / CANCELLED ...
-        private String merchantUid;
-        private Integer amount;
-        // getter/setter
     }
 }

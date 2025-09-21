@@ -2,6 +2,7 @@ package com.Ignis.payment;
 
 import com.Ignis.payment.PaymentBO.CompletedPayment;
 import com.Ignis.payment.PaymentBO.PrepareResult;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,11 +37,28 @@ public class PaymentRestController {
         return ResponseEntity.ok(result);
     }
 
-    // 웹훅 엔드포인트 — 콘솔 등록 후 사용 가능
+    // (선택) 웹훅 엔드포인트 — 콘솔 등록 후 사용 가능
     @PostMapping("/webhook")
-    public ResponseEntity<Void> webhook(@RequestBody WebhookPayload payload) {
-        // payload.imp_uid / merchant_uid 수신 → 서버 검증 재사용 가능
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> webhook(@RequestBody WebhookPayload payload) {
+        try {
+            if (payload.getImpUid() == null || payload.getMerchantUid() == null) {
+                return ResponseEntity.badRequest().body(
+                        Map.of("result", "fail", "error", "imp_uid 또는 merchant_uid 누락")
+                );
+            }
+            CompletedPayment done = paymentBO.completeFunding(payload.getImpUid(), payload.getMerchantUid());
+            return ResponseEntity.ok(Map.of(
+                    "result", "ok",
+                    "fundingId", done.getFundingId(),
+                    "amount", done.getAmount(),
+                    "merchantUid", done.getMerchantUid(),
+                    "impUid", done.getImpUid()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(
+                    Map.of("result", "fail", "error", e.getMessage())
+            );
+        }
     }
 
     @Data
@@ -56,8 +76,10 @@ public class PaymentRestController {
 
     @Data
     public static class WebhookPayload {
-        private String imp_uid;
-        private String merchant_uid;
+        @JsonProperty("imp_uid")
+        private String impUid;
+        @JsonProperty("merchant_uid")
+        private String merchantUid;
         private String status;
     }
 }
