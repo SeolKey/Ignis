@@ -1,12 +1,13 @@
 import React from 'react';
 import Header from './Header';
 import Footer from './Footer';
+import Container from './Container';
 
 const Layout = ({ children }) => {
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <Container Layout={children}/>
       <Footer />
     </>
   );

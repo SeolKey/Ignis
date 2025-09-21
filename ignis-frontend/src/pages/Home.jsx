@@ -117,6 +117,7 @@ export default function MainPage() {
             >
               <h2 style={{ margin: 0 }}>기부</h2>
               <a
+                className='more-Button'
                 onClick={() => navigate('/donation-list')}
                 style={{ cursor: 'pointer' }}
               >
@@ -194,6 +195,7 @@ export default function MainPage() {
             >
               <h2 style={{ margin: 0 }}>봉사</h2>
               <a
+                className='more-Button'
                 onClick={() => navigate('/volunteer')}
                 style={{ cursor: 'pointer' }}
               >
@@ -271,6 +273,7 @@ export default function MainPage() {
             >
               <h2 style={{ margin: 0 }}>펀딩</h2>
               <a
+                className='more-Button'
                 onClick={() => navigate('/funding')}
                 style={{ cursor: 'pointer' }}
               >

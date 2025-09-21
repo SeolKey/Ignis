@@ -1,5 +1,6 @@
 // src/App.jsx
 import { Routes, Route } from 'react-router-dom';
+import './App.css';
 
 /* ========== 공통/홈 ========== */
 import Home from './pages/Home';
