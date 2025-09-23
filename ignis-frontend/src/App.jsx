@@ -14,6 +14,7 @@ import DonationList from './pages/donation/DonationList';
 import DonationDetail from './pages/donation/DonationDetail';
 import DonationCreate from './pages/donation/DonationCreate';
 import DonationPayment from './pages/donation/DonationPayment';
+import DonationPaymentSuccessPage from './pages/donation/DonationPaymentSuccessPage.jsx';
 
 /* ========== 공지사항( Notice ) ========== */
 import NoticeList from './pages/noticeboard/NoticeList';
@@ -58,6 +59,7 @@ function App() {
       <Route path="/donation-detail/:id" element={<DonationDetail />} />
       <Route path="/donation-create" element={<DonationCreate />} />
       <Route path="/donation-payment" element={<DonationPayment />} />
+      <Route path="/donation-payment-success" element={<DonationPaymentSuccessPage />} />
 
       {/* ===== 공지사항( Notice ) ===== */}
       <Route path="/board/notice" element={<NoticeList />} />

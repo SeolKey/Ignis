@@ -1,9 +1,6 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Row, Col, Card, Typography, Progress,
-  Button, Tabs, Divider, message, List, Input, Tooltip
-} from 'antd';
+import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Tooltip } from 'antd';
 import {
   CalendarOutlined,
   ShareAltOutlined,
@@ -15,10 +12,11 @@ import Layout from '../../components/Layout';
 import testImage from '../../assets/testImage.png';
 import { Carousel } from 'antd';
 import { Modal, Form, Input as AntInput } from 'antd';
+import Comments from '../common/Comments.jsx';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
-const { TextArea } = Input;
+
 
 // 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
@@ -31,25 +29,16 @@ const fmtDate = (iso) => {
   return `${y}.${m}.${dd}`;
 };
 
-// 날짜+시간 포맷 (yyyy-mm-dd hh:mm)
-const fmtDateTime = (iso) => {
-  if (!iso) return '';
-  return iso.replace('T', ' ').substring(0, 16);
-};
-
 export default function DonationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [donation, setDonation] = useState(null);
-  const [comments, setComments] = useState([]);
-  const [commentLoading, setCommentLoading] = useState(false);
-  const [commentInput, setCommentInput] = useState('');
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
 
-  // ❤️ 좋아요 상태
+  //  좋아요 상태
   const [liked, setLiked] = useState(false);
 
   const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
@@ -76,70 +65,7 @@ export default function DonationDetail() {
 
   const contentId = donation?.donationId ?? donation?.id ?? Number(id);
 
-  // 댓글 불러오기
-  const loadComments = useCallback(async () => {
-    if (!contentId) return;
-    try {
-      setCommentLoading(true);
-      const res = await fetch(`/comment/list?contentType=donation&contentId=${contentId}`, {
-        credentials: 'include',
-        headers: { Accept: 'application/json' },
-      });
-      if (res.status === 401) {
-        message.warning('로그인 후 이용 가능합니다.');
-        navigate('/login');
-        return;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setComments(Array.isArray(data) ? data : []);
-    } catch {
-      message.error('댓글을 불러오지 못했어요.');
-    } finally {
-      setCommentLoading(false);
-    }
-  }, [contentId, navigate]);
 
-  // 댓글 작성
-  const submitComment = async () => {
-    const content = commentInput.trim();
-    if (!content) return message.warning('댓글 내용을 입력해줘.');
-    try {
-      setCommentLoading(true);
-      const res = await fetch('/comment/create', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          contentType: 'donation',
-          contentId,
-          content,
-          parentId: null,
-        }),
-      });
-      if (res.status === 401) {
-        message.warning('로그인 후 이용 가능합니다.');
-        navigate('/login');
-        return;
-      }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const result = await res.json();
-      if (result?.result === 'success') {
-        setCommentInput('');
-        message.success('댓글이 등록되었습니다.');
-        await loadComments();
-      } else {
-        message.error(result?.errorMessage || '댓글 등록에 실패했습니다.');
-      }
-    } catch {
-      message.error('댓글 등록 중 오류가 발생했어요.');
-    } finally {
-      setCommentLoading(false);
-    }
-  };
 
   // 진행률 계산
   const progress = useMemo(() => {
@@ -239,11 +165,7 @@ export default function DonationDetail() {
               </Carousel>
             </Card>
 
-            <Tabs
-              defaultActiveKey="1"
-              className="custom-tabs"
-              onChange={(key) => { if (key === '3') loadComments(); }}
-            >
+            <Tabs defaultActiveKey="1" className="custom-tabs">
               {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{donation?.title}</Title>
@@ -265,36 +187,7 @@ export default function DonationDetail() {
 
               {/* 댓글 */}
               <TabPane tab="댓글" key="3">
-                <Card bordered={false} className="comment-editor-card">
-                  <div className="comment-editor">
-                    <TextArea
-                      value={commentInput}
-                      onChange={(e) => setCommentInput(e.target.value)}
-                      placeholder="댓글을 입력하세요"
-                      autoSize={{ minRows: 3, maxRows: 6 }}
-                    />
-                    <div className="comment-actions">
-                      <Button type="primary" htmlType="button" onClick={submitComment} loading={commentLoading}>
-                        발송
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-
-                <List
-                  loading={commentLoading}
-                  locale={{ emptyText: '아직 댓글이 없습니다.' }}
-                  dataSource={comments}
-                  renderItem={(c) => (
-                    <List.Item>
-                      <div className="comment-item-inner">
-                        <div className="comment-author">{c?.userName || '익명 사용자'}</div>
-                        <div className="comment-content">{c?.content}</div>
-                        <div className="comment-time">{fmtDateTime(c?.createdAt || '')}</div>
-                      </div>
-                    </List.Item>
-                  )}
-                />
+                <Comments contentType="donation" contentId={contentId} />
               </TabPane>
             </Tabs>
           </Col>

@@ -1,0 +1,37 @@
+.comment-editor {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.comment-editor textarea {
+  flex: 1;
+  min-height: 40px;   /* 기본 높이 */
+}
+
+.comment-actions {
+  display: flex;
+  align-items: center;
+}
+
+.comment-actions button {
+  height: 40px;       /* textarea 높이와 동일 */
+  line-height: 40px;
+  padding: 0 16px;    /* 좌우 패딩 */
+}
+
+
+.comment-item-inner { 
+  display: grid; 
+  gap: 4px; 
+  width: 100%; 
+}
+
+.comment-author { 
+  font-weight: 600; 
+}
+
+.comment-time { 
+  color: #999; 
+  font-size: 12px; 
+}

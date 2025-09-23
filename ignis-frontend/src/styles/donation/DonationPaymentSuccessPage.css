@@ -1,0 +1,100 @@
+/* 바탕 영역 */
+.donation-payment-content {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  padding: 40px 5vw;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+
+/* 메인 카드 */
+.donation-payment-card {
+  width: 100%;
+  max-width: 720px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  border-radius: 12px;
+}
+
+/* 정보행 (제목/목표/현재) */
+.info-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  column-gap: 16px;
+  padding: 6px 0;
+}
+
+/* 섹션 공통 */
+.section {
+  margin-top: 8px;
+}
+
+/* 결제 옵션 카드 */
+.donation-payment-option {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border-radius: 10px;
+}
+.donation-payment-option:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+/* 총액 표시 */
+.total-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.total-amount {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+/* 결제 버튼 */
+.donation-payment-button {
+  height: 44px;
+  font-weight: 600;
+}
+
+/* ===== 성공 페이지 공용 ===== */
+.donation-success-wrap {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  padding: 40px 5vw;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+}
+.donation-success-card {
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+  border-radius: 12px;
+  text-align: left;
+  padding: 12px 16px;
+}
+.success-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  column-gap: 16px;
+  padding: 8px 0;
+  border-top: 1px dashed #f0f0f0;
+}
+.success-row:first-of-type {
+  border-top: none;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .info-row,
+  .success-row {
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+  }
+}

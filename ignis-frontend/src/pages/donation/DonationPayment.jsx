@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Typography,
   Input,
@@ -31,6 +31,9 @@ export default function DonationPayment() {
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerTel, setBuyerTel] = useState("");
+
+  const navigate = useNavigate();
+
 
   // 프로젝트 정보 (제목/목표/현재금액)
   useEffect(() => {
@@ -129,8 +132,10 @@ export default function DonationPayment() {
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
             donationId: String(donationId),
+            paidAmount: String(rsp.paid_amount ?? ""),
+            payMethod: String(rsp.pay_method ?? ""),
           }).toString();
-          window.location.href = "/donation/participate-complete?" + q;
+          navigate("/donation-payment-success?" + q, { replace: true });
         }
       );
     } catch (e) {

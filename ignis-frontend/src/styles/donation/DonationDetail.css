@@ -116,30 +116,6 @@
 }
 
 /* =========================
-   댓글 영역
-   ========================= */
-.comment-editor-card { margin-bottom: 12px; }
-
-.comment-editor {
-  display: flex;
-  gap: 12px;
-}
-
-.comment-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.comment-item-inner { width: 100%; }
-
-.comment-author { font-weight: bold; }
-
-.comment-content { white-space: pre-wrap; }
-
-.comment-time { font-size: 12px; color: #999; }
-
-/* =========================
    기타
    ========================= */
 .related-card { display: flex; gap: 12px; margin-bottom: 12px; }

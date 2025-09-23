@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping({"/payment", "/api/payment/"})
 @RequiredArgsConstructor
 public class DonationPaymentRestController {
     private final DonationPaymentBO donationPaymentBO;
