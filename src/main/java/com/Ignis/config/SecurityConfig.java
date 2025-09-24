@@ -45,7 +45,6 @@ public class SecurityConfig {
                     "/mypage/**",
                     "/volunteer/react/list", "/volunteer/react/detail/**" ,
                     "/comment/list","/comment/create"
-
                 ).permitAll()
                 .anyRequest().authenticated()
             )
