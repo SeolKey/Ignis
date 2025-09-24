@@ -48,24 +48,37 @@ public class UserBO {
         return userRepository.findByEmail(email.trim().toLowerCase()) != null;
     }
 
-    public boolean updatePassword(Long userId, String currentPassword, String newPassword) {
+    /** ✅ 설정 페이지 입장 전 비밀번호 확인용 */
+    public boolean checkPassword(Long userId, String rawPassword) {
         UserEntity user = userRepository.findById(userId).orElse(null);
-        if (user != null && user.isCorrectPassword(currentPassword)) {
-            user.setPassword(newPassword);
-            userRepository.save(user);
-            return true;
-        }
-        return false;
+        return user != null && user.isCorrectPassword(rawPassword);
     }
 
-    public boolean updateEmail(Long userId, String newEmail) {
+    /** ✅ 비밀번호 변경: 현재 비밀번호 검증 + 새 비밀번호 해시 저장 */
+    public boolean updatePassword(Long userId, String currentPassword, String newPassword) {
         UserEntity user = userRepository.findById(userId).orElse(null);
-        if (user != null) {
-            user.setEmail(newEmail);
-            userRepository.save(user);
-            return true;
-        }
-        return false;
+        if (user == null) return false;
+        if (!user.isCorrectPassword(currentPassword)) return false;
+
+        user.setPassword(SecurityUtil.sha256(newPassword)); // ← 해시 저장 (기존 raw 저장 문제 수정)
+        userRepository.save(user);
+        return true;
+    }
+
+    /** ✅ 이메일 변경: 소문자 정규화 + 중복 체크 */
+    public boolean updateEmail(Long userId, String newEmail) {
+        String normalized = newEmail == null ? null : newEmail.trim().toLowerCase();
+        if (normalized == null || normalized.isBlank()) return false;
+
+        // 본인 제외 중복 체크가 필요하면 repository에 별도 쿼리 추가해서 교체
+        if (userRepository.existsByEmailIgnoreCase(normalized)) return false;
+
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        if (user == null) return false;
+
+        user.setEmail(normalized);
+        userRepository.save(user);
+        return true;
     }
 
     public UserEntity getUserByLoginIdAndPassword(String loginId, String password) {

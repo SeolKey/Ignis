@@ -42,7 +42,7 @@ public class SecurityConfig {
                     "/donation-detail/**", "/donation-create",
                     "/funding/**",
                     "/api/**",
-                    "/volunteer/react/list", "/volunteer/react/detail/**" 
+                    "/volunteer/react/list", "/volunteer/react/detail/**" ,"/mypage/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
