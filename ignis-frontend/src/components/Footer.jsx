@@ -1,6 +1,6 @@
 import React from 'react';
 import { FacebookOutlined, InstagramOutlined, TwitterOutlined, YoutubeOutlined } from '@ant-design/icons';
-import '../styles/Footer.css';
+import '../styles/components/Footer.css';
 
 const Footer = () => {
   return (

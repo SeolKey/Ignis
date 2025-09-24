@@ -55,3 +55,23 @@
   .home-layout { grid-template-columns:1fr; }
   .recommend-box { position:static; top:auto; }
 }
+
+/* 추천 탭 스타일 */
+.recommend-segmented {
+  width: 100%;
+  background: #f5f7fa;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px #e6eaf0;
+}
+
+.recommend-segmented .ant-segmented-item {
+  flex: 1;
+  justify-content: center;
+}
+
+.recommend-segmented .ant-segmented-item-selected {
+  background: #4096ff; 
+  color: #fff;
+  font-weight: 600;
+  box-shadow: none;
+}

@@ -1,0 +1,37 @@
+.mypage-wrap { padding: 32px 24px; background: #fff; }
+
+.profile-card, .menu-card, .stat-card { border-radius: 16px; }
+.menu-btn { width: 100%; justify-content: flex-start; height: 44px; border-radius: 12px; }
+.menu-btn.active, .menu-btn:hover { background: #f0f5ff; }
+
+.greeting-bar { display: flex; align-items: center; background: #fff; padding: 20px 24px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+.stat-card .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: #f0f5ff; }
+
+.activity-icon { width: 32px; height: 32px; display: grid; place-items: center; }
+.activity-title { font-weight: 600; }
+
+/* 보안 카드 */
+.security-card { border-radius: 16px; margin-bottom: 12px; }
+.sec-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; }
+.sec-pill { background: #f5f5f5; border-radius: 999px; padding: 2px 10px; font-size: 12px; color: #595959; }
+.sec-tag { border-radius: 999px; }
+
+/* 이메일 인증 */
+.email-steps { margin-bottom: 12px; }
+.verify-row { display: flex; align-items: center; gap: 10px; margin-top: -2px; }
+.ghost-btn { border: 1px dashed #d9d9d9; background: #fff; }
+.ghost-btn:hover { border-color: #1677ff; color: #1677ff; }
+.mini-hint { font-size: 12px; color: #8c8c8c; opacity: 0; transition: .15s; }
+.mini-hint.show { opacity: 1; }
+.verify-actions { display: flex; gap: 12px; align-items: center; }
+
+/* OTP */
+.ant-input-otp { --otp-item-size: 44px; }
+.ant-input-otp .ant-input-otp-input { width: var(--otp-item-size); height: var(--otp-item-size); border-radius: 10px; }
+.otp-fallback input { letter-spacing: 8px; text-align: center; }
+
+/* 비밀번호 강도 */
+.pwd-meter { display: flex; align-items: center; gap: 10px; margin-top: -4px; margin-bottom: 8px; }
+.pwd-meter-hint { font-size: 12px; color: #8c8c8c; }
+
+.tips-card { border-radius: 14px; background: #fbfbfb; }

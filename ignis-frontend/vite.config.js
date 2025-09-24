@@ -17,6 +17,7 @@ export default defineConfig({
       '/funding': { target: 'http://localhost:80', changeOrigin: true },
       '/volunteer': { target: 'http://localhost:80', changeOrigin: true },
       '/mypage': { target: 'http://localhost:80', changeOrigin: true },
+      '/uploads': { target: 'http://localhost:80', changeOrigin: true },
     },
   },
 })

@@ -170,7 +170,6 @@ public class UserRestController {
         if (exists) res.put("message", "이 이메일은 이미 가입되어 있습니다.");
         return res;
     }
-    
     @GetMapping("/me/phone")
     public Map<String, Object> getPhone(HttpSession session) {
         Map<String, Object> res = new HashMap<>();

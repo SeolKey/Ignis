@@ -29,8 +29,9 @@ export default function Comments({ contentType, contentId, lazy = false, autoFoc
         headers: { Accept: 'application/json' },
       });
       if (res.status === 401) {
-        message.warning('로그인 후 이용 가능합니다.');
-        navigate('/login');
+        // 목록(GET)은 비로그인도 보게 하거나, 최소한 튕기지 않게 처리
+        message.warning('댓글 목록을 불러오지 못했어요. (로그인이 필요할 수 있어요)');
+        setComments([]); // 비워두고 화면은 유지
         return;
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

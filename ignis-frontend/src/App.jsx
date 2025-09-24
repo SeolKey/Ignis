@@ -2,8 +2,8 @@
 import { Routes, Route } from 'react-router-dom';
 
 /* ========== 공통/홈 ========== */
-import Home from './pages/Home';
-import MyPage from './pages/MyPage';
+import Home from './pages/home/Home';
+import MyPage from './pages/mypage/MyPage';
 
 /* ========== 인증 ========== */
 import LoginPage from './pages/LoginPage';

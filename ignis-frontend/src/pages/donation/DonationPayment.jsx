@@ -74,7 +74,7 @@ export default function DonationPayment() {
 
   const addAmount = (v) => setAmount((prev) => Math.max(0, Number(prev || 0) + v));
   const numberOnly = (v) => v.replace(/[^0-9]/g, "");
-  const formatWon  = (n) => `${Number(n || 0).toLocaleString()}원`;
+  const formatWon = (n) => `${Number(n || 0).toLocaleString()}원`;
 
   // 결제 요청
   const requestPay = async () => {
@@ -88,9 +88,9 @@ export default function DonationPayment() {
       const form = new URLSearchParams();
       form.append("donationId", String(donationId));
       form.append("amount", String(amount));
-      if (buyerName)  form.append("buyerName", buyerName);
+      if (buyerName) form.append("buyerName", buyerName);
       if (buyerEmail) form.append("buyerEmail", buyerEmail);
-      if (buyerTel)   form.append("buyerTel", buyerTel);
+      if (buyerTel) form.append("buyerTel", buyerTel);
 
       const prepRes = await fetch("/api/payment/donation/prepare", {
         method: "POST",
@@ -100,12 +100,12 @@ export default function DonationPayment() {
       });
 
       if (!prepRes.ok) throw new Error(`결제 준비 실패 (HTTP ${prepRes.status})`);
-      const raw  = await prepRes.json();
+      const raw = await prepRes.json();
       const prep = raw?.data ?? raw; // 래퍼/비래퍼 모두 대응
 
       const merchantUid = prep.merchantUid ?? prep.merchant_uid ?? prep.orderId;
       const readyAmount = Number(prep.amount ?? prep.totalAmount);
-      const title       = prep.name ?? prep.orderName ?? `[Donation] ${donationId}`;
+      const title = prep.name ?? prep.orderName ?? `[Donation] ${donationId}`;
       if (!merchantUid || !readyAmount) throw new Error("사전등록 응답에 필수 필드가 없습니다.");
 
       const IMP = window.IMP;
@@ -128,15 +128,41 @@ export default function DonationPayment() {
             setLoading(false);
             return;
           }
-          const q = new URLSearchParams({
-            imp_uid: rsp.imp_uid,
-            merchant_uid: rsp.merchant_uid,
-            donationId: String(donationId),
-            paidAmount: String(rsp.paid_amount ?? ""),
-            payMethod: String(rsp.pay_method ?? ""),
-          }).toString();
-          navigate("/donation-payment-success?" + q, { replace: true });
+
+          // ====== 서버에 결제 완료 요청 ======
+          const completeForm = new URLSearchParams();
+          completeForm.append("impUid", rsp.imp_uid);
+          completeForm.append("merchantUid", rsp.merchant_uid);
+          completeForm.append("donationId", String(donationId));
+
+          fetch("/api/payment/donation/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+            body: completeForm,
+            credentials: "include",
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data?.result === "success") {
+                const q = new URLSearchParams({
+                  imp_uid: rsp.imp_uid,
+                  merchant_uid: rsp.merchant_uid,
+                  donationId: String(donationId),
+                  paidAmount: String(rsp.paid_amount ?? ""),
+                  payMethod: String(rsp.pay_method ?? ""),
+                }).toString();
+                navigate("/donation-payment-success?" + q, { replace: true });
+              } else {
+                message.error(data?.error_message || "서버 완료 처리에 실패했습니다.");
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              message.error("서버 완료 처리 중 오류가 발생했습니다.");
+            })
+            .finally(() => setLoading(false));
         }
+
       );
     } catch (e) {
       console.error(e);
@@ -196,9 +222,9 @@ export default function DonationPayment() {
           <div className="section">
             <Text strong>기부자 정보 (선택)</Text>
             <Space direction="vertical" style={{ width: "100%", marginTop: 8 }}>
-              <Input placeholder="이름(선택)"   value={buyerName}  onChange={(e) => setBuyerName(e.target.value)} />
+              <Input placeholder="이름(선택)" value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
               <Input placeholder="이메일(선택)" value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} />
-              <Input placeholder="연락처(선택)" value={buyerTel}   onChange={(e) => setBuyerTel(e.target.value)} />
+              <Input placeholder="연락처(선택)" value={buyerTel} onChange={(e) => setBuyerTel(e.target.value)} />
             </Space>
           </div>
 

@@ -39,10 +39,13 @@ public class SecurityConfig {
                     "/user/**",
                     "/error", "/public/**",
                     "/css/**", "/js/**", "/images/**", "/favicon.ico", "/uploads/**",
-                    "/donation-detail/**", "/donation-create",
+                    "/donation/react/list", "/donation/react/detail/**","/donation/react/create",
                     "/funding/**",
                     "/api/**",
-                    "/volunteer/react/list", "/volunteer/react/detail/**" ,"/mypage/**"
+                    "/mypage/**",
+                    "/volunteer/react/list", "/volunteer/react/detail/**" ,
+                    "/comment/list","/comment/create"
+
                 ).permitAll()
                 .anyRequest().authenticated()
             )
