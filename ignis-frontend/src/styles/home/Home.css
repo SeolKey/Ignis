@@ -1,56 +1,162 @@
 /* ========= 0) PAGE WRAPPER ========= */
 /* 전체 페이지 공통 여백/최대폭 */
-.page { padding: 48px 24px; max-width: 1600px; margin: 0 auto; }
+.page {
+  padding: 48px 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
 
 /* ========= 1) LAYOUT (메인3 : 사이드1) ========= */
-.home-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 32px; align-items: start; }
-.main-content { min-width: 0; } /* 그리드 자식 폭 수축 허용 */
+.home-layout {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+.main-content { min-width: 0; }
 
 /* ========= 2) BANNER (상단 임시 배너) ========= */
-.simple-banner { background: linear-gradient(135deg,#91d5ff,#1677ff); color:#fff; padding:40px 24px; margin-bottom:32px; border-radius:20px; text-align:center; box-shadow:0 6px 16px rgba(0,0,0,.12); position:relative; overflow:hidden; }
-.simple-banner::after { content:""; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background: radial-gradient(circle, rgba(255,255,255,.2) 0%, transparent 70%); animation: shine 6s linear infinite; }
+.simple-banner {
+  background: linear-gradient(135deg,#91d5ff,#1677ff);
+  color:#fff;
+  padding:40px 24px;
+  margin-bottom:32px;
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.12);
+  position:relative;
+  overflow:hidden;
+}
+.simple-banner::after {
+  content:"";
+  position:absolute;
+  top:-50%; left:-50%;
+  width:200%; height:200%;
+  background: radial-gradient(circle, rgba(255,255,255,.2) 0%, transparent 70%);
+  animation: shine 6s linear infinite;
+}
 @keyframes shine { 0%{transform: rotate(0deg);} 100%{transform: rotate(360deg);} }
-.simple-banner h2 { margin:0 0 12px; font-size:32px; font-weight:800; letter-spacing:-.5px; }
-.simple-banner p { margin:6px 0; font-size:18px; font-weight:500; opacity:.95; }
+.simple-banner h2 {
+  margin:0 0 12px;
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.simple-banner p {
+  margin:6px 0;
+  font-size:18px;
+  font-weight:500;
+  opacity:.95;
+}
 .simple-banner .banner-sub { font-size:16px; font-style:italic; opacity:.9; }
 
-/* ========= 3) CATEGORY (기부/봉사/펀딩 버튼) ========= */
-.category-buttons { display:flex; justify-content:center; gap:28px; margin:40px 0; flex-wrap:wrap; }
-.category-item { display:flex; flex-direction:column; align-items:center; }
-.category-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; width:100px; height:100px; border-radius:20px; font-size:50px; font-weight:600; color:#fff; border:none; cursor:pointer; box-shadow:0 6px 16px rgba(0,0,0,.15); transition: transform .2s ease, box-shadow .2s ease; text-align:center; }
-.category-btn:hover { transform: translateY(-6px); box-shadow:0 12px 24px rgba(0,0,0,.22); }
-.category-btn:active { transform: translateY(-2px); box-shadow:0 6px 14px rgba(0,0,0,.15); }
-.category-label { margin-top:10px; font-size:15px; font-weight:600; text-align:center; }
-
-/* 색상(선택): JSX에 붙인 .donation/.volunteer/.funding */
-.category-btn.donation { background:#d9d9d9 } /* 밝은 회색 */
-.category-btn.volunteer { background:#d9d9d9 }
-.category-btn.funding { background:#d9d9d9 }
+/* ========= 3) CATEGORY (기부/봉사/펀딩 카드 버튼) ========= */
+.category-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 48px 0;
+  flex-wrap: wrap;
+}
+.category-card {
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+  transition: all .25s ease;
+  cursor: pointer;
+}
+.category-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
+}
+.category-label {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+/* 개별 색 포인트 */
+.category-card.donation:hover { border: 2px solid #ff4d4f; }
+.category-card.volunteer:hover { border: 2px solid #52c41a; }
+.category-card.funding:hover { border: 2px solid #722ed1; }
 
 /* ========= 4) SECTION & CARDS (그리드/카드) ========= */
 .section { margin-bottom:48px; }
-/* 미사용 제거: .section-header, .section-title */
-.card-container { display:grid; gap:24px; grid-template-columns: repeat(2,1fr); }
-/* 선택: card-grid 유령 클래스 제거 or 다음처럼 alias 부여 */
-.card-grid { /* alias for clarity */ }
+
+.card-container {
+  display:grid;
+  gap:24px;
+  grid-template-columns: repeat(2,1fr);
+}
 @media (min-width:768px) { .card-container { grid-template-columns: repeat(3,1fr); } }
 @media (min-width:1200px){ .card-container { grid-template-columns: repeat(4,1fr); } }
 
-.card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 6px 16px rgba(0,0,0,.08); cursor:pointer; min-height:260px; }
-.donation-image { width:100%; height:200px; object-fit:cover; display:block; background:#f3f4f6; }
-/* 타이틀 p 기본값(펀딩 카드는 인라인 스타일로 별도 제어) */
-.card p { margin:12px 14px 14px; font-weight:600; line-height:1.3; color:#111; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+/* ✅ 새 donation-card 스타일 */
+.donation-card {
+  background: #fff;
+  border-radius: 10px; /* ← 모서리 살짝만 둥글게 */
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  transition: transform .22s ease, box-shadow .22s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.donation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+.donation-card img.donation-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+.donation-card p {
+  margin: 12px 14px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #111;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ========= 5) SIDEBAR (추천 프로젝트 + sticky) ========= */
-.recommend-box { background:#fff; border-radius:12px; padding:20px; box-shadow:0 4px 12px rgba(0,0,0,.08); height:fit-content; position:sticky; top:88px; }
+.recommend-box {
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  box-shadow:0 4px 12px rgba(0,0,0,.08);
+  height:fit-content;
+  position:sticky;
+  top:88px;
+}
 .recommend-title { font-size:18px; font-weight:700; margin-bottom:16px; }
 .recommend-list { display:flex; flex-direction:column; gap:14px; }
-.recommend-item { display:flex; align-items:center; gap:10px; cursor:pointer; transition: transform .18s ease; }
+.recommend-item {
+  display:flex; align-items:center; gap:10px;
+  cursor:pointer;
+  transition: transform .18s ease;
+}
 .recommend-item:hover { transform: translateY(-3px); }
-.recommend-item img { width:60px; height:60px; object-fit:cover; border-radius:8px; }
+.recommend-item img {
+  width:60px; height:60px;
+  object-fit:cover;
+  border-radius:8px;
+}
 .recommend-item p { margin:0; font-size:14px; font-weight:600; }
 
-/* ========= 6) RESPONSIVE (모바일 1열 + sticky 해제) ========= */
+/* ========= 6) RESPONSIVE ========= */
 @media (max-width:991px){
   .home-layout { grid-template-columns:1fr; }
   .recommend-box { position:static; top:auto; }
@@ -63,15 +169,88 @@
   border-radius: 12px;
   box-shadow: inset 0 0 0 1px #e6eaf0;
 }
-
 .recommend-segmented .ant-segmented-item {
   flex: 1;
   justify-content: center;
 }
-
 .recommend-segmented .ant-segmented-item-selected {
-  background: #4096ff; 
+  background: #4096ff;
   color: #fff;
   font-weight: 600;
   box-shadow: none;
 }
+
+/* 사이드 레일 컨테이너 */
+.home-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 로그인은 일반 배치(스크롤 고정 X) */
+.login-static .login-card { margin-bottom: 0; }
+
+/* ✅ 추천 프로젝트만 sticky */
+.recommend-sticky { position: sticky; top: 88px; }
+
+/* 모바일에서는 자연스럽게 흐르게 */
+@media (max-width: 991px) {
+  .recommend-sticky { position: static; top: auto; }
+}
+
+/* === Login Widget Beautify === */
+.login-card {
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+.login-header {
+  position: relative;
+  padding: 16px 12px 12px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  background: #f5f9ff;
+}
+.login-header-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120px 60px at 20% -20%, rgba(64,150,255,.25), transparent),
+              radial-gradient(140px 70px at 120% 0%, rgba(22,119,255,.18), transparent);
+  pointer-events: none;
+}
+.login-head-copy { position: relative; }
+.login-footnote {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+/* ===== 공통 카드 베이스 (기부/봉사/펀딩) ===== */
+.grid-card{
+  background:#fff; border-radius:10px; overflow:hidden;
+  box-shadow:0 4px 12px rgba(0,0,0,.06);
+  transition:transform .22s ease, box-shadow .22s ease;
+  cursor:pointer; display:flex; flex-direction:column; height:100%;
+}
+.grid-card:hover{ transform:translateY(-5px); box-shadow:0 10px 24px rgba(0,0,0,.12); }
+
+.grid-image{
+  width:100%; height:180px; object-fit:cover; background:#f3f4f6; display:block;
+}
+.grid-body{ padding:12px 14px 14px; }
+.grid-title{
+  margin:0; font-weight:600; font-size:15px; color:#111; line-height:1.4;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.grid-sub{ margin:6px 0 0; color:#666; font-size:13px; }
+
+/* 섹션별 미세 톤(원하면 색만 조절해도 OK) */
+.volunteer-card .grid-image{ background:#f5f9f6; }
+.funding-card   .grid-image{ background:#f7f5fb; }
+
+/* 기존 donation-card와도 일관 유지(이미 적용했으면 생략 가능) */
+.donation-card{ background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,.06); transition:transform .22s ease, box-shadow .22s ease; cursor:pointer; display:flex; flex-direction:column; height:100%; }
+.donation-card:hover{ transform:translateY(-5px); box-shadow:0 10px 24px rgba(0,0,0,.12); }
+.donation-card img.donation-image{ width:100%; height:180px; object-fit:cover; background:#f3f4f6; }
+.donation-card p{ margin:12px 14px 16px; font-weight:600; font-size:15px; color:#111; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }

@@ -17,7 +17,6 @@ import Comments from '../common/Comments.jsx';
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
-
 // 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
   if (!iso) return '';
@@ -29,11 +28,57 @@ const fmtDate = (iso) => {
   return `${y}.${m}.${dd}`;
 };
 
+// 이미지 후보 필드에서 URL 뽑아오기
+const pickImageFields = (obj) => {
+  if (!obj) return [];
+  const candidates = [
+    obj.url, obj.path, obj.imagePath, obj.image_url, obj.image, obj.thumbnailUrl,
+    obj.thumbnail_path, obj.thumbnailPath, obj.mainImage, obj.coverImage
+  ].filter(Boolean);
+
+  // 문자열이 아니라 {url: "..."} 형태가 섞였을 가능성 처리
+  const flat = candidates.map((c) => (typeof c === 'string' ? c : c?.url || c?.path || c?.imagePath)).filter(Boolean);
+
+  // 로컬 파일 경로가 내려오는 경우(예: C:\...)는 프론트에서 못 씀 → 그대로 두되 서버가 /uploads/** 로 매핑되면 표시됨
+  return flat;
+};
+
+// 배열 형태 images에서 URL 뽑기
+const extractFromImagesArray = (arr) => {
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .map((it) => (typeof it === 'string' ? it : pickImageFields(it)[0]))
+    .filter(Boolean);
+};
+
+// Donation 응답에서 이미지 후보 추출
+const extractDonationImages = (don) => {
+  if (!don) return [];
+  // 선호 순서: images[] → 대표 이미지 필드들
+  const list = [
+    ...extractFromImagesArray(don.images),
+    ...pickImageFields(don),
+  ].filter(Boolean);
+  // 중복 제거
+  return Array.from(new Set(list));
+};
+
+// Funding 응답에서 이미지 후보 추출
+const extractFundingImages = (fund) => {
+  if (!fund) return [];
+  const list = [
+    ...extractFromImagesArray(fund.images),
+    ...pickImageFields(fund),
+  ].filter(Boolean);
+  return Array.from(new Set(list));
+};
+
 export default function DonationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [donation, setDonation] = useState(null);
+  const [imageUrls, setImageUrls] = useState([]); // ✅ 캐러셀에 쓸 최종 이미지들
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
@@ -43,7 +88,7 @@ export default function DonationDetail() {
 
   const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
 
-  // 기부 상세 데이터 불러오기
+  // 기부 상세 데이터 불러오기 (+ 이미지 폴백: 펀딩)
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -51,11 +96,32 @@ export default function DonationDetail() {
         const res = await fetch(`/donation/api/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!ignore) {
-          setDonation(data);
-          // 초기 좋아요 상태(선택) — API가 있다면 주석 해제해서 사용
-          // setLiked(Boolean(data?.liked));
+        if (ignore) return;
+
+        setDonation(data);
+
+        // 1) Donation에서 이미지 추출
+        let images = extractDonationImages(data);
+
+        // 2) 이미지가 없거나 너무 적다면 → Funding에서 폴백
+        if (!images || images.length === 0) {
+          // 매칭용 키: donation.fundingId 가 있으면 우선, 없으면 동일 id로 시도
+          const fundingKey = data?.fundingId ?? id;
+          try {
+            const fres = await fetch(`/funding/api/${fundingKey}`, { credentials: 'include' });
+            if (fres.ok) {
+              const fdata = await fres.json();
+              const fimgs = extractFundingImages(fdata);
+              if (fimgs.length > 0) {
+                images = fimgs;
+              }
+            }
+          } catch {
+            // 펀딩 폴백 실패는 무시하고 아래로 진행
+          }
         }
+
+        setImageUrls(images);
       } catch {
         message.error('기부 상세 정보를 불러오지 못했어요.');
       }
@@ -65,8 +131,6 @@ export default function DonationDetail() {
 
   const contentId = donation?.donationId ?? donation?.id ?? Number(id);
 
-
-
   // 진행률 계산
   const progress = useMemo(() => {
     const cur = Number(donation?.currentPrice || 0);
@@ -75,16 +139,11 @@ export default function DonationDetail() {
     return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
   }, [donation]);
 
-  // 캐러셀 이미지 세팅
+  // 캐러셀 이미지 세팅 (없으면 테스트 이미지 3장)
   const imagesForCarousel = useMemo(() => {
-    const raw = Array.isArray(donation?.images)
-      ? donation.images
-          .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
-          .filter(Boolean)
-      : [];
-    if (raw.length < 2) return [testImage, testImage, testImage];
-    return raw;
-  }, [donation]);
+    if (imageUrls && imageUrls.length >= 1) return imageUrls;
+    return [testImage, testImage, testImage];
+  }, [imageUrls]);
 
   const start = fmtDate(donation?.createdAt);
   const end = donation?.endAt ? fmtDate(donation.endAt) : '';
@@ -136,7 +195,6 @@ export default function DonationDetail() {
   // 좋아요 토글
   const toggleLike = async () => {
     try {
-      // 서버 연동이 있으면 아래 예시 사용
       // await fetch(`/like/toggle?contentType=donation&contentId=${contentId}`, { method: 'POST', credentials: 'include' });
       setLiked((v) => !v);
     } catch {
@@ -146,16 +204,16 @@ export default function DonationDetail() {
 
   return (
     <Layout>
-      <div className="detail-content">
+      <div className="donation-detail-content">
         <Row gutter={[24, 24]}>
           {/* 메인 상세 영역 */}
           <Col xs={24} md={16}>
-            <Card bordered={false} className="thumbnail-card">
+            <Card bordered={false} className="donation-thumbnail-card">
               <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
                 {imagesForCarousel.map((src, idx) => (
                   <div key={idx}>
                     <img
-                      className="thumbnail-image"
+                      className="donation-thumbnail-image"
                       src={src || testImage}
                       alt={`이미지-${idx}`}
                       onError={(e) => { e.currentTarget.src = testImage; }}
@@ -165,11 +223,11 @@ export default function DonationDetail() {
               </Carousel>
             </Card>
 
-            <Tabs defaultActiveKey="1" className="custom-tabs">
+            <Tabs defaultActiveKey="1" className="donation-custom-tabs">
               {/* 상세내용 */}
               <TabPane tab="상세내용" key="1">
                 <Title level={4}>{donation?.title}</Title>
-                <Card className="content-card" bordered={false}>
+                <Card className="donation-content-card" bordered={false}>
                   <Paragraph>{donation?.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
               </TabPane>
@@ -194,20 +252,20 @@ export default function DonationDetail() {
 
           {/* 사이드 정보 영역 */}
           <Col xs={24} md={8}>
-            <Card className="info-card" variant="borderless">
+            <Card className="donation-info-card" variant="borderless">
               <Title level={5}>{donation?.title}</Title>
-              <div className="project-period">
-                <CalendarOutlined className="calendar-icon" />
+              <div className="donation-project-period">
+                <CalendarOutlined className="donation-calendar-icon" />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
               </div>
 
-              <Divider className="divider-tight" />
+              <Divider className="donation-divider-tight" />
 
               <Text strong>{progress}% 달성</Text>
               <Progress percent={progress} showInfo={false} status="active" />
-              {end && <Text type="secondary" className="end-text">{end} 종료</Text>}
+              {end && <Text type="secondary" className="donation-end-text">{end} 종료</Text>}
 
-              <div className="stats">
+              <div className="donation-stats">
                 <Paragraph>
                   <Text>목표 금액</Text><br />
                   <Text>{Number(donation?.maxPrice || 0).toLocaleString()}원</Text>
@@ -219,12 +277,12 @@ export default function DonationDetail() {
               </div>
 
               {/* 하단 액션 */}
-              <div className="action-row">
-                <div className="icon-group">
+              <div className="donation-action-row">
+                <div className="donation-icon-group">
                   <Tooltip title={liked ? '좋아요 취소' : '좋아요'}>
                     <button
                       type="button"
-                      className={`icon-btn ${liked ? 'active' : ''}`}
+                      className={`donation-icon-btn ${liked ? 'active' : ''}`}
                       aria-label="좋아요"
                       onClick={toggleLike}
                     >
@@ -234,7 +292,7 @@ export default function DonationDetail() {
                   <Tooltip title="공유하기">
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="donation-icon-btn"
                       aria-label="공유하기"
                       onClick={share}
                     >
@@ -242,7 +300,7 @@ export default function DonationDetail() {
                     </button>
                   </Tooltip>
                 </div>
-                <Button type="primary" size="large" className="cta-btn" onClick={handleParticipate}>
+                <Button type="primary" size="large" className="donation-cta-btn" onClick={handleParticipate}>
                   기부하기
                 </Button>
               </div>
@@ -298,7 +356,7 @@ export default function DonationDetail() {
               maxLength={13}
             />
           </Form.Item>
-          <div className="phone-hint">예: 010-1234-5678</div>
+          <div className="donation-phone-hint">예: 010-1234-5678</div>
         </Form>
       </Modal>
     </Layout>
