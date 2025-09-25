@@ -11,10 +11,22 @@
             const title = document.getElementById("title").value;
             const content = document.getElementById("content").value;
 
+            // FormData로 전송 (헤더 수동 지정 X)
+            const fd = new FormData();
+            fd.append("title", title);
+            fd.append("content", content);
+
+            // 파일 입력(id가 file 또는 image인 경우 모두 대응)
+            const fileInput =
+                document.getElementById("file") || document.getElementById("image");
+            if (fileInput && fileInput.files && fileInput.files[0]) {
+                fd.append("file", fileInput.files[0]); // 서버에서 @RequestParam("file")
+            }
+
             fetch("/post/create", {
                 method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ title, content })
+                body: fd,             // ← Content-Type 자동(boundary 포함). 절대 직접 지정하지 마세요.
+                credentials: "include"
             })
                 .then(res => res.json())
                 .then(data => {
@@ -22,10 +34,10 @@
                         alert("글이 등록되었습니다.");
                         window.location.href = "/post/post-list-view";
                     } else {
-                        alert("오류: " + data.error);
+                        alert("오류: " + (data.error || "서버 오류"));
                     }
                 })
-                .catch(err => alert("서버 오류"));
+                .catch(() => alert("서버 오류"));
         }
     </script>
 </head>
@@ -38,6 +50,9 @@
 
     <label>내용:</label><br>
     <textarea id="content" name="content" rows="10" cols="50"></textarea><br><br>
+
+    <label for="file">이미지:</label><br>
+    <input type="file" id="file" name="file" accept="image/*"><br>
 
     <input type="submit" value="작성">
 </form>
