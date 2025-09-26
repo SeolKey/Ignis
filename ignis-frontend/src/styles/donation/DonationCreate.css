@@ -1,39 +1,94 @@
+/* 레이아웃 */
 .donation-layout {
   min-height: 100vh;
   background-color: #ffffff;
 }
 
 .donation-content-create {
-  max-width: 1000px;
-  margin: 80px auto;
+  max-width: 980px;
+  margin: 72px auto 96px;
   padding: 0 24px;
 }
 
-.form-card {
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+/* 상단 안내 배너 */
+.create-banner {
+  margin-bottom: 16px;
+}
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.banner-help {
+  font-size: 16px;
+  color: #8c8c8c;
+  cursor: help;
+}
+
+/* 메인 카드 – 트렌디 스타일 */
+.form-card.modern {
+  border-radius: 16px;
+  border: 1px solid #f1f1f1;
   padding: 24px;
+  background:
+    radial-gradient(1000px 200px at 10% -50%, rgba(22,119,255,0.08), transparent 40%),
+    radial-gradient(800px 160px at 110% -30%, rgba(22,119,255,0.06), transparent 45%),
+    #fff;
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 .form-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.header-tip {
+  font-size: 18px;
+  color: #faad14;
 }
 
-.form-actions > button {
-  margin-left: 8px;
-}
-
+/* 서브 카드 */
 .sub-card {
-  margin-top: 24px;
+  margin-top: 20px;
   background-color: #fafafa;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid #f0f0f0;
   padding: 16px;
 }
 
+/* 업로드 영역 커스텀 */
+.upload-name {
+  color: #1677ff;
+  font-weight: 600;
+}
+
+/* 동의 카드 */
+.agreement-card {
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid #ffe58f;
+  background: #fffbe6;
+}
+.agreement-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.agreement-brief {
+  margin: 6px 0 12px;
+}
+
+/* 하단 버튼 */
+.form-actions > button {
+  margin-left: 8px;
+}
+
+/* 헤더/푸터(선택적으로 유지) */
 .donation-header {
   background-color: #ffffff;
   border-bottom: 1px solid #f0f0f0;
@@ -42,13 +97,7 @@
   align-items: center;
   height: 64px;
 }
-
-.logo {
-  font-weight: bold;
-  font-size: 20px;
-  color: #1890ff;
-}
-
+.logo { font-weight: bold; font-size: 20px; color: #1890ff; }
 .donation-footer {
   text-align: center;
   padding: 24px;

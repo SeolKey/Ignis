@@ -1,4 +1,3 @@
-// src/pages/volunteer/VolunteerDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Carousel, Modal, Table } from 'antd';

@@ -1,9 +1,8 @@
-// src/pages/funding/FundingList.jsx
 import React, { useEffect, useState } from 'react';
 import { message, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
-import '../../styles/funding/FundingList.css';   // 새 CSS 파일
+import '../../styles/funding/FundingList.css';   
 import fallback from '../../assets/testImage.png';
 
 const toImageUrl = (p) => {

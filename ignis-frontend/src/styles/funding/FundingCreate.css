@@ -1,50 +1,101 @@
-/* 페이지 전체 래퍼 (이 네임스페이스 안에서만 스타일 적용) */
+/* 페이지 래퍼 */
 .funding-create {
-  max-width: 900px;
-  margin: 32px auto 64px;
-  padding: 0 16px;
+  max-width: 980px;
+  margin: 72px auto 96px;
+  padding: 0 24px;
 }
 
-/* 카드 스타일 */
-.funding-create .funding-create-card {
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+/* 상단 안내 배너 */
+.funding-create-banner {
+  margin-bottom: 16px;
+}
+.funding-banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.funding-banner-help {
+  font-size: 16px;
+  color: #8c8c8c;
+  cursor: help;
+}
+
+/* 메인 카드 – 트렌디 룩 */
+.funding-create-card.modern {
+  border-radius: 16px;
+  border: 1px solid #f1f1f1;
   padding: 24px;
+  background:
+    radial-gradient(1000px 200px at 10% -50%, rgba(22,119,255,0.08), transparent 40%),
+    radial-gradient(800px 160px at 110% -30%, rgba(22,119,255,0.06), transparent 45%),
+    #fff;
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* 헤더 라인 */
+.funding-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.funding-header-tip {
+  font-size: 18px;
+  color: #faad14;
+}
+
+/* 서브 정보 카드 */
+.funding-sub-card {
+  margin-top: 20px;
+  background-color: #fafafa;
+  border-radius: 12px;
   border: 1px solid #f0f0f0;
+  padding: 16px;
 }
 
-/* 제목 간격 */
-.funding-create .ant-typography {
-  margin-bottom: 8px;
-}
-
-/* 라벨 가독성 */
-.funding-create .ant-form-item-label > label {
+/* 업로드 박스 */
+.funding-upload-name {
+  color: #1677ff;
   font-weight: 600;
 }
 
-/* 업로드 박스 여백/모양 */
-.funding-create .ant-upload-drag {
-  border-radius: 10px;
+/* 동의 카드 */
+.funding-agreement-card {
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid #ffe58f;
+  background: #fffbe6;
 }
-.funding-create .ant-upload-drag:hover {
-  border-color: #b5b9c0;
+.funding-agreement-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.funding-agreement-brief {
+  margin: 6px 0 12px;
 }
 
-/* 액션 버튼: 오른쪽 하단 정렬 */
-.funding-create .form-actions {
+/* 액션 버튼 */
+.funding-form-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: space-between;
   margin-top: 8px;
 }
+.funding-form-actions > button + button {
+  margin-left: 8px;
+}
 
-/* 모바일 간격 조정 */
+/* 모바일 대응 */
 @media (max-width: 576px) {
   .funding-create {
-    margin: 24px auto 48px;
+    margin: 48px auto 72px;
+    padding: 0 16px;
   }
-  .funding-create .funding-create-card {
+  .funding-create-card.modern {
     padding: 16px;
   }
 }
