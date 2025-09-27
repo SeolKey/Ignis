@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Checkbox, Typography, Space, Modal } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import '../styles/SignupPage.css';
 
@@ -13,6 +13,8 @@ const SignupPage = () => {
 
   const [termsModal, setTermsModal] = useState(false);
   const [privacyModal, setPrivacyModal] = useState(false);
+  const navigate = useNavigate();
+
 
   // 이메일 인증 요청
   const handleSendEmailCode = async () => {
@@ -92,8 +94,9 @@ const SignupPage = () => {
 
       if (data.result === '회원가입 성공') {
         alert('회원가입 성공!');
-        window.location.href = '/user/login';
-      } else {
+        navigate('/login', { replace: true }); // 뒤로가기 눌러도 제출 화면 안 돌아오게
+      }
+      else {
         alert(data.error_message || '회원가입 실패');
       }
     } catch (err) {

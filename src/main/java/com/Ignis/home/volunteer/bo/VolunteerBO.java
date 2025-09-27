@@ -1,8 +1,10 @@
 package com.Ignis.home.volunteer.bo;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.Ignis.common.upload.UploadCategory;
 import com.Ignis.home.volunteer.domain.VolunteerParticipant;
 import com.Ignis.home.volunteer.mapper.VolunteerPeopleMapper;
 import jakarta.transaction.Transactional;
@@ -63,7 +65,12 @@ public class VolunteerBO {
 
 
     public String saveImage(MultipartFile imageFile) {
-        return fileManagerService.saveFile(imageFile);
+        if (imageFile == null || imageFile.isEmpty()) return null;
+        try {
+            return fileManagerService.saveFile(UploadCategory.VOLUNTEER, imageFile);
+        } catch (IOException e) {
+            throw new RuntimeException("봉사 이미지 저장 실패", e);
+        }
     }
 
     public void increaseViewCount(Long volunteerId) {

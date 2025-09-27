@@ -1,4 +1,3 @@
-// src/pages/DonationList.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { message, Segmented, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';

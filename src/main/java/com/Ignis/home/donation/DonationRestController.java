@@ -14,6 +14,7 @@ import com.Ignis.home.donation.domain.Donation;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -81,8 +82,6 @@ public class DonationRestController {
 
         return result;
     }
-
-    
 
     @PostMapping("/update-status")
     public Map<String, Object> updateDonationStatus(
@@ -211,75 +210,137 @@ public class DonationRestController {
 
         return ResponseEntity.ok(body);
     }
-// DonationPaymentRestController에 문제가 생길 경우 아래 주석 제거 후 사용
-//    private Long currentUserId(HttpSession session) {
-//        Object id = session.getAttribute("userId");
-//        if (id == null) id = session.getAttribute("userID");
-//        if (id instanceof Long) return (Long) id;
-//        if (id instanceof Integer) return ((Integer) id).longValue();
-//        return null;
-//    }
-//
-//    @PostMapping("/pay/prepare")
-//    public Map<String, Object> preparePay(@RequestParam Long donationId,
-//                                          @RequestParam int amount,
-//                                          @RequestParam(required = false) String buyerName,
-//                                          @RequestParam(required = false) String buyerEmail,
-//                                          @RequestParam(required = false) String buyerTel,
-//                                          HttpSession session) {
-//        Map<String, Object> res = new HashMap<>();
-//        try {
-//            Long userId = currentUserId(session);
-//            if (userId == null) {
-//                res.put("code", 401);
-//                res.put("error_message", "로그인이 필요합니다.");
-//                return res;
-//            }
-//            DonationPaymentBO.PrepareResult pr = donationPaymentBO.prepareDonation(
-//                    userId, donationId, amount, buyerName, buyerEmail, buyerTel
-//            );
-//            res.put("result", "success");
-//            res.put("merchantUid", pr.getMerchantUid());
-//            res.put("name", pr.getName());     // 결제창 표시용(기부 제목)
-//            res.put("amount", pr.getAmount());
-//            res.put("buyerName", pr.getBuyerName());
-//            res.put("buyerEmail", pr.getBuyerEmail());
-//            res.put("buyerTel", pr.getBuyerTel());
-//            return res;
-//        } catch (IllegalArgumentException e) {
-//            res.put("code", 400);
-//            res.put("error_message", e.getMessage());
-//            return res;
-//        } catch (IllegalStateException e) {
-//            res.put("code", 500);
-//            res.put("error_message", e.getMessage());
-//            return res;
-//        } catch (Exception e) {
-//            res.put("code", 500);
-//            res.put("error_message", "결제 사전등록 중 오류가 발생했습니다.");
-//            return res;
-//        }
-//    }
-//
-//
-//    @PostMapping("/pay/complete")
-//    public Map<String, Object> completePay(@RequestParam String impUid,
-//                                           @RequestParam String merchantUid,
-//                                           @RequestParam Long donationId) {
-//        Map<String, Object> res = new HashMap<>();
-//        try {
-//            DonationPaymentBO.CompletedPayment done = donationPaymentBO.completeDonation(impUid, merchantUid, donationId);
-//            res.put("result", "success");
-//            res.put("donationId", done.getDonationId());
-//            res.put("amount", done.getAmount());
-//            res.put("impUid", done.getImpUid());
-//            res.put("merchantUid", done.getMerchantUid());
-//            return res;
-//        } catch (Exception e) {
-//            res.put("code", 400);
-//            res.put("error_message", e.getMessage());
-//            return res;
-//        }
-//    }
+
+    /** React 전용 생성 */
+    @PostMapping("/react/create")
+    public ResponseEntity<?> createDonationForReact(
+            @RequestParam String title,
+            @RequestParam String description,
+            @RequestParam("maxPrice") String maxPriceRaw,
+            @RequestParam(value = "accountInfo", required = false) String accountInfo,
+            @RequestParam("file") MultipartFile file,
+            HttpSession session) {
+        // 1) 세션 확인 (미로그인 → 401)
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인 필요"));
+        }
+
+        // 2) 파일 필수/메타 검증
+        if (file == null || file.isEmpty() || file.getOriginalFilename() == null || file.getContentType() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("result", "fail", "error", "유효한 이미지 파일을 첨부해주세요."));
+        }
+
+        // 3) 목표금액 숫자 정규화
+        String norm = (maxPriceRaw == null ? "" : maxPriceRaw).replaceAll("[^0-9]", "");
+        if (norm.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("result", "fail", "error", "목표 금액을 입력해주세요."));
+        }
+        Integer maxPrice = Integer.valueOf(norm);
+
+        try {
+            // 4) 엔티티 구성
+            Donation d = new Donation();
+            d.setUserId(userId);
+            d.setTitle(title == null ? "" : title);
+            d.setDescription(description == null ? "" : description);
+            d.setAccountInfo(accountInfo);
+            d.setMaxPrice(maxPrice);
+            d.setCurrentPrice(0);
+            if (d.getStatus() == null)
+                d.setStatus("PENDING");
+            if (d.getImagePath() == null)
+                d.setImagePath("");
+
+            // 5) BO에서 파일까지 처리(업로드+DB저장) — 펀딩과 동일 흐름
+            donationBO.insertDonation(d, file);
+
+            // 6) 성공 응답 (필요 시 imagePath도 함께 내려줄 수 있음)
+            return ResponseEntity.ok(Map.of(
+                    "result", "success",
+                    "donationId", d.getDonationId()
+            // ,"imagePath", d.getImagePath()
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getClass().getSimpleName() + ": " + e.getMessage()));
+        }
+    }
+
+    // DonationPaymentRestController에 문제가 생길 경우 아래 주석 제거 후 사용
+    // private Long currentUserId(HttpSession session) {
+    // Object id = session.getAttribute("userId");
+    // if (id == null) id = session.getAttribute("userID");
+    // if (id instanceof Long) return (Long) id;
+    // if (id instanceof Integer) return ((Integer) id).longValue();
+    // return null;
+    // }
+    //
+    // @PostMapping("/pay/prepare")
+    // public Map<String, Object> preparePay(@RequestParam Long donationId,
+    // @RequestParam int amount,
+    // @RequestParam(required = false) String buyerName,
+    // @RequestParam(required = false) String buyerEmail,
+    // @RequestParam(required = false) String buyerTel,
+    // HttpSession session) {
+    // Map<String, Object> res = new HashMap<>();
+    // try {
+    // Long userId = currentUserId(session);
+    // if (userId == null) {
+    // res.put("code", 401);
+    // res.put("error_message", "로그인이 필요합니다.");
+    // return res;
+    // }
+    // DonationPaymentBO.PrepareResult pr = donationPaymentBO.prepareDonation(
+    // userId, donationId, amount, buyerName, buyerEmail, buyerTel
+    // );
+    // res.put("result", "success");
+    // res.put("merchantUid", pr.getMerchantUid());
+    // res.put("name", pr.getName()); // 결제창 표시용(기부 제목)
+    // res.put("amount", pr.getAmount());
+    // res.put("buyerName", pr.getBuyerName());
+    // res.put("buyerEmail", pr.getBuyerEmail());
+    // res.put("buyerTel", pr.getBuyerTel());
+    // return res;
+    // } catch (IllegalArgumentException e) {
+    // res.put("code", 400);
+    // res.put("error_message", e.getMessage());
+    // return res;
+    // } catch (IllegalStateException e) {
+    // res.put("code", 500);
+    // res.put("error_message", e.getMessage());
+    // return res;
+    // } catch (Exception e) {
+    // res.put("code", 500);
+    // res.put("error_message", "결제 사전등록 중 오류가 발생했습니다.");
+    // return res;
+    // }
+    // }
+    //
+    //
+    // @PostMapping("/pay/complete")
+    // public Map<String, Object> completePay(@RequestParam String impUid,
+    // @RequestParam String merchantUid,
+    // @RequestParam Long donationId) {
+    // Map<String, Object> res = new HashMap<>();
+    // try {
+    // DonationPaymentBO.CompletedPayment done =
+    // donationPaymentBO.completeDonation(impUid, merchantUid, donationId);
+    // res.put("result", "success");
+    // res.put("donationId", done.getDonationId());
+    // res.put("amount", done.getAmount());
+    // res.put("impUid", done.getImpUid());
+    // res.put("merchantUid", done.getMerchantUid());
+    // return res;
+    // } catch (Exception e) {
+    // res.put("code", 400);
+    // res.put("error_message", e.getMessage());
+    // return res;
+    // }
+    // }
 
 }

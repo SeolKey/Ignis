@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>마이페이지 설정</title>
+    <th:block th:replace="fragments/headerStyle :: headerStyle"/>
+    <style>
+        :root{
+            --bg:#f6f7f9; --card:#fff; --text:#111; --muted:#6b7280;
+            --brand:#3b82f6; --brand-600:#2563eb; --ok:#10b981; --danger:#ef4444;
+            --ring:rgba(59,130,246,.35); --shadow:0 10px 25px rgba(0,0,0,.06);
+            --radius:16px;
+        }
+        html,body{background:var(--bg); color:var(--text);}
+        .container{max-width:1080px;margin:40px auto;padding:0 20px;}
+        .page-title{font-size:32px;font-weight:800;margin:8px 0 18px;}
+        .subtitle{color:var(--muted);margin-bottom:24px;}
+        .back{font-size:14px;color:#374151;text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+
+        .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;}
+        .cards{display:grid;grid-template-columns:1fr;gap:18px;}
+        @media (min-width:960px){ .cards{grid-template-columns:1fr 1fr;} }
+
+        .section-title{font-size:18px;font-weight:700;margin-bottom:14px;}
+        .row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+        label{font-weight:600;font-size:14px;}
+        .hint{font-size:12px;color:var(--muted);}
+        .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+        .input{
+            width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:12px;
+            padding:12px 14px;font-size:14px;outline:none;transition:.15s;
+        }
+        .input:focus{border-color:var(--brand); box-shadow:0 0 0 4px var(--ring);}
+        .actions{display:flex;gap:10px;align-items:center;margin-top:6px;}
+        .btn{
+            appearance:none;border:0;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;
+            background:var(--brand);color:#fff;transition:.15s;
+        }
+        .btn:hover{background:var(--brand-600);}
+        .btn.secondary{background:#e5e7eb;color:#111;}
+        .badge{display:inline-flex;align-items:center;gap:8px;background:#eef2ff;color:#3730a3;
+            padding:8px 12px;border-radius:12px;font-weight:700;}
+        .panel{display:flex;gap:14px;align-items:center;justify-content:space-between;margin-bottom:16px;}
+        .kpi{display:flex;gap:14px;flex-wrap:wrap}
+        .kpi .chip{background:#f3f4f6;border-radius:999px;padding:8px 12px;font-size:13px}
+        .muted{color:var(--muted);}
+
+        .toast{
+            position:fixed;right:24px;bottom:24px;background:#111;color:#fff;padding:12px 14px;
+            border-radius:12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:translateY(8px);
+            transition:.2s;
+        }
+        .toast.show{opacity:1;transform:translateY(0);pointer-events:auto;}
+        .danger{color:var(--danger);} .ok{color:var(--ok);}
+        .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);cursor:pointer;color:#6b7280;}
+        .rel{position:relative;}
+
+        /* 재인증 모달 (전체 화면) */
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;}
+        .modal-card{max-width:420px;margin:10% auto;background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+        .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+        .error{color:#dc2626;font-size:13px;margin-top:8px}
+
+        /* 잠금 상태일 때 뒤 콘텐츠 클릭/포커스 방지 */
+        .locked{pointer-events:none; user-select:none; filter:blur(1px) brightness(0.98);}
+
+        /* 이메일 변경 섹션 보조 스타일 */
+        .row-grid{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch;}
+        .mini-hint{font-size:12px;margin-top:4px;}
+        .ok-text{color:#10b981;} .warn-text{color:#ef4444;}
+    </style>
+</head>
+<body th:data-need-verify="${needVerify}">
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<div id="pageRoot" class="container">
+    <a class="back" href="/mypage">← 마이페이지로</a>
+
+    <div class="panel">
+        <div>
+            <div class="page-title" th:text="${userName} + '님의 설정'">설정</div>
+            <div class="subtitle">계정 보안과 연락처 정보를 관리하세요.</div>
+        </div>
+        <div class="kpi">
+            <div class="chip">보안 상태: <span class="ok" id="secureState">양호</span></div>
+            <div class="chip">마지막 변경: <span id="lastChanged">-</span></div>
+        </div>
+    </div>
+
+    <div class="cards">
+        <!-- 비밀번호 변경 (그대로) -->
+        <section class="card">
+            <div class="section-title">비밀번호 변경</div>
+
+            <div class="row two">
+                <div class="rel">
+                    <label for="currentPassword">현재 비밀번호</label>
+                    <input type="password" class="input" id="currentPassword" placeholder="현재 비밀번호"/>
+                    <span class="eye" onclick="toggle('currentPassword')">👁</span>
+                </div>
+                <div class="rel">
+                    <label for="newPassword">새 비밀번호</label>
+                    <input type="password" class="input" id="newPassword" placeholder="영문/숫자/특수문자 8자 이상"/>
+                    <span class="eye" onclick="toggle('newPassword')">👁</span>
+                </div>
+            </div>
+
+            <div class="hint">안전한 비밀번호를 위해 대·소문자, 숫자, 특수문자를 섞어 10자 이상 사용하세요.</div>
+            <div class="actions">
+                <button class="btn" id="pwBtn" onclick="changePassword()">변경</button>
+                <span class="muted" id="pwMsg"></span>
+            </div>
+        </section>
+
+        <!-- ✅ 이메일 변경 (회원가입의 이메일 인증 흐름 적용) -->
+        <section class="card">
+            <div class="section-title">이메일 변경</div>
+
+            <!-- 새 이메일 입력 + 인증 요청 -->
+            <div class="row">
+                <label for="newEmail">새 이메일</label>
+                <div class="row-grid">
+                    <input type="email" class="input" id="newEmail" placeholder="name@example.com"/>
+                    <button class="btn secondary" id="sendEmailCodeBtn" onclick="sendEmailCode()">인증코드 발송</button>
+                </div>
+                <div class="mini-hint" id="emailHint"></div>
+            </div>
+
+            <!-- 인증 코드 입력 + 확인 -->
+            <div class="row" id="emailCodeRow" style="display:none;">
+                <label for="emailCode">인증 코드</label>
+                <div class="row-grid">
+                    <input type="text" class="input" id="emailCode" placeholder="메일로 받은 코드"/>
+                    <button class="btn secondary" id="verifyEmailCodeBtn" onclick="verifyEmailCode()">인증확인</button>
+                </div>
+            </div>
+
+            <div class="hint">로그인 알림 및 영수증이 이 주소로 발송됩니다.</div>
+            <div class="actions">
+                <button class="btn" id="emBtn" onclick="changeEmail()" disabled>변경</button>
+                <span class="muted" id="emMsg"></span>
+            </div>
+        </section>
+    </div>
+
+    <!-- 추가: 기타 설정 -->
+    <section class="card" style="margin-top:18px">
+        <div class="section-title">기타</div>
+        <div class="row">
+            <div class="badge">🔐 2단계 인증 <span class="muted">(준비중)</span></div>
+        </div>
+        <div class="hint">보안을 강화하려면 2단계 인증을 활성화하세요. 추후 업데이트됩니다.</div>
+    </section>
+</div>
+
+<!-- 재인증 모달 -->
+<div class="modal" id="reverifyModal" aria-hidden="true">
+    <div class="modal-card">
+        <h3 style="margin:0 0 12px;font-weight:800">비밀번호 확인</h3>
+        <p class="muted" style="margin:0 0 10px">설정 페이지에 들어가기 전에 본인 확인이 필요합니다.</p>
+        <input type="password" id="reverifyPw" class="input" placeholder="비밀번호"/>
+        <div class="modal-actions">
+            <button class="btn secondary" id="reverifyCancel">취소</button>
+            <button class="btn" id="reverifyOk">확인</button>
+        </div>
+        <div class="error" id="reverifyErr"></div>
+    </div>
+</div>
+
+<!-- 토스트 -->
+<div class="toast" id="toast"></div>
+
+<script>
+    // ===== helpers =====
+    const toast = (msg, ok=true) => {
+        const t=document.getElementById('toast');
+        t.textContent = msg;
+        t.style.background = ok ? '#111' : '#b91c1c';
+        t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'), 1800);
+    };
+    const setBusy = (btn, busy) => {
+        btn.disabled = busy;
+        btn.classList.toggle('secondary', busy);
+        btn.textContent = busy ? '처리중…' : (btn.dataset.label || btn.textContent || '확인');
+    };
+    function toggle(id){
+        const el=document.getElementById(id);
+        el.type = el.type === 'password' ? 'text':'password';
+    }
+
+    // ===== 재인증 모달 =====
+    const root = document.getElementById('pageRoot');
+    const modal = document.getElementById('reverifyModal');
+    const pwInput = document.getElementById('reverifyPw');
+    const errBox = document.getElementById('reverifyErr');
+
+    const openReverify = () => {
+        root.classList.add('locked');
+        modal.style.display='block';
+        errBox.textContent='';
+        pwInput.value='';
+        setTimeout(()=>pwInput.focus(), 0);
+    };
+    const closeReverify = () => {
+        modal.style.display='none';
+        root.classList.remove('locked');
+    };
+
+    document.getElementById('reverifyCancel').addEventListener('click', () => { closeReverify(); });
+    document.getElementById('reverifyOk').addEventListener('click', doReverify);
+    pwInput.addEventListener('keydown', e=>{ if(e.key==='Enter') doReverify(); });
+
+    async function doReverify(){
+        const password = pwInput.value.trim();
+        if(!password){ errBox.textContent='비밀번호를 입력하세요.'; return; }
+        try{
+            const res = await fetch('/mypage/verify', {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded'},
+                body:new URLSearchParams({password})
+            });
+            const data = await res.json().catch(()=> ({}));
+            if(res.ok && data.ok){
+                closeReverify();
+                toast('인증되었습니다');
+            }else{
+                errBox.textContent = data.msg || '인증에 실패했습니다.';
+            }
+        }catch(_){ errBox.textContent = '네트워크 오류입니다.'; }
+    }
+
+    // ===== 비밀번호 변경(기존) =====
+    async function changePassword(){
+        const btn = document.getElementById('pwBtn');
+        btn.dataset.label='변경';
+        setBusy(btn, true);
+        const currentPassword = document.getElementById("currentPassword").value.trim();
+        const newPassword = document.getElementById("newPassword").value.trim();
+
+        if(!currentPassword || !newPassword){
+            setBusy(btn,false); toast('비밀번호를 모두 입력하세요', false); return;
+        }
+        try{
+            const res = await fetch("/mypage/change-password",{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({currentPassword, newPassword})
+            });
+
+            if(res.status === 401){
+                setBusy(btn,false);
+                openReverify();
+                return;
+            }
+
+            const data = await res.json();
+            const ok = !!data.result;
+            document.getElementById('pwMsg').textContent = ok ? '변경 완료' : (data.error_message || '변경 실패');
+            if(ok){ document.getElementById('lastChanged').textContent = new Date().toLocaleString(); }
+            toast(ok ? '비밀번호가 변경되었습니다' : (data.error_message||'오류가 발생했습니다'), ok);
+        }catch(e){ toast('네트워크 오류', false); }
+        finally{ setBusy(btn,false); }
+    }
+
+    // ===== 이메일 변경: 회원가입의 이메일 인증 로직 적용 =====
+    let emailVerified = false;
+
+    async function sendEmailCode(){
+        const btn = document.getElementById('sendEmailCodeBtn');
+        const email = document.getElementById('newEmail').value.trim();
+        const hint = document.getElementById('emailHint');
+        hint.className = 'mini-hint'; hint.textContent = '';
+
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+            hint.classList.add('warn-text'); hint.textContent = '이메일 형식을 확인해 주세요.'; return;
+        }
+
+        try{
+            setBusy(btn, true);
+
+            // (선택) 이미 가입된 이메일인지 확인하고 싶다면 /user/check-email 활용
+            const chk = await fetch(`/user/check-email?email=${encodeURIComponent(email)}`);
+            const exists = await chk.json().catch(()=> ({}));
+            if(exists?.exists){ hint.classList.add('warn-text'); hint.textContent='이미 가입된 이메일입니다.'; return; }
+
+            const res = await fetch("/user/email-auth/send", {
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({email})
+            });
+            const data = await res.json().catch(()=> ({}));
+            if(data?.result){
+                document.getElementById('emailCodeRow').style.display='block';
+                hint.classList.add('ok-text'); hint.textContent='인증코드 전송됨 (3분 내 입력).';
+                toast('인증코드를 전송했습니다.');
+            }else{
+                hint.classList.add('warn-text'); hint.textContent = data?.error_message || '인증코드 전송 실패';
+            }
+        }catch(_){
+            hint.classList.add('warn-text'); hint.textContent='네트워크 오류';
+        }finally{
+            setBusy(btn, false);
+        }
+    }
+
+    async function verifyEmailCode(){
+        const btn = document.getElementById('verifyEmailCodeBtn');
+        const email = document.getElementById('newEmail').value.trim();
+        const code  = document.getElementById('emailCode').value.trim();
+        const hint = document.getElementById('emailHint');
+
+        if(!code){ toast('인증코드를 입력하세요', false); return; }
+
+        try{
+            setBusy(btn, true);
+            const res = await fetch("/user/email-auth/verify",{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({email, code})
+            });
+            const data = await res.json().catch(()=> ({}));
+            if(data?.result === '인증 성공'){
+                emailVerified = true;
+                hint.className = 'mini-hint ok-text';
+                hint.textContent = '이메일 인증 완료';
+                document.getElementById('emBtn').disabled = false; // 변경 버튼 활성화
+                toast('이메일 인증이 완료되었습니다.');
+            }else{
+                emailVerified = false;
+                hint.className = 'mini-hint warn-text';
+                hint.textContent = data?.error_message || '인증 실패';
+            }
+        }catch(_){
+            emailVerified = false;
+            hint.className = 'mini-hint warn-text';
+            hint.textContent = '네트워크 오류';
+        }finally{
+            setBusy(btn, false);
+        }
+    }
+
+    async function changeEmail(){
+        const btn = document.getElementById('emBtn');
+        btn.dataset.label='변경';
+        setBusy(btn, true);
+
+        const newEmail = document.getElementById("newEmail").value.trim();
+        const hint = document.getElementById('emailHint');
+
+        if(!emailVerified){
+            setBusy(btn,false);
+            hint.className='mini-hint warn-text';
+            hint.textContent='먼저 이메일 인증을 완료해 주세요.';
+            toast('먼저 이메일 인증을 완료해 주세요.', false);
+            return;
+        }
+
+        try{
+            const res = await fetch("/mypage/change-email",{
+                method:"POST",
+                headers:{"Content-Type":"application/x-www-form-urlencoded"},
+                body:new URLSearchParams({newEmail})
+            });
+
+            if(res.status === 401){
+                setBusy(btn,false);
+                openReverify(); // 세션 만료시 재인증
+                return;
+            }
+
+            const data = await res.json();
+            const ok = !!data.result;
+            document.getElementById('emMsg').textContent = ok ? '변경 완료' : (data.error_message || '변경 실패');
+            if(ok){
+                document.getElementById('lastChanged').textContent = new Date().toLocaleString();
+                toast('이메일이 변경되었습니다');
+            }else{
+                toast(data.error_message || '오류가 발생했습니다', false);
+            }
+        }catch(e){
+            toast('네트워크 오류', false);
+        }finally{
+            setBusy(btn,false);
+        }
+    }
+
+    // ===== 입장 시 needVerify=true면 자동 모달 오픈 =====
+    (function(){
+        const need = document.body.getAttribute('data-need-verify');
+        if(need === 'true'){ openReverify(); }
+    })();
+
+    // 입력 변경 시 상태 리셋
+    document.getElementById('newEmail').addEventListener('input', () => {
+        emailVerified = false;
+        document.getElementById('emailHint').className='mini-hint';
+        document.getElementById('emailHint').textContent='';
+        document.getElementById('emailCodeRow').style.display='none';
+        document.getElementById('emailCode').value='';
+        document.getElementById('emBtn').disabled = true;
+    });
+</script>
+</body>
+</html>

@@ -1,12 +1,11 @@
-// Header.jsx
 import React, { useEffect, useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import IgnisLogo from '../assets/IgnisLogo.png';
-import '../styles/Header.css';
+import '../styles/components/Header.css';
 
-const { Header: AntHeader } = Layout; // ⚡ antd Header는 AntHeader로 alias 처리
+const { Header: AntHeader } = Layout;
 
 const Header = () => {
     const navigate = useNavigate();

@@ -11,6 +11,16 @@ import com.Ignis.user.entity.UserEntity;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -21,10 +31,10 @@ public class UserRestController {
     @PostMapping("/do-login")
     public Map<String, Object> login(@RequestParam("userLoginId") String userLoginId,
                                      @RequestParam("password") String password,
-                                     HttpSession session) {
+                                     HttpSession session,
+                                     HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
 
-        // 1) 파라미터 유효성 간단 체크 (디버깅에 도움)
         if (userLoginId == null || password == null) {
             result.put("code", 400);
             result.put("error_message", "필수 파라미터가 없습니다.(userLoginId/password)");
@@ -33,10 +43,25 @@ public class UserRestController {
 
         UserEntity user = userBO.getUserByLoginIdAndPassword(userLoginId, password);
         if (user != null) {
-            // 2) 세션에 표준 키로 저장
-            session.setAttribute("userId", user.getUserId());   // Long/Integer 모두 가능 (아래 /me에서 안전 변환)
+            // 기존처럼 내 세션에도 저장 (선택)
+            session.setAttribute("userId", user.getUserId());
             session.setAttribute("userLoginId", user.getUserLoginId());
             session.setAttribute("userName", user.getName());
+
+            // ✅ 스프링 시큐리티에게도 "인증됨"을 알려주기
+            // 역할은 프로젝트 규칙에 맞게 세팅. 최소 "ROLE_USER" 하나는 넣자.
+            List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(user.getUserLoginId(), null, authorities);
+
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+
+            // 세션에도 컨텍스트 저장 (중요)
+            request.getSession(true).setAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context
+            );
 
             result.put("result", "성공");
             result.put("userId", user.getUserId());
@@ -47,6 +72,7 @@ public class UserRestController {
         }
         return result;
     }
+
 
     /** ✅ 로그인 상태 확인 / 사용자 정보 복구 API */
     @GetMapping("/me")
@@ -76,7 +102,74 @@ public class UserRestController {
     }
 
     // (기존 코드) 이메일 인증/중복확인/전화번호 API는 그대로 유지
+    @PostMapping("/do-sign-up")
+    public Map<String, Object> signUp(@RequestBody UserEntity user) {
+        Map<String, Object> result = new HashMap<>();
 
+        if (!userBO.isAvailableLoginId(user.getUserLoginId())) {
+            result.put("code", 409);
+            result.put("error_message", "이미 사용 중인 아이디입니다.");
+            return result;
+        }
+
+        userBO.signUp(user);
+        result.put("result", "회원가입 성공");
+        return result;
+    }
+
+    @PostMapping("/email-auth/send")
+    public Map<String, Object> sendEmailCode(@RequestParam("email") String email) {
+        Map<String, Object> result = new HashMap<>();
+        userBO.generateAndSendVerificationCode(email);
+        result.put("result", "인증코드 발송 완료");
+        return result;
+    }
+
+    @PostMapping("/email-auth/verify")
+    public Map<String, Object> verifyEmailCode(@RequestParam("email") String email,
+                                               @RequestParam("code") String code) {
+        Map<String, Object> result = new HashMap<>();
+        boolean isCorrect = userBO.verifyCode(email, code);
+
+        if (isCorrect) {
+            userBO.markEmailAsVerified(email);
+            result.put("result", "인증 성공");
+        } else {
+            result.put("code", 400);
+            result.put("error_message", "인증코드가 올바르지 않거나 만료되었습니다.");
+        }
+        return result;
+    }
+
+    // ✅ 아이디 중복확인
+    @GetMapping("/check-login-id")
+    public Map<String, Object> checkLoginId(@RequestParam("loginId") String loginId) {
+        Map<String, Object> res = new HashMap<>();
+        if (loginId == null || !loginId.matches("^[a-zA-Z0-9]{5,20}$")) {
+            res.put("available", false);
+            res.put("message", "아이디는 영문/숫자 5~20자여야 합니다.");
+            return res;
+        }
+        boolean available = userBO.isAvailableLoginId(loginId);
+        res.put("available", available);
+        if (!available) res.put("message", "이미 사용 중인 아이디입니다.");
+        return res;
+    }
+
+    // ✅ 이메일 중복확인
+    @GetMapping("/check-email")
+    public Map<String, Object> checkEmail(@RequestParam("email") String email) {
+        Map<String, Object> res = new HashMap<>();
+        if (email == null || !email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            res.put("exists", false);
+            res.put("message", "이메일 형식을 확인해주세요.");
+            return res;
+        }
+        boolean exists = userBO.isEmailExists(email);
+        res.put("exists", exists);
+        if (exists) res.put("message", "이 이메일은 이미 가입되어 있습니다.");
+        return res;
+    }
     @GetMapping("/me/phone")
     public Map<String, Object> getPhone(HttpSession session) {
         Map<String, Object> res = new HashMap<>();

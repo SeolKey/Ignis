@@ -1,11 +1,15 @@
 package com.Ignis.post;
 
+import com.Ignis.common.FileManagerService;
+import com.Ignis.common.upload.UploadCategory;
 import com.Ignis.post.bo.PostBO;
 import com.Ignis.post.domain.Post;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,11 +20,13 @@ import java.util.Map;
 public class PostRestController {
 
     private final PostBO postBO;
+    private final FileManagerService fileManagerService;
 
     @PostMapping("/create")
     public Map<String, Object> createPost(
             @RequestParam("title") String title,
             @RequestParam("content") String content,
+            @RequestParam(value = "file", required = false) MultipartFile file,
             HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         Long userIdLong = (Long) session.getAttribute("userId");
@@ -32,10 +38,22 @@ public class PostRestController {
         }
         int userId = userIdLong.intValue();
 
+        String imageUrl = null;
+        if(file != null && !file.isEmpty()) {
+            try{
+                imageUrl = fileManagerService.saveFile(UploadCategory.POST, file);
+            } catch (IOException e){
+                result.put("result", "실패");
+                result.put("error", "이미지 저장 실패: " + e.getMessage());
+                return result;
+            }
+        }
+
         Post post = new Post();
         post.setTitle(title);
         post.setContent(content);
         post.setUserId(userId);
+        post.setImagePath(imageUrl);
 
         postBO.createPost(post);
         result.put("result", "성공");

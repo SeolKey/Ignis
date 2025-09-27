@@ -1,19 +1,14 @@
-// src/pages/volunteer/VolunteerDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Row, Col, Card, Typography, Progress,
-  Button, Tabs, Divider, message, Spin, Input,
-  Carousel, Modal, Table
-} from 'antd';
+import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Carousel, Modal, Table } from 'antd';
 import { CalendarOutlined, EnvironmentOutlined, ShareAltOutlined, TeamOutlined, CheckCircleTwoTone } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import '../../styles/volunteer/VolunteerDetail.css';
 import testImage from '../../assets/testImage.png';
+import Comments from '../common/Comments';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
-const { TextArea } = Input;
 
 const participantCols = [
   { title: '이름', dataIndex: 'name', key: 'name', width: '30%' },
@@ -27,7 +22,7 @@ const fmtDate = (v) => {
     const d = new Date(typeof v === 'string' ? v.replace(' ', 'T') : v);
     if (Number.isNaN(d.getTime())) return String(v);
     return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  } catch{
+  } catch {
     return String(v);
   }
 };
@@ -70,7 +65,7 @@ export default function VolunteerDetail() {
             setJoined(!!result.joined);
           }
         }
-      } catch  {
+      } catch {
         message.error('봉사 상세 정보를 불러오지 못했습니다.');
       } finally {
         if (!ignore) setLoading(false);
@@ -85,6 +80,27 @@ export default function VolunteerDetail() {
     if (!max) return 0;
     return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
   }, [vol]);
+
+  // 댓글에서 사용할 대상 ID
+  const contentId = useMemo(
+    () => (vol?.volunteerId ?? vol?.id ?? Number(id)),
+    [vol, id]
+  );
+
+  // 공유 (FundingDetail과 동일 패턴)
+  const share = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: vol?.title || '봉사', url: window.location.href });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        message.success('링크가 복사되었어요.');
+      }
+    } catch (e) {
+      console.warn('공유 취소/실패:', e);
+    }
+  };
+
 
   const imagesForCarousel = useMemo(() => {
     const one = toImageUrl(vol?.imagePath);
@@ -130,7 +146,7 @@ export default function VolunteerDetail() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const list = await res.json();
       setParticipants(Array.isArray(list) ? list : []);
-    } catch  {
+    } catch {
       message.error('참여자 목록을 불러오지 못했습니다.');
     } finally {
       setLoadingParticipants(false);
@@ -210,7 +226,7 @@ export default function VolunteerDetail() {
               </TabPane>
 
               <TabPane tab="댓글" key="3">
-                {/* 댓글 구현부 생략 */}
+                <Comments contentType="volunteer" contentId={contentId} />
               </TabPane>
             </Tabs>
           </Col>
@@ -244,31 +260,40 @@ export default function VolunteerDetail() {
                 </div>
               )}
 
-              <Button
-                type={joined ? 'default' : 'primary'}
-                danger={joined}
-                block
-                style={{ marginBottom: 12 }}
-                onClick={toggleJoin}
-              >
-                {joined ? '참여 취소하기' : '봉사 참여하기'}
-              </Button>
+              <div className="action-row">
+                <div className="icon-group">
+                  {/* 참여 목록 아이콘 버튼 */}
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="참여 인원 목록"
+                    onClick={openParticipantsModal}
+                  >
+                    <TeamOutlined />
+                  </button>
 
-              <Button
-                icon={<ShareAltOutlined />}
-                block
-                style={{ marginTop: 12 }}
-                onClick={() =>
-                  navigator.clipboard.writeText(window.location.href).then(() => message.success('링크 복사됨'))
-                }
-              >
-                공유하기
-              </Button>
+                  {/* 공유 아이콘 버튼 */}
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="공유하기"
+                    onClick={share}
+                  >
+                    <ShareAltOutlined />
+                  </button>
+                </div>
 
-              {/* 작성자/관리자만 노출하려면 아래 조건 추가: vol.canViewParticipantList && */}
-              <Button block onClick={openParticipantsModal} style={{ marginTop: 12 }}>
-                참여 인원 목록
-              </Button>
+                <Button
+                  type={joined ? 'default' : 'primary'}
+                  danger={joined}
+                  size="large"
+                  className="cta-btn"
+                  onClick={toggleJoin}
+                >
+                  {joined ? '참여 취소하기' : '봉사 참여하기'}
+                </Button>
+              </div>
+
 
               <Modal
                 title="참여 인원 목록"

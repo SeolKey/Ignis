@@ -1,7 +1,9 @@
 package com.Ignis.home.donation.bo;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.Ignis.common.upload.UploadCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,13 +47,13 @@ public class DonationBO {
 
 	// 기부 등록 (파일 포함)
     public void insertDonation(Donation donation, MultipartFile file) {
-        if (file != null && !file.isEmpty()) {
-            String imagePath = fileManagerService.saveFile(file);
-            donation.setImagePath(imagePath);
-        } else {
-            // 🔥 DB에 NOT NULL 제약이 있으므로 빈 문자열이라도 넣자
-            donation.setImagePath("");
+        String imageUrl = null;
+        try {
+            imageUrl = fileManagerService.saveFile(UploadCategory.DONATION, file);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 실패", e);
         }
+        donation.setImagePath(imageUrl); // DB에는 URL 문자열 저장
         donationMapper.insertDonation(donation);
     }
 

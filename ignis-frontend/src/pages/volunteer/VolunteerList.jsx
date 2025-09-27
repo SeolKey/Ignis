@@ -1,4 +1,3 @@
-// src/pages/volunteer/VolunteerList.jsx
 import React, { useEffect, useState } from 'react';
 import { Button, Typography, Empty } from 'antd';
 import { useNavigate } from 'react-router-dom';

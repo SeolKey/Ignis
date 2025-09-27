@@ -1,4 +1,3 @@
-// src/pages/noticeboard/NoticeEdit.jsx
 import React, { useEffect } from 'react';
 import { Card, Form, Input, Button, Typography, message, Space } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';

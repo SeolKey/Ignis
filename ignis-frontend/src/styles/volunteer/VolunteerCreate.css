@@ -1,25 +1,57 @@
 /* VolunteerCreate 전용 래퍼 */
 .volunteer-create-page {
-  max-width: 880px;
-  margin: 24px auto;
-  padding: 0 16px;
+  max-width: 980px;
+  margin: 72px auto 96px;
+  padding: 0 24px;
 }
 
-/* 이 안에서만 sub-card, 버튼 스타일 적용 */
+/* 상단 안내 배너 */
+.volunteer-create-banner {
+  margin-bottom: 16px;
+}
+.banner-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.banner-help {
+  font-size: 16px;
+  color: #8c8c8c;
+  cursor: help;
+}
+
+/* 메인 카드 – 트렌디 룩 (Donation/Funding과 통일감) */
+.form-card.modern {
+  border-radius: 16px;
+  border: 1px solid #f1f1f1;
+  padding: 24px;
+  background:
+    radial-gradient(1000px 200px at 10% -50%, rgba(22,119,255,0.08), transparent 40%),
+    radial-gradient(800px 160px at 110% -30%, rgba(22,119,255,0.06), transparent 45%),
+    #fff;
+  box-shadow:
+    0 8px 16px rgba(0,0,0,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* 헤더 */
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.header-tip {
+  font-size: 18px;
+  color: #faad14;
+}
+
+/* 이 페이지 안에서만 sub-card, 버튼 스타일 적용 */
 .volunteer-create-page .sub-card {
-  margin-top: 24px;
+  margin-top: 20px;
   background-color: #fafafa;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid #f0f0f0;
   padding: 16px;
-}
-
-.volunteer-create-page .form-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 24px;
-}
-
-.volunteer-create-page .form-actions button + button {
-  margin-left: 8px;
 }

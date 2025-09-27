@@ -21,8 +21,6 @@
   background: #f0f0f0;
 }
 
-
-
 /* 탭/본문 카드 */
 .custom-tabs .ant-tabs-nav {
   margin: 0 0 12px 0;
@@ -45,4 +43,50 @@
 /* 숫자 정보 블록(필요 시 확장) */
 .stats p {
   margin-bottom: 12px;
+}
+
+
+/* --- 하단 버튼 스타일 (펀딩과 동일) --- */
+.action-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 12px;
+}
+.icon-group {
+  display: flex;
+  gap: 8px;
+}
+.icon-btn {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all .18s ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  padding: 0;
+}
+.icon-btn:hover {
+  background: #f7f8fa;
+  border-color: #e1e1e1;
+}
+.icon-btn:active {
+  transform: translateY(1px);
+}
+.cta-btn {
+  flex: 1;
+  height: 48px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+@media (max-width: 767px) {
+  .action-row { gap: 10px; }
+  .icon-btn  { width: 44px; height: 44px; }
+  .cta-btn   { height: 44px; }
 }

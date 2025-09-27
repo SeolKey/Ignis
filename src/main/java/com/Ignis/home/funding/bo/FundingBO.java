@@ -1,8 +1,10 @@
 package com.Ignis.home.funding.bo;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.Ignis.common.enums.Status;
+import com.Ignis.common.upload.UploadCategory;
 import com.Ignis.home.donation.domain.Donation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,8 +35,13 @@ public class FundingBO {
     }
 
     public void insertFunding(Funding funding, MultipartFile file) {
-    	String imagePath = fileManagerService.saveFile(file);
-        funding.setImagePath(imagePath);
+        String imageUrl = null;
+        try {
+            imageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, file);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 실패", e);
+        }
+        funding.setImagePath(imageUrl); // DB에는 URL 문자열 저장
         fundingMapper.insertFunding(funding);
     }
 
