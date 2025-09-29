@@ -19,7 +19,6 @@ const FreeList = () => {
     (async () => {
       try {
         setLoading(true);
-        // ✅ React 전용 목록 API (백엔드에 아래 3-1 추가)
         const res = await fetch('/post/react/list', { credentials: 'include', signal: ctrl.signal });
         if (!res.ok) throw new Error('LIST_FAIL');
         const ct = res.headers.get('content-type') || '';
@@ -71,8 +70,8 @@ const FreeList = () => {
         <Card className="board-header-card">
           <Space className="board-header" align="center" wrap>
             <div>
-              <Title level={3} style={{ margin: 0 }}>자유게시판</Title>
-              <Text type="secondary">자유롭게 소통하는 공간입니다.</Text>
+              <Title level={3} style={{ margin: 0 }}>후기 게시판</Title>
+              <Text type="secondary">여러분의 경험을 소통하는 공간입니다.</Text>
             </div>
             <Space className="board-actions" align="center" wrap>
               <Search placeholder="제목 검색" onSearch={setQ} allowClear enterButton className="board-search" />

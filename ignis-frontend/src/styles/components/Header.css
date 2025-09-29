@@ -1,28 +1,131 @@
-.header {
+/* ===== 공통 레이아웃 ===== */
+.ignis-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 2px 24px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #eee;
+  padding: 10px 24px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.logo {
+/* 왼쪽 영역: 로고 + 네비게이션 */
+.left-wrap {
   display: flex;
   align-items: center;
-  margin-left: 50px;
+  gap: 18px;
+  min-width: 0;
 }
- 
-.logo img {
+.brand {
+  display: inline-flex;
+  align-items: center;
+}
+.brand img {
   height: 80px;
-  margin-top: 10px;
-  margin-bottom: 15px;
-  vertical-align: middle;
+  display: block;
 }
 
-.menu {
-  flex-grow: 1;
-  justify-content: flex-end;
-  background: none;
-  border-bottom: none;
+/* ===== 1차 메뉴: 트렌디 룩 ===== */
+.primary-nav {
+  border-bottom: none !important;
+  background: transparent !important;
+  margin-left: 6px;
+}
+
+.primary-nav.trendy .ant-menu-item {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 0 14px !important;
+  line-height: 44px;
+  position: relative;
+}
+
+/* 기본 텍스트/상태 */
+.primary-nav.trendy .ant-menu-item a {
+  color: #1f1f1f;
+  transition: color .2s ease;
+}
+
+/* 호버: 그라디언트 언더라인 애니메이션 */
+.primary-nav.trendy .ant-menu-item::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 2px;
+  background: linear-gradient(90deg, #1677ff 0%, #69b1ff 100%);
+  transform: scaleX(0);
+  transform-origin: 50% 50%;
+  transition: transform .22s ease;
+  border-radius: 2px;
+}
+.primary-nav.trendy .ant-menu-item:hover::after {
+  transform: scaleX(1);
+}
+.primary-nav.trendy .ant-menu-item:hover a {
+  color: #1677ff;
+}
+
+/* 선택 상태: 강조 컬러 + 굵은 언더라인 */
+.primary-nav.trendy .ant-menu-item-selected a {
+  color: #1677ff !important;
+}
+.primary-nav.trendy .ant-menu-item-selected::after {
+  transform: scaleX(1);
+  height: 3px;
+  bottom: 5px;
+}
+
+/* ===== 오른쪽: 검색 + 인증 ===== */
+.right-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* 검색 영역 */
+.search-shell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.search-input.trendy {
+  width: 260px;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+.search-input.trendy .ant-input-prefix {
+  color: #8c8c8c;
+}
+.search-input.trendy input {
+  border-radius: 999px !important;
+}
+
+/* 포커스 글로우 & 테두리 컬러 */
+.search-input.trendy .ant-input {
+  border-color: #d9d9d9;
+}
+.search-input.trendy:focus-within .ant-input,
+.search-input.trendy .ant-input:focus {
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+  border-color: #1677ff;
+}
+
+/* 검색 버튼: 둥근 캡슐 */
+.search-btn.trendy {
+  border-radius: 999px;
+  padding: 0 16px;
+}
+
+/* 인증 영역 */
+.auth-zone .hello { color: #1f1f1f; font-weight: 500; }
+.login-btn, .logout-btn { color: #1f1f1f; }
+
+/* ===== 반응형 ===== */
+@media (max-width: 992px) {
+  .search-input.trendy { width: 200px; }
+}
+@media (max-width: 768px) {
+  .primary-nav { display: none; } /* 필요 시 Drawer로 대체 */
+  .search-input.trendy { width: 160px; }
 }

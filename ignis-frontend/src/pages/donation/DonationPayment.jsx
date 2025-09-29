@@ -243,7 +243,7 @@ export default function DonationPayment() {
                   <Radio value="card">카드 결제(포트원)</Radio>
                 </Card>
                 <Card className="donation-payment-option" bordered>
-                  <Radio value="account" disabled>계좌이체 (준비중)</Radio>
+                  <Radio value="account" disabled>계좌이체</Radio>
                 </Card>
               </Space>
             </Radio.Group>

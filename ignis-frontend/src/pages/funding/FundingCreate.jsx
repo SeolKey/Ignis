@@ -32,7 +32,11 @@ const FundingCreate = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
+  // 대표 이미지(단일)
   const [file, setFile] = useState(null);
+  // 상세 이미지(다중)
+  const [detailFiles, setDetailFiles] = useState([]);
+
   const [submitting, setSubmitting] = useState(false);
   const [agree, setAgree] = useState(false);
   const [showAgreement, setShowAgreement] = useState(false);
@@ -40,6 +44,19 @@ const FundingCreate = () => {
   const handleFileChange = (info) => {
     const f = info?.fileList?.[0]?.originFileObj ?? null;
     setFile(f);
+  };
+
+  const handleDetailChange = ({ fileList }) => {
+    // 이미지 파일만, 최대 10장 권장
+    const sanitized = (fileList || [])
+      .slice(0, 10)
+      .filter((f) => {
+        const ok = (f.type || "").startsWith("image/");
+        if (!ok) message.warning("이미지 파일만 업로드할 수 있습니다.");
+        return ok;
+      })
+      .map((f) => f.originFileObj || f);
+    setDetailFiles(sanitized);
   };
 
   const onFinish = async (values) => {
@@ -58,7 +75,12 @@ const FundingCreate = () => {
     formData.append("description", values.description ?? "");
     formData.append("maxPrice", mp);
     formData.append("accountNumber", values.accountNumber ?? "");
-    formData.append("file", file);
+    formData.append("file", file); // 대표 이미지
+
+    // 상세 이미지(여러 장) — Donation과 동일한 키로 전송
+    detailFiles.forEach((df, idx) => {
+      if (df) formData.append(`detailFiles[${idx}]`, df, df.name || `detail_${idx}.jpg`);
+    });
 
     try {
       setSubmitting(true);
@@ -173,6 +195,7 @@ const FundingCreate = () => {
               </Form.Item>
             </Card>
 
+            {/* 대표 이미지 */}
             <Form.Item
               label="대표 이미지 업로드"
               required
@@ -194,6 +217,30 @@ const FundingCreate = () => {
                 {file?.name && <p className="funding-upload-name">업로드된 파일: {file.name}</p>}
               </Dragger>
             </Form.Item>
+
+            {/* 상세 이미지 (여러 장) */}
+            <Card
+              className="funding-detail-card"
+              title="상세 내용 이미지 (선택)"
+              extra={<Text type="secondary">권장 1200×800px · 최대 10장</Text>}
+            >
+              <Form.Item name="detailFiles" tooltip="이미지 순서는 업로드 순서대로 저장됩니다.">
+                <Dragger
+                  multiple
+                  accept="image/*"
+                  beforeUpload={() => false}
+                  onChange={handleDetailChange}
+                  listType="picture"
+                >
+                  <p className="ant-upload-drag-icon"><InboxOutlined /></p>
+                  <p className="ant-upload-text">클릭하거나 이미지를 이곳에 드래그하여 업로드해 주십시오.</p>
+                  <p className="ant-upload-hint">최대 10장 · 이미지 파일만 가능</p>
+                </Dragger>
+              </Form.Item>
+              {detailFiles?.length > 0 && (
+                <Paragraph type="secondary">업로드된 파일: {detailFiles.length}개 (순서: 위 → 아래)</Paragraph>
+              )}
+            </Card>
 
             {/* 동의영역 */}
             <Card className="funding-agreement-card" bodyStyle={{ padding: 16 }}>

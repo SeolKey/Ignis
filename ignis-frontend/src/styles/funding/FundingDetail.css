@@ -1,4 +1,4 @@
-/* 레이아웃 */
+/* ===== 레이아웃 ===== */
 .funding-content {
   width: 100%;
   padding: 40px 5vw;
@@ -7,50 +7,71 @@
   overflow: visible;
 }
 
-/* 썸네일 카드/이미지  */
-.thumbnail-card {
+/* ===== 썸네일 카드/이미지 ===== */
+.funding-thumbnail-card {
   background: #fff;
   border: none;
   box-shadow: none;
   margin-bottom: 12px;
 }
-.thumbnail-image {
-  width: 1000px;
-  height: 440px;
-  object-fit: cover; /* 이미지를 비율에 맞춰 잘라서 채우기 */
+
+/* 이미지가 잘리지 않게 전체 보이도록 + 반응형 */
+.funding-thumbnail-image {
+  width: 100%;
+  height: auto;              /* 원본 비율 유지 */
+  max-height: 520px;         /* 너무 커지지 않도록 상한 */
+  object-fit: contain;       /* 잘리지 않고 전체 보이기 */
+  image-rendering: auto;     /* 기본 화질 보정 */
   border-radius: 8px;
   background: #f0f0f0;
 }
 
-/* 탭/본문 카드 */
-.custom-tabs .ant-tabs-nav {
+/* ===== 탭/본문 카드 ===== */
+.funding-custom-tabs .ant-tabs-nav {
   margin: 0 0 12px 0;
 }
-.content-card {
+.funding-content-card {
   margin-top: 16px;
 }
 
-/* 우측 정보 카드 */
-.info-card {
+/* 상세내용 탭 - 제목/본문 크게 */
+.funding-detail-title,
+.funding-custom-tabs .ant-typography h4 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #222;
+}
+.funding-content-card .ant-typography,
+.funding-content-card .ant-typography p,
+.funding-detail-paragraph {
+  font-size: 18px;
+  line-height: 1.8;
+  color: #333;
+  margin: 0;
+}
+
+/* ===== 우측 정보 카드 ===== */
+.funding-info-card {
   background: #fff;
   border: 1px solid #f0f0f0;
   border-radius: 8px;
 }
 
-.project-period {
-  margin-bottom: 12px;
-  color: #888;
-}
-
-/* 사이드 카드 제목 */
-.info-card .ant-typography {
+.funding-side-title,
+.funding-info-card .ant-typography {
   font-size: 22px;
   font-weight: 700;
   margin-bottom: 12px;
 }
 
-/* 진행 퍼센트(텍스트로 쓸 때) */
-.info-card .progress-text {
+.funding-project-period {
+  margin-bottom: 12px;
+  color: #888;
+}
+
+/* 진행 퍼센트 텍스트 */
+.funding-progress-text {
   font-size: 22px;
   font-weight: 700;
   color: #000;
@@ -58,35 +79,32 @@
   margin-bottom: 8px;
 }
 
-.info-card .stats.stats-v2 {
+/* 금액/목표금액 */
+.funding-stats-v2 {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   margin-top: 8px;
 }
-
-/* 왼쪽: 현재 금액 */
-.info-card .current-amount .amount {
-  font-size: 28px;         /* 숫자 크게 강조 */
+.funding-current-amount .funding-amount {
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: #111;
   line-height: 1;
 }
-.info-card .current-amount .amount-label {
+.funding-amount-label {
   margin-left: 6px;
-  font-size: 15px;         /* 라벨은 숫자보다 작게 */
+  font-size: 15px;
   font-weight: 600;
   color: #666;
 }
-
-/* 오른쪽: 목표금액 배지 */
-.info-card .goal-pill {
+.funding-goal-pill {
   padding: 6px 10px;
   border-radius: 9999px;
-  background: #e6f7ff;     /* 밝은 하늘색 */
-  color: #1677ff;          /* 포인트 컬러 */
+  background: #e6f7ff;
+  color: #1677ff;
   font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
@@ -95,45 +113,22 @@
 
 /* 좁은 화면에서는 세로로 쌓이게 */
 @media (max-width: 767px) {
-  .info-card .stats.stats-v2 {
+  .funding-stats-v2 {
     flex-direction: column;
     align-items: flex-start;
     gap: 6px;
   }
 }
 
-
-.info-card .stats {
-  display: flex;
-  flex-direction: column;   /* 세로 배치 */
-  gap: 12px;                /* 위아래 간격 */
-  margin-top: 16px;
-}
-
-.info-card .stats-block {
-  text-align: left;
-}
-.info-card .stats-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #000;
-}
-.info-card .stats-label {
-  font-size: 14px;
-  color: #666;
-  margin-top: 4px;
-}
-
 /* 오른쪽 컨테이너만 sticky */
 @media (min-width: 768px) {
-  .info-card {
+  .funding-info-card {
     position: sticky;
     top: 88px;        /* 헤더 높이에 맞게 조정 */
     align-self: flex-start;
     z-index: 2;
     background: #fff;
   }
-
   /* 혹시 남아있을 리워드 sticky를 무력화 */
   .reward-wrap.sticky {
     position: static;
@@ -142,18 +137,18 @@
   }
 }
 
-/* --- 하단 버튼 스타일 --- */
-.action-row {
+/* ===== 하단 버튼 ===== */
+.funding-action-row {
   display: flex;
   gap: 12px;
   align-items: stretch;
   margin-top: 12px;
 }
-.icon-group {
+.funding-icon-group {
   display: flex;
   gap: 8px;
 }
-.icon-btn {
+.funding-icon-btn {
   width: 48px;
   height: 48px;
   border: 1px solid #eaeaea;
@@ -168,26 +163,26 @@
   box-shadow: 0 1px 0 rgba(0,0,0,0.02);
   padding: 0;
 }
-.icon-btn:hover {
+.funding-icon-btn:hover {
   background: #f7f8fa;
   border-color: #e1e1e1;
 }
-.icon-btn:active {
+.funding-icon-btn:active {
   transform: translateY(1px);
 }
-.icon-btn.active {
+.funding-icon-btn.active {
   color: #ff4d4f;
   background: #fff7f7;
   border-color: rgba(255,77,79,.25);
 }
-.cta-btn {
+.funding-cta-btn {
   flex: 1;
   height: 48px;
   font-weight: 600;
   border-radius: 10px;
 }
 @media (max-width: 767px) {
-  .action-row { gap: 10px; }
-  .icon-btn  { width: 44px; height: 44px; }
-  .cta-btn   { height: 44px; }
+  .funding-action-row { gap: 10px; }
+  .funding-icon-btn  { width: 44px; height: 44px; }
+  .funding-cta-btn   { height: 44px; }
 }

@@ -35,3 +35,11 @@
 .pwd-meter-hint { font-size: 12px; color: #8c8c8c; }
 
 .tips-card { border-radius: 14px; background: #fbfbfb; }
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.stat-card { min-height: 92px; }

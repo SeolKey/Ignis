@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import '../../styles/home/Home.css';
 import testImage from '../../assets/testImage.png';
+import HomeGridSection from './HomeGridSection';
 import { Card, Segmented, Space, message } from 'antd';
 import { HeartTwoTone, SmileTwoTone, GiftTwoTone } from "@ant-design/icons";
 
@@ -112,7 +113,6 @@ export default function Home() {
             subtitle="당신의 작은 선택이 세상을 바꿉니다, IGNIS에서 시작하세요."
             subNote="작은 참여가 큰 희망을 만듭니다"
           />
-
           {/* 카테고리 버튼 */}
           <div className="category-buttons">
             <Card hoverable className="category-card donation" onClick={() => navigate('/donation-list')}>
@@ -128,104 +128,31 @@ export default function Home() {
               <p className="category-label">펀딩</p>
             </Card>
           </div>
-
           {/* 기부 섹션 */}
-          <section className="section" style={{ marginTop: 40 }}>
-            <div className="top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0 }}>기부</h2>
-              <a onClick={() => navigate('/donation-list')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
-            </div>
-
-            <div className="card-container card-grid">
-              {donationList.map((item) => (
-                <div
-                  key={item.donationId ?? item.id}
-                  className="donation-card"
-                  role="button"
-                  onClick={() => navigate(`/donation-detail/${item.donationId ?? item.id}`)}
-                >
-                  <img
-                    src={toImageUrl(item.imagePath)}
-                    alt={item.title || '기부 이미지'}
-                    className="donation-image"
-                    loading="lazy"
-                    onError={(e) => { if (!e.currentTarget.src.includes(testImage)) e.currentTarget.src = testImage; }}
-                  />
-                  <p>{item.title}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-
+          <HomeGridSection
+            title="기부"
+            type="기부"
+            items={donationList}
+            onMore={() => navigate('/donation-list')}
+            onClickItem={(id) => navigate(`/donation-detail/${id}`)}
+          />
           {/* 봉사 섹션 */}
-          <section className="section" style={{ marginTop: 48 }}>
-            <div className="top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0 }}>봉사</h2>
-              <a onClick={() => navigate('/volunteer')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
-            </div>
-
-            <div className="card-container card-grid">
-              {volunteerList.map((item) => (
-                <div
-                  key={item.volunteerId ?? item.id}
-                  className="grid-card volunteer-card"
-                  role="button"
-                  onClick={() => navigate(`/volunteer/${item.volunteerId ?? item.id}`)}
-                >
-                  <img
-                    src={toImageUrl(item.imagePath)}
-                    alt={item.title || '봉사 이미지'}
-                    className="grid-image"
-                    loading="lazy"
-                    onError={(e) => { if (!e.currentTarget.src.includes(testImage)) e.currentTarget.src = testImage; }}
-                  />
-                  <div className="grid-body">
-                    <p className="grid-title">{item.title}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
+          <HomeGridSection
+            title="봉사"
+            type="봉사"
+            items={volunteerList}
+            onMore={() => navigate('/volunteer')}
+            onClickItem={(id) => navigate(`/volunteer/${id}`)}
+          />
           {/* 펀딩 섹션 */}
-          <section className="section" style={{ marginTop: 48 }}>
-            <div className="top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ margin: 0 }}>펀딩</h2>
-              <a onClick={() => navigate('/funding')} style={{ cursor: 'pointer' }}>더 보러가기 →</a>
-            </div>
-
-            <div className="card-container card-grid">
-              {fundingList.map((item) => (
-                <div
-                  key={item.fundingId ?? item.id}
-                  className="grid-card funding-card"
-                  role="button"
-                  onClick={() => navigate(`/funding/${item.fundingId ?? item.id}`)}
-                >
-                  <img
-                    src={toImageUrl(item.imagePath)}
-                    alt={item.title || '펀딩 이미지'}
-                    className="grid-image"
-                    loading="lazy"
-                    onError={(e) => { if (!e.currentTarget.src.includes(testImage)) e.currentTarget.src = testImage; }}
-                  />
-                  <div className="grid-body">
-                    <p className="grid-title">{item.title}</p>
-                    {(item.maxPrice != null || item.currentPrice != null) && (
-                      <p className="grid-sub">
-                        {item.currentPrice != null && <>현재 {Number(item.currentPrice).toLocaleString()}원</>}
-                        {item.maxPrice != null && <> · 목표 {Number(item.maxPrice).toLocaleString()}원</>}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
+          <HomeGridSection
+            title="펀딩"
+            type="펀딩"
+            items={fundingList}
+            onMore={() => navigate('/funding')}
+            onClickItem={(id) => navigate(`/funding/${id}`)}
+          />
         </div>
-
         {/* 사이드: 로그인 + 추천 */}
         <aside className="home-sidebar">
           <div className="login-static">

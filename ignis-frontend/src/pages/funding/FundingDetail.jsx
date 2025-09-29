@@ -9,7 +9,6 @@ import testImage from '../../assets/testImage.png';
 import Comments from '../common/Comments';
 // import RewardSelector from "../funding/RewardSelector";
 
-
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
@@ -24,8 +23,6 @@ const fmtDate = (iso) => {
   return `${y}.${m}.${dd}`;
 };
 
-
-
 // 이미지 경로 정규화
 const toImageUrl = (p) => {
   if (!p || String(p).trim() === '' || String(p).toLowerCase() === 'null') return testImage;
@@ -37,7 +34,7 @@ const toImageUrl = (p) => {
 export default function FundingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // 상태
+
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState(null);
   const [liked, setLiked] = useState(false);
@@ -116,7 +113,6 @@ export default function FundingDetail() {
     navigate(`/payment?type=funding&id=${contentId}&amount=${amount}`);
   };
 
-  // 로딩/없음 처리
   if (loading) {
     return (
       <Layout>
@@ -126,23 +122,21 @@ export default function FundingDetail() {
       </Layout>
     );
   }
-  
-  // 렌더
+
   return (
     <Layout>
       <div className="funding-content">
         <Row gutter={[24, 24]}>
           {/* 메인 상세 */}
           <Col xs={24} md={16}>
-            <Card bordered={false} className="thumbnail-card">
+            <Card bordered={false} className="funding-thumbnail-card">
               <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
                 {imagesForCarousel.map((src, idx) => (
                   <div key={idx}>
                     <img
                       src={src || testImage}
                       alt={`이미지-${idx}`}
-                      className="thumbnail-image"
-                      style={{ height: 300 }}
+                      className="funding-thumbnail-image"
                       onError={(e) => { e.currentTarget.src = testImage; }}
                     />
                   </div>
@@ -150,17 +144,17 @@ export default function FundingDetail() {
               </Carousel>
             </Card>
 
-            <Tabs defaultActiveKey="1" className="custom-tabs">
+            <Tabs defaultActiveKey="1" className="funding-custom-tabs">
               <TabPane tab="상세내용" key="1">
-                <Title level={4}>{item?.title || '펀딩 상세'}</Title>
-                <Card className="content-card" bordered={false}>
-                  <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
+                <Title level={4} className="funding-detail-title">{item?.title || '펀딩 상세'}</Title>
+                <Card className="funding-content-card" bordered={false}>
+                  <Paragraph className="funding-detail-paragraph" style={{ whiteSpace: 'pre-wrap' }}>
                     {item?.description || '프로젝트 설명이 등록되지 않았습니다.'}
                   </Paragraph>
                 </Card>
               </TabPane>
               <TabPane tab="안내사항" key="2">
-                <Paragraph>
+                <Paragraph className="funding-detail-paragraph">
                   - 본 프로젝트는 <strong>모금형 펀딩</strong>이며, 목표 금액 달성도에 따라 보상이 달라질 수 있습니다.<br />
                   - 결제·환불 정책은 프로젝트별로 상이할 수 있으니 반드시 확인해주세요.<br />
                   - 허위 정보 기재 및 부정 참여는 사전 고지 없이 제한될 수 있습니다.<br />
@@ -175,44 +169,50 @@ export default function FundingDetail() {
 
           {/* 사이드 정보 */}
           <Col xs={24} md={8}>
-            <Card className="info-card" variant="borderless">
-              <Title level={5}>{item?.title || '펀딩 상세'}</Title>
-              <div className="project-period">
+            <Card className="funding-info-card" variant="borderless">
+              <Title level={5} className="funding-side-title">{item?.title || '펀딩 상세'}</Title>
+
+              <div className="funding-project-period">
                 <CalendarOutlined style={{ marginRight: 8 }} />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
               </div>
+
               <Divider style={{ margin: '16px 0' }} />
-              <Text className="progress-text">{progressText}% 달성</Text>
+
+              <Text className="funding-progress-text">{progressText}% 달성</Text>
               <Progress percent={progressForBar} showInfo={false} status="active" />
-              <div className="stats stats-v2">
-                <div className="current-amount">
-                  <span className="amount">
+
+              <div className="funding-stats-v2">
+                <div className="funding-current-amount">
+                  <span className="funding-amount">
                     {Number(item?.currentPrice || 0).toLocaleString()}원
                   </span>
-                  <span className="amount-label"> 달성</span>
+                  <span className="funding-amount-label"> 달성</span>
                 </div>
 
-                <div className="goal-pill">
+                <div className="funding-goal-pill">
                   {Number(item?.maxPrice || 0).toLocaleString()}원 목표금액
                 </div>
               </div>
+
               {/* 하단 액션 */}
-              <div className="action-row">
-                <div className="icon-group">
+              <div className="funding-action-row">
+                <div className="funding-icon-group">
                   <Tooltip title={liked ? '좋아요 취소' : '좋아요'}>
                     <button
                       type="button"
-                      className={`icon-btn ${liked ? 'active' : ''}`}
+                      className={`funding-icon-btn ${liked ? 'active' : ''}`}
                       aria-label="좋아요"
                       onClick={toggleLike}
                     >
                       {liked ? <HeartFilled /> : <HeartOutlined />}
                     </button>
                   </Tooltip>
+
                   <Tooltip title="공유하기">
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="funding-icon-btn"
                       aria-label="공유하기"
                       onClick={share}
                     >
@@ -220,12 +220,15 @@ export default function FundingDetail() {
                     </button>
                   </Tooltip>
                 </div>
-                <Button type="primary" size="large" className="cta-btn" onClick={goPayment}>
+
+                <Button type="primary" size="large" className="funding-cta-btn" onClick={goPayment}>
                   펀딩하기
                 </Button>
               </div>
             </Card>
-            {/* <RewardSelector
+
+            {/* 리워드 선택 영역 (옵션)
+            <RewardSelector
               title="리워드 선택"
               periodText={`${start} ~ ${end || "진행중"}`}
               rewards={item?.rewards}

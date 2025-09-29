@@ -1,0 +1,140 @@
+/* ===== 스코프: 마이페이지 영역 안에서만 적용 ===== */
+.mypage-wrap .greeting-bar {
+  margin-bottom: 16px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background:
+    radial-gradient(1000px 200px at -10% -80%, rgba(22,119,255,0.10), transparent 40%),
+    radial-gradient(800px 160px at 120% -40%, rgba(105,177,255,0.12), transparent 45%),
+    #fff;
+  border: 1px solid #f0f3f8;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+/* ===== 상단 지표 카드 ===== */
+.mypage-wrap .stat-card {
+  border-radius: 16px !important;
+  border: 1px solid #f1f5ff !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.92)),
+    radial-gradient(120% 100% at 0% -20%, rgba(22,119,255,0.06), transparent 40%),
+    #ffffff !important;
+  box-shadow:
+    0 10px 24px rgba(23, 43, 77, 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.mypage-wrap .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 14px 30px rgba(23, 43, 77, 0.10),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+.mypage-wrap .stat-card .ant-statistic-content,
+.mypage-wrap .stat-card h2 {
+  letter-spacing: -0.2px;
+}
+
+/* ===== 섹션 헤더 (제목 + 컨트롤) ===== */
+.mypage-wrap .section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.mypage-wrap .section-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mypage-wrap .section-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mypage-wrap .section-head .ant-typography {
+  margin: 0;
+}
+
+/* 캡슐형 컨트롤 */
+.mypage-wrap .section-head .ant-checkbox-wrapper {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #edf2ff;
+  background: #fbfdff;
+  transition: background .2s ease, border-color .2s ease;
+}
+.mypage-wrap .section-head .ant-checkbox-wrapper:hover {
+  background: #f5f9ff;
+  border-color: #dbe7ff;
+}
+
+/* 새로고침 버튼 – 라운드(우측 정렬 유지) */
+.mypage-wrap .section-head .ant-btn {
+  border-radius: 999px;
+  padding: 0 14px;
+}
+
+/* ===== 카드(표 컨테이너) 비주얼 일관성 ===== */
+.mypage-wrap .ant-card {
+  border-radius: 16px;
+  border: 1px solid #eef2f8;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+}
+
+/* ===== 테이블 스타일 업그레이드 + 너비 고정으로 컬럼 정렬 일치 ===== */
+.mypage-wrap .ant-table {
+  border-radius: 12px;
+  overflow: hidden; /* 둥근 모서리 */
+  table-layout: fixed; /* 컬럼 폭 고정으로 줄 정렬 일치 */
+}
+.mypage-wrap .ant-table-thead > tr > th {
+  background:
+    linear-gradient(180deg, #f9fbff 0%, #f4f8ff 100%) !important;
+  color: #1f1f1f;
+  font-weight: 600;
+  border-bottom: 1px solid #e9eef7 !important;
+}
+.mypage-wrap .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f2f4f7;
+}
+
+/* 행 호버 & 포커스 */
+.mypage-wrap .ant-table-tbody > tr:hover > td {
+  background: #f9fbff !important;
+}
+.mypage-wrap .ant-table-tbody > tr {
+  transition: background .15s ease;
+}
+
+/* 금액 컬럼 정렬을 돕는 숫자 폰트 느낌 */
+.mypage-wrap .ant-table-cell[align="right"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 비어있는 상태 */
+.mypage-wrap .ant-table-empty .ant-table-placeholder {
+  background: #fff;
+}
+
+/* ===== 타이포 & 여백 미세 조정 ===== */
+.mypage-wrap .greeting-bar .ant-typography + .ant-typography {
+  margin-top: 2px;
+}
+.mypage-wrap .ant-card + .ant-card {
+  margin-top: 12px;
+}
+
+/* ===== 반응형 최적화 ===== */
+@media (max-width: 992px) {
+  .mypage-wrap .stat-card { border-radius: 14px; }
+  .mypage-wrap .section-head { flex-direction: column; align-items: stretch; gap: 10px; }
+  .mypage-wrap .section-left { justify-content: space-between; }
+  .mypage-wrap .section-right { justify-content: flex-end; }
+}
+@media (max-width: 576px) {
+  .mypage-wrap .greeting-bar { padding: 12px 14px; border-radius: 12px; }
+  .mypage-wrap .section-head .ant-btn { width: auto; }
+  .mypage-wrap .section-head .ant-checkbox-wrapper { width: auto; }
+}
