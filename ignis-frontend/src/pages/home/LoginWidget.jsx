@@ -167,7 +167,7 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
 
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
           <Form.Item name="remember" valuePropName="checked" style={{ margin: 0 }}>
-            <Checkbox>자동 로그인</Checkbox>
+            <Checkbox>아이디 저장</Checkbox>
           </Form.Item>
           <Space size={12}>
             <Button type="link" size="small" onClick={() => navigate('/find-password')}>
@@ -217,7 +217,7 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
 
       <div className="login-footnote">
         <Typography.Text type="secondary">
-          본 서비스는 안전한 통신(HTTPS)을 사용합니다. 공용 PC에서는 자동 로그인을 사용하지 마세요.
+          본 서비스는 안전한 통신(HTTPS)을 사용합니다. 
         </Typography.Text>
       </div>
     </Card>

@@ -35,23 +35,24 @@ public class VolunteerRestController {
             @RequestParam("startTime") String startTime,
             @RequestParam("endTime") String endTime,
             @RequestParam("maxParticipants") int maxParticipants,
-            @RequestParam(value = "image", required = false) MultipartFile imageFile,
+            @RequestParam(value = "file", required = false) MultipartFile imageFile,
             HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("result", "실패", "error", "UNAUTHORIZED"));
+                    .body(Map.of("result","실패","error","UNAUTHORIZED"));
         }
 
         int rowCount = volunteerBO.addVolunteer(
                 userId, title, description, location, startTime, endTime, maxParticipants, imageFile);
 
         return (rowCount > 0)
-                ? ResponseEntity.ok(Map.of("code", 1, "result", "성공"))
+                ? ResponseEntity.ok(Map.of("code",1,"result","성공"))
                 : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("code", 500, "errorMessage", "DB 저장 실패"));
+                .body(Map.of("code",500,"errorMessage","DB 저장 실패"));
     }
+
 
     // ------------------------------
     // 2) 목록 (React용)
@@ -78,8 +79,8 @@ public class VolunteerRestController {
     // ------------------------------
     // 4) 생성 (React용 멀티파트/폼)
     // ------------------------------
-    @PostMapping(value = "/react/create", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(value = "/react/create",
+            consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> apiVolunteerCreate(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
@@ -116,6 +117,7 @@ public class VolunteerRestController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("result", "실패", "error", "이미지 저장 실패: " + e.getMessage()));
             }
+
 
             Volunteer v = new Volunteer();
             v.setUserId(userId);
@@ -211,13 +213,13 @@ public class VolunteerRestController {
 
         Volunteer v = volunteerBO.getVolunteerById(id);
         if (v == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "NOT_FOUND"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","NOT_FOUND"));
         }
 
         boolean isOwner = me != null && me.equals(v.getUserId());
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
         if (!(isOwner || isAdmin)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "FORBIDDEN"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error","FORBIDDEN"));
         }
 
         return ResponseEntity.ok(volunteerBO.getParticipantList(id));

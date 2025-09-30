@@ -45,14 +45,21 @@ public class VolunteerBO {
             String startTime, String endTime, int maxParticipants, MultipartFile imageFile) {
 
         // 이미지 저장 처리
-        String imagePath = saveImage(imageFile);
+        String imageUrl;
+        try {
+                imageUrl = fileManagerService.saveFile(UploadCategory.VOLUNTEER, imageFile);
+        } catch (IOException e) {
+            throw new RuntimeException("봉사 이미지 저장 실패", e);
+        }
+
+
 
         Volunteer volunteer = new Volunteer();
         volunteer.setUserId(userId);
         volunteer.setTitle(title);
         volunteer.setDescription(description);
         volunteer.setLocation(location);
-        volunteer.setImagePath(imagePath);
+        volunteer.setImagePath(imageUrl);
         volunteer.setStartTime(LocalDateTime.parse(startTime));
         volunteer.setEndTime(LocalDateTime.parse(endTime));
         volunteer.setMaxParticipants(maxParticipants);
