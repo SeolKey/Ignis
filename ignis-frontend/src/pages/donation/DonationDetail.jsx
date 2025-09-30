@@ -6,6 +6,7 @@ import {
   ShareAltOutlined,
   HeartOutlined,
   HeartFilled,
+  EyeOutlined,
 } from '@ant-design/icons';
 import "../../styles/donation/DonationDetail.css";
 import Layout from '../../components/Layout';
@@ -13,6 +14,7 @@ import testImage from '../../assets/testImage.png';
 import { Carousel } from 'antd';
 import { Modal, Form, Input as AntInput } from 'antd';
 import Comments from '../common/Comments.jsx';
+import useViewOnce from '../../hooks/useViewOnce'; // ✅ 조회수 훅
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -130,6 +132,17 @@ export default function DonationDetail() {
   }, [id]);
 
   const contentId = donation?.donationId ?? donation?.id ?? Number(id);
+
+  // ✅ 조회수 훅: 최초 진입 1회만 증가 (6시간 쿨다운)
+  useViewOnce({
+    id,
+    type: 'donation',
+    endpoints: [`/donation/api/${id}/view`], // 컨트롤러 분리형 엔드포인트
+    onUpdated: (views) => {
+      // 서버가 최신 viewCount를 내려줬다면 UI에 반영
+      setDonation((prev) => (prev ? { ...prev, viewCount: views, views } : prev));
+    },
+  });
 
   // 진행률 계산
   const progress = useMemo(() => {
@@ -273,6 +286,12 @@ export default function DonationDetail() {
                 <Paragraph>
                   <Text>현재 금액</Text><br />
                   <Text>{Number(donation?.currentPrice || 0).toLocaleString()}원</Text>
+                </Paragraph>
+                <Paragraph style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <EyeOutlined />
+                  <Text type="secondary">
+                    {Number(donation?.viewCount ?? donation?.views ?? 0).toLocaleString()}회 조회
+                  </Text>
                 </Paragraph>
               </div>
 

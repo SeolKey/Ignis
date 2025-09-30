@@ -1,11 +1,13 @@
+// src/pages/volunteer/VolunteerDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Carousel, Modal, Table } from 'antd';
-import { CalendarOutlined, EnvironmentOutlined, ShareAltOutlined, TeamOutlined, CheckCircleTwoTone } from '@ant-design/icons';
+import { CalendarOutlined, EnvironmentOutlined, ShareAltOutlined, TeamOutlined, CheckCircleTwoTone, EyeOutlined } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import '../../styles/volunteer/VolunteerDetail.css';
 import testImage from '../../assets/testImage.png';
 import Comments from '../common/Comments';
+import useViewOnce from '../../hooks/useViewOnce'; // ✅ 조회수 훅 임포트
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -41,11 +43,12 @@ export default function VolunteerDetail() {
   const [vol, setVol] = useState(null);
   const [joined, setJoined] = useState(false);
 
-  // ✅ 참여자 모달 상태들 추가
+  // ✅ 참여자 모달 상태들
   const [openParticipants, setOpenParticipants] = useState(false);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [participants, setParticipants] = useState([]);
 
+  // 상세 데이터 로드
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -74,6 +77,16 @@ export default function VolunteerDetail() {
     return () => { ignore = true; };
   }, [id]);
 
+  // ✅ 조회수: 최초 진입 1회만 증가 (6시간 쿨다운, 서버가 viewCount/views 내려주면 즉시 반영)
+  useViewOnce({
+    id,
+    type: 'volunteer',
+    endpoints: [`/volunteer/api/${id}/view`],
+    onUpdated: (views) => {
+      setVol((prev) => (prev ? { ...prev, viewCount: views, views } : prev));
+    },
+  });
+
   const progress = useMemo(() => {
     const cur = Number(vol?.currentPeople || 0);
     const max = Number(vol?.maxParticipants || 0);
@@ -87,7 +100,6 @@ export default function VolunteerDetail() {
     [vol, id]
   );
 
-  // 공유 (FundingDetail과 동일 패턴)
   const share = async () => {
     try {
       if (navigator.share) {
@@ -100,7 +112,6 @@ export default function VolunteerDetail() {
       console.warn('공유 취소/실패:', e);
     }
   };
-
 
   const imagesForCarousel = useMemo(() => {
     const one = toImageUrl(vol?.imagePath);
@@ -133,7 +144,7 @@ export default function VolunteerDetail() {
     }
   };
 
-  // ✅ 컴포넌트 내부로 이동(훅/상태 접근)
+  // 참여자 목록
   const fetchParticipants = async () => {
     if (!vol?.volunteerId) return;
     try {
@@ -244,7 +255,10 @@ export default function VolunteerDetail() {
                   <Text>{loc}</Text>
                 </div>
               )}
+
               <Divider style={{ margin: '16px 0' }} />
+
+              {/* 참여 현황 */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text strong>참여 현황</Text>
                 <Text type="secondary">
@@ -253,6 +267,8 @@ export default function VolunteerDetail() {
                 </Text>
               </div>
               <Progress percent={progress} showInfo={false} status="active" />
+
+              {/* 상태 */}
               {vol?.status && (
                 <div style={{ marginTop: 8 }}>
                   <CheckCircleTwoTone twoToneColor="#52c41a" style={{ marginRight: 6 }} />
@@ -260,9 +276,15 @@ export default function VolunteerDetail() {
                 </div>
               )}
 
+              {/* ✅ 조회수 표시 */}
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <EyeOutlined />
+                <Text type="secondary">{Number(vol?.viewCount ?? vol?.views ?? 0).toLocaleString()}회 조회</Text>
+              </div>
+
+              {/* 액션 */}
               <div className="action-row">
                 <div className="icon-group">
-                  {/* 참여 목록 아이콘 버튼 */}
                   <button
                     type="button"
                     className="icon-btn"
@@ -272,7 +294,6 @@ export default function VolunteerDetail() {
                     <TeamOutlined />
                   </button>
 
-                  {/* 공유 아이콘 버튼 */}
                   <button
                     type="button"
                     className="icon-btn"
@@ -294,7 +315,7 @@ export default function VolunteerDetail() {
                 </Button>
               </div>
 
-
+              {/* 참여자 모달 */}
               <Modal
                 title="참여 인원 목록"
                 open={openParticipants}

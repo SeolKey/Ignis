@@ -14,7 +14,7 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Dragger } = Upload;
 
-// DB image_path가 NOT NULL이라 기본 경로를 전송
+// DB image_path가 NOT NULL이라 기본 경로를 전송 (이미지 없을 때만 사용)
 const DEFAULT_IMAGE_PATH = '/images/default-volunteer.png';
 
 // 날짜 포맷터 (백엔드가 yyyy-MM-dd HH:mm:ss로 받도록 유지)
@@ -67,7 +67,7 @@ export default function VolunteerCreate() {
       setSubmitting(true);
 
       if (!hasImages) {
-        // 기존: x-www-form-urlencoded
+        // 기존: x-www-form-urlencoded (이미지 없을 때)
         const params = new URLSearchParams();
         params.set('title', values.title ?? '');
         params.set('description', values.description ?? '');
@@ -76,6 +76,7 @@ export default function VolunteerCreate() {
         params.set('endTime', fmt(values.endTime));
         params.set('maxParticipants', String(values.maxParticipants ?? ''));
         params.set('currentPeople', String(values.currentPeople ?? 0));
+        // 서버가 기본 이미지를 자동 세팅하지 않는 경우 대비
         params.set('imagePath', values.imagePath ?? DEFAULT_IMAGE_PATH);
 
         const res = await fetch('/volunteer/react/create', {
@@ -104,7 +105,7 @@ export default function VolunteerCreate() {
         return;
       }
 
-      // 새 방식: multipart/form-data (상세 이미지 포함)
+      // ✅ 새 방식: multipart/form-data (상세 이미지 포함)
       const fd = new FormData();
       fd.append('title', values.title ?? '');
       fd.append('description', values.description ?? '');
@@ -113,9 +114,17 @@ export default function VolunteerCreate() {
       fd.append('endTime', fmt(values.endTime));
       fd.append('maxParticipants', String(values.maxParticipants ?? ''));
       fd.append('currentPeople', String(values.currentPeople ?? 0));
-      fd.append('imagePath', values.imagePath ?? DEFAULT_IMAGE_PATH);
+      // ⛔️ multipart 분기에서는 imagePath를 보내지 않음 (서버가 file로 저장 경로 세팅하도록)
+      // fd.append('imagePath', ...);  // 제거
 
-      // 상세 이미지들을 detailImages 라는 필드명으로 다중 전송
+      // ✅ 대표 이미지: 상세 이미지 중 첫 번째를 대표로 사용하여 'file' 필드로 전송
+      const cover = detailFiles[0];
+      const coverBlob = cover?.originFileObj ?? cover;
+      if (coverBlob) {
+        fd.append('file', coverBlob, coverBlob.name || 'cover.jpg');
+      }
+
+      // (옵션) 상세 이미지 여러 장 — 서버에서 detailImages[] 처리 시에만 사용
       detailFiles.forEach((f, idx) => {
         const file = f.originFileObj ?? f;
         if (file) fd.append('detailImages', file, file.name || `detail_${idx}.jpg`);
@@ -260,7 +269,7 @@ export default function VolunteerCreate() {
               </Row>
             </Card>
 
-            {/* ▼▼▼ 상세 내용 이미지 업로드 섹션 (요청하신 위치) ▼▼▼ */}
+            {/* 상세 내용 이미지 업로드 섹션 (기존 UI 그대로) */}
             <Card
               className="detail-images-card"
               title="상세 내용 이미지 (선택)"
@@ -292,7 +301,6 @@ export default function VolunteerCreate() {
                 </Paragraph>
               )}
             </Card>
-            {/* ▲▲▲ 상세 내용 이미지 업로드 섹션 끝 ▲▲▲ */}
 
             {/* 동의 영역 */}
             <Card className="agreement-card" bodyStyle={{ padding: 16 }}>

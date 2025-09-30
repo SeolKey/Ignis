@@ -41,18 +41,17 @@ public class VolunteerRestController {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("result","실패","error","UNAUTHORIZED"));
+                    .body(Map.of("result", "실패", "error", "UNAUTHORIZED"));
         }
 
         int rowCount = volunteerBO.addVolunteer(
                 userId, title, description, location, startTime, endTime, maxParticipants, imageFile);
 
         return (rowCount > 0)
-                ? ResponseEntity.ok(Map.of("code",1,"result","성공"))
+                ? ResponseEntity.ok(Map.of("code", 1, "result", "성공"))
                 : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("code",500,"errorMessage","DB 저장 실패"));
+                        .body(Map.of("code", 500, "errorMessage", "DB 저장 실패"));
     }
-
 
     // ------------------------------
     // 2) 목록 (React용)
@@ -79,8 +78,8 @@ public class VolunteerRestController {
     // ------------------------------
     // 4) 생성 (React용 멀티파트/폼)
     // ------------------------------
-    @PostMapping(value = "/react/create",
-            consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping(value = "/react/create", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE,
+            MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> apiVolunteerCreate(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
@@ -117,7 +116,6 @@ public class VolunteerRestController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("result", "실패", "error", "이미지 저장 실패: " + e.getMessage()));
             }
-
 
             Volunteer v = new Volunteer();
             v.setUserId(userId);
@@ -213,15 +211,43 @@ public class VolunteerRestController {
 
         Volunteer v = volunteerBO.getVolunteerById(id);
         if (v == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error","NOT_FOUND"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "NOT_FOUND"));
         }
 
         boolean isOwner = me != null && me.equals(v.getUserId());
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
         if (!(isOwner || isAdmin)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error","FORBIDDEN"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "FORBIDDEN"));
         }
 
         return ResponseEntity.ok(volunteerBO.getParticipantList(id));
+    }
+
+    @PostMapping("/api/{id}/view")
+    public ResponseEntity<?> increaseView(@PathVariable("id") Long volunteerId) {
+        try {
+            volunteerBO.increaseViewCount(volunteerId);
+
+            // 증가 후 최신 조회수까지 내려주면 프론트가 즉시 갱신 가능
+            Volunteer v = volunteerBO.getVolunteerById(volunteerId); // 기존에 상세 조회가 있다면 재사용
+            Integer count = (v != null ? v.getViewCount() : null);
+
+            return ResponseEntity.ok(Map.of(
+                    "result", "success",
+                    "viewCount", count));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
+        }
+    }
+
+    /** (선택) 상세 조회는 증가 없이 데이터만 */
+    @GetMapping("/api/{id}")
+    public ResponseEntity<?> getVolunteer(@PathVariable("id") Long volunteerId) {
+        Volunteer v = volunteerBO.getVolunteerById(volunteerId);
+        if (v == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("result", "fail"));
+        }
+        return ResponseEntity.ok(v);
     }
 }

@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Tooltip } from 'antd';
-import { CalendarOutlined, ShareAltOutlined, HeartOutlined, HeartFilled } from '@ant-design/icons';
+import { CalendarOutlined, ShareAltOutlined, HeartOutlined, HeartFilled, EyeOutlined } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import { Carousel } from 'antd';
 import '../../styles/funding/FundingDetail.css';
 import testImage from '../../assets/testImage.png';
 import Comments from '../common/Comments';
-// import RewardSelector from "../funding/RewardSelector";
+import useViewOnce from '../../hooks/useViewOnce'; // ✅ 조회수 훅 임포트
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -67,6 +67,16 @@ export default function FundingDetail() {
 
   const contentId = item?.fundingId ?? item?.id ?? Number(id);
 
+  // ✅ 조회수: 최초 진입 1회만 증가 (6시간 쿨다운)
+  useViewOnce({
+    id,
+    type: 'funding',
+    endpoints: [`/funding/api/${id}/view`],
+    onUpdated: (views) => {
+      setItem((prev) => (prev ? { ...prev, viewCount: views, views } : prev));
+    },
+  });
+
   // 진행률
   const { progressText, progressForBar } = useMemo(() => {
     const cur = Number(item?.currentPrice ?? 0);
@@ -82,8 +92,8 @@ export default function FundingDetail() {
   const imagesForCarousel = useMemo(() => {
     const arr = Array.isArray(item?.images)
       ? item.images
-        .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
-        .filter(Boolean)
+          .map((it) => (typeof it === 'string' ? it : it?.url || it?.path || it?.imagePath))
+          .filter(Boolean)
       : [];
     if (arr.length >= 2) return arr.map(toImageUrl);
     const one = toImageUrl(item?.imagePath);
@@ -195,6 +205,14 @@ export default function FundingDetail() {
                 </div>
               </div>
 
+              {/* ✅ 조회수 표시 */}
+              <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <EyeOutlined />
+                <Text type="secondary">
+                  {Number(item?.viewCount ?? item?.views ?? 0).toLocaleString()}회 조회
+                </Text>
+              </div>
+
               {/* 하단 액션 */}
               <div className="funding-action-row">
                 <div className="funding-icon-group">
@@ -226,19 +244,6 @@ export default function FundingDetail() {
                 </Button>
               </div>
             </Card>
-
-            {/* 리워드 선택 영역 (옵션)
-            <RewardSelector
-              title="리워드 선택"
-              periodText={`${start} ~ ${end || "진행중"}`}
-              rewards={item?.rewards}
-              onSelect={(r) => { console.log("선택된 리워드:", r); }}
-              onShare={share}
-              onClickFund={(r) => {
-                navigate(`/payment?type=funding&id=${contentId}&rewardId=${r.id}&amount=${r.price}`);
-              }}
-              className="sticky"
-            /> */}
           </Col>
         </Row>
       </div>

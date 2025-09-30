@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card } from 'antd';
 import testImage from '../../assets/testImage.png';
 
 const toImageUrl = (p) => {
@@ -20,23 +19,23 @@ export default function HomeCard({ item, onClick, type }) {
 
   return (
     <div
-      className={`grid-card ${type === '펀딩' ? 'funding-card' : type === '봉사' ? 'volunteer-card' : 'donation-card'}`}
+      className={`ignis-card ${type === '펀딩' ? 'funding-card' : type === '봉사' ? 'volunteer-card' : 'donation-card'}`}
       role="button"
       onClick={() => onClick?.(id)}
     >
       <img
         src={image}
         alt={title}
-        className="grid-image"
+        className="ignis-thumb"
         loading="lazy"
         onError={(e) => {
           if (!e.currentTarget.src.includes(testImage)) e.currentTarget.src = testImage;
         }}
       />
-      <div className="grid-body">
-        <p className="grid-title">{title}</p>
+      <div className="ignis-body">
+        <p className="ignis-title">{title}</p>
         {type === '펀딩' && (item.maxPrice != null || item.currentPrice != null) && (
-          <p className="grid-sub">
+          <p className="ignis-sub">
             {item.currentPrice != null && <>현재 {Number(item.currentPrice).toLocaleString()}원</>}
             {item.maxPrice != null && <> · 목표 {Number(item.maxPrice).toLocaleString()}원</>}
           </p>

@@ -95,25 +95,29 @@ public class DonationRestController {
     }
 
     // 상세 JSON API
+    // 상세 JSON (증가 X)
     @GetMapping("/api/{id}")
-    public ResponseEntity<?> getDonationApi(@PathVariable("id") Long donationId) {
-        Donation d = donationBO.getDonationById(donationId);
+    public ResponseEntity<?> getDonationApi(@PathVariable Long id) {
+        Donation d = donationBO.getDonationById(id);
         if (d == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("result", "fail"));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("result", "fail"));
         }
-
-        // ✅ 이미지 경로 풀 URL로 보정
+        // (이미지 경로 보정 그대로 유지)
         String path = d.getImagePath();
         if (path != null && !path.startsWith("http")) {
             if (!path.startsWith("/"))
                 path = "/" + path;
-            String base = ServletUriComponentsBuilder.fromCurrentContextPath()
-                    .build().toUriString(); // ex) http://localhost
-            d.setImagePath(base + path); // http://localhost/images/donation/xxx.png
+            String base = ServletUriComponentsBuilder.fromCurrentContextPath().build().toUriString();
+            d.setImagePath(base + path);
         }
-
         return ResponseEntity.ok(d);
+    }
+
+    // 🔥 조회수 증가(증가 O) — React에서 최초 진입 시 1회만 호출
+    @PostMapping("/api/{id}/view")
+    public ResponseEntity<?> increaseView(@PathVariable Long id) {
+        donationBO.increaseViewCount(id); // BO → Mapper.incrementViewCount() 실행
+        return ResponseEntity.ok(Map.of("result", "success"));
     }
 
     // 제한 목록 JSON API

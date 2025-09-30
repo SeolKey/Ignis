@@ -1,9 +1,22 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { message, Segmented, Button } from 'antd';
+import {
+  message,
+  Segmented,
+  Button,
+  Progress,
+  Tag,
+  Space,
+  Typography,
+  Spin,
+  Carousel,
+  Divider,
+} from 'antd';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import "../../styles/donation/DonationList.css";
 import fallback from '../../assets/testImage.png';
+
+const { Title, Text, Paragraph } = Typography;
 
 const toImageUrl = (p) => {
   if (!p) return fallback;
@@ -17,10 +30,29 @@ export default function DonationList() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ 정렬/페이지 상태
-  const [sort, setSort] = useState('latest'); // 'latest' | 'views'
+  const [sort, setSort] = useState('latest');
   const [page, setPage] = useState(0);
   const size = 20;
+
+  // 광고형 배너(원하면 서버에서 내려받게 바꿔도 됨)
+  const adBanners = [
+    {
+      img: '/assets/ad1.jpg',
+      title: '작은 기부가 큰 변화를',
+      desc: '지금, 도움이 필요한 곳에 함께해요.',
+    },
+    {
+      img: '/assets/ad2.jpg',
+      title: '당신의 마음이 모이면',
+      desc: '누군가의 내일이 바뀝니다.',
+
+    },
+    {
+      img: '/assets/ad3.jpg',
+      title: '믿을 수 있는 기부 플랫폼',
+      desc: '투명한 진행률과 안전한 결제.',
+    },
+  ].map(b => ({ ...b, img: toImageUrl(b.img) }));
 
   // 쿼리스트링
   const query = useMemo(() => {
@@ -36,9 +68,9 @@ export default function DonationList() {
 
     const pickArray = (d) => {
       if (Array.isArray(d)) return d;
-      if (Array.isArray(d?.items)) return d.items;               // ← 새 JSON({items:[]}) 대응
-      if (Array.isArray(d?.donationList)) return d.donationList; // ← 과거 키 대응
-      if (Array.isArray(d?.postList)) return d.postList;         // ← 폴백
+      if (Array.isArray(d?.items)) return d.items;
+      if (Array.isArray(d?.donationList)) return d.donationList;
+      if (Array.isArray(d?.postList)) return d.postList;
       return [];
     };
 
@@ -52,26 +84,24 @@ export default function DonationList() {
     (async () => {
       setLoading(true);
       try {
-        // ✅ 1) 리액트/JSON 엔드포인트 우선 (정렬/페이지 파라미터 포함)
         const candidates = [
           `/donation/react/list${query}`,
           `/api/donation/list${query}`,
-          '/donation/list', // 서버 렌더일 수 있어 실패 가능성 있음
+          '/donation/list',
         ];
 
         for (const url of candidates) {
           try {
             const arr = await tryFetch(url);
-            if (mounted && arr.length >= 0) {
+            if (mounted) {
               setList(arr);
               return;
             }
           } catch {
-            // 다음 후보로 넘어감
+            //
           }
         }
 
-        // ✅ 2) 전부 실패하면 홈 API로 폴백(보통 소수개)
         try {
           const arr = await tryFetch('/api/home');
           if (mounted) setList(arr);
@@ -89,38 +119,64 @@ export default function DonationList() {
     })();
 
     return () => { mounted = false; };
-  }, [query]); // ← 정렬/페이지 바뀌면 재호출
+  }, [query]);
 
   return (
     <Layout>
       <div className="donation-list-page">
-        <div className="donation-list-header">
-          <h1 className="donation-list-title">지금 도움이 필요한 모금함</h1>
+        {/* ===== 상단 광고형 배너 캐러셀 ===== */}
+        <div className="donation-ad-wrap">
+          <Carousel autoplay dots className="donation-ad-carousel" arrows>
+            {adBanners.map((b, i) => (
+              <div key={i}>
+                <div
+                  className="ad-slide"
+                  style={{ backgroundImage: `url(${b.img})` }}
+                  onClick={() => b.href && navigate(b.href)}
+                  role="button"
+                >
+                  <div className="ad-overlay">
+                    <div className="ad-badge">AD</div>
+                    <div className="ad-text">
+                      <h3 className="ad-title">{b.title}</h3>
+                      <p className="ad-desc">{b.desc}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Carousel>
+        </div>
 
-          {/* 우측 액션: 생성 버튼 */}
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginLeft: 'auto' }}>
-            {/* ✅ 정렬 토글 */}
+        {/* ===== 가운데 정렬 헤드라인 ===== */}
+        <div className="donation-headline">
+          <Title level={1} className="donation-h1">지금 도움이 필요한 모금함</Title>
+          <Paragraph className="donation-sub">따뜻한 마음을 함께 나누어주세요 💙</Paragraph>
+        </div>
+
+        
+        <div className="donation-controls">
+          <Space>
             <Segmented
               options={[
                 { label: '최신순', value: 'latest' },
                 { label: '조회순', value: 'views' },
               ]}
               value={sort}
-              onChange={(v) => {
-                setPage(0);
-                setSort(v);
-              }}
+              onChange={(v) => { setPage(0); setSort(v); }}
             />
             <Button type="primary" onClick={() => navigate('/donation-create')}>
               기부 생성
             </Button>
-          </div>
+          </Space>
         </div>
 
+
+        {/* ===== 리스트 ===== */}
         {loading ? (
-          <div>불러오는 중…</div>
+          <div className="donation-loading-center"><Spin /></div>
         ) : list.length === 0 ? (
-          <div>표시할 모금함이 없습니다.</div>
+          <div className="donation-empty">표시할 모금함이 없습니다.</div>
         ) : (
           <>
             <div className="donation-grid">
@@ -132,42 +188,33 @@ export default function DonationList() {
                 const percent = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
 
                 return (
-                  <article
+                  <div
                     key={id}
-                    className="donation-card"
+                    className="ignis-card donation-card"
                     onClick={() => navigate(`/donation-detail/${id}`)}
                   >
                     <img
-                      className="donation-thumb"
                       src={toImageUrl(item.imagePath)}
-                      alt={item.title || '기부 이미지'}
+                      alt={item.title}
+                      className="ignis-thumb"
                       loading="lazy"
                       onError={(e) => {
                         if (!e.currentTarget.src.includes(fallback)) e.currentTarget.src = fallback;
                       }}
                     />
-
-                    <div className="donation-body">
-                      {org && <p className="donation-org">{org}</p>}
-                      <h3 className="donation-title">{item.title}</h3>
-
-                      {/* 진행률/통계 */}
+                    <div className="ignis-body">
+                      {org && <Tag color="blue" className="donation-org-tag">{org}</Tag>}
+                      <p className="ignis-title">{item.title}</p>
                       {max > 0 && (
-                        <div className="donation-foot">
-                          <div className="donation-progress" style={{ ['--pct']: `${percent}%` }}>
-                            <span />
-                          </div>
-                          <span className="donation-stats">{percent}%</span>
-                        </div>
+                        <Progress percent={percent} size="small" status="active" />
                       )}
                     </div>
-                  </article>
+                  </div>
                 );
               })}
             </div>
 
-            {/* (선택) 간단 페이지 이동: 다음/이전 */}
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
+            <div className="donation-pagination">
               <Button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
                 이전
               </Button>

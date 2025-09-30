@@ -1,101 +1,114 @@
-/* 페이지 여백 */
+/* ===== 공통 카드(홈/리스트 공용 뼈대) ===== */
+.ignis-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+.ignis-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.12);
+}
+.ignis-thumb {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.ignis-body { padding: 10px 12px; flex: 1; }
+.ignis-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 2px 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 42px;
+}
+.ignis-sub { font-size: 12.5px; color: #666; margin-top: 4px; }
+
+/* ===== 페이지 레이아웃 ===== */
 .donation-list-page {
-  padding: 40px 24px 72px;
-  max-width: 1200px;
+  padding: 24px 24px 64px;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
-/* 상단 제목 */
-.donation-list-title {
-  margin: 0 0 24px 0;
-  font-size: 28px;
-  font-weight: 800;
+/* ===== 광고형 배너 ===== */
+.donation-ad-wrap { margin: 8px 0 28px; }
+.donation-ad-carousel {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ad-slide {
+  height: 320px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border-radius: 16px;
+}
+.ad-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.15) 60%, rgba(0,0,0,0) 100%);
+  display: flex; align-items: center;
+  padding: 28px;
+}
+.ad-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(255,255,255,.85);
+  color: #555; font-size: 12px; padding: 2px 8px; border-radius: 999px;
+}
+.ad-text { color: #fff; max-width: 520px; }
+.ad-title { margin: 0 0 8px 0; font-size: 28px; font-weight: 800; }
+.ad-desc { margin: 0; opacity: .95; }
+
+/* ===== 헤드라인(문구) ===== */
+.donation-headline {
+  text-align: center;       /* 항상 가운데 정렬 */
+  margin: 12px 0 10px;
+}
+.donation-h1 {
+  margin: 0 0 6px 0 !important;
+  letter-spacing: -0.4px;
+}
+.donation-sub {
+  margin: 0 !important;
+  color: #6b7280 !important;
 }
 
-/* 카드 그리드: 모바일 1열 → 태블릿 2열 → 데스크톱 3열 (원하면 4열 주석 해제) */
+/* ===== 버튼 컨트롤 (문구 밑 오른쪽) ===== */
+.donation-controls {
+  display: flex;
+  justify-content: flex-end;  
+  margin: 0 0 20px;
+  gap: 12px;
+}
+
+
+/* ===== 리스트 그리드 ===== */
 .donation-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 24px;
+  gap: 20px;
 }
 @media (min-width: 640px) {
   .donation-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (min-width: 1024px) {
-  .donation-grid { grid-template-columns: repeat(3, 1fr); }
-}
-@media (min-width: 1024px) {
   .donation-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
-/* 4열 원하면 아래 주석 해제
-@media (min-width: 1400px) {
-  .donation-grid { grid-template-columns: repeat(4, 1fr); }
-}
-*/
+/* 로딩/빈 상태 & 페이지네이션 */
+.donation-loading-center { padding: 40px; display: flex; justify-content: center; }
+.donation-empty { padding: 24px; text-align: center; color: #8c8c8c; }
+.donation-pagination { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
 
-/* 카드 */
-.donation-card {
-  border-radius: 10px; 
-  box-shadow: 0 2px 6px rgba(0,0,0,.06);
-}
-.donation-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,.1);
-}
-
-
-/* 큰 썸네일 (해피빈 느낌) */
-.donation-thumb {
-  width: 100%;
-  aspect-ratio: 4/3;   /* 기존 16/9 → 조금 정사각형에 가깝게 */
-  object-fit: cover;
-}
-
-
-/* 본문 */
-.donation-body {
-  padding: 10px 12px;
-}
-.donation-title {
-  font-size: 15px;      /* 17px → 15px */
-  line-height: 1.4;
-}
-.donation-org {
-  font-size: 12px;      /* 조금 더 작게 */
-}
-
-/* 진행바/하단 정보 (선택) */
-.donation-foot {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.donation-progress {
-  position: relative;
-  flex: 1;
-  height: 6px;
-  border-radius: 999px;
-  background: #eef2f7;
-  overflow: hidden;
-}
-.donation-progress > span {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: var(--pct, 0%);
-  background: #22c55e;     /* 초록 진행색 */
-}
-.donation-stats {
-  white-space: nowrap;
-  font-size: 12px;
-  color: #374151;
-}
-
-/* 제목 + 버튼 헤더 */
-.donation-list-header {
-  display: flex;
-  justify-content: space-between; /* 제목과 버튼 좌우 배치 */
-  align-items: center;
-  margin-bottom: 24px;
-}
+/* 조직 태그 여백 */
+.donation-org-tag { margin: 0 0 6px 0; }
