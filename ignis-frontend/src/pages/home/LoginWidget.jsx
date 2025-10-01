@@ -74,16 +74,19 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
                   .then(r => r.ok)
                   .catch(() => false);
                 if (!ok1) {
-                  await fetch('/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+                  await fetch('/logout', { method: 'POST', credentials: 'include' }).catch(() => { });
                 }
               } finally {
                 onUserChange?.(null);
+                window.dispatchEvent(new Event('auth:changed')); // ★ 헤더에 인증 변경 알림
                 message.success('로그아웃 되었습니다.');
+                navigate('/', { replace: true });               // ★ 홈으로 리다이렉트 (새로고침 원하면 window.location.reload();)
               }
             }}
           >
             로그아웃
           </Button>
+
         </Space>
       </Card>
     );
@@ -124,7 +127,12 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
               const meRes = await fetch('/user/me', { credentials: 'include' });
               const meJson = meRes.ok ? await meRes.json() : null;
               onUserChange?.(meJson || null);
+
+              // 🔔 헤더에 인증 상태 변경 알림 + 홈으로 이동
+              window.dispatchEvent(new Event('auth:changed'));
               message.success('환영합니다 👋');
+              navigate('/', { replace: true });  // 새로고침 대신 라우트 리다이렉트
+              // 만약 강제 새로고침을 원하면: window.location.reload();
             } else {
               message.error(data?.error_message ?? '아이디 또는 비밀번호를 확인해 주세요.');
             }
@@ -135,6 +143,8 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
           }
         }}
       >
+
+
         <Form.Item
           label="아이디"
           name="username"
@@ -217,7 +227,7 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
 
       <div className="login-footnote">
         <Typography.Text type="secondary">
-          본 서비스는 안전한 통신(HTTPS)을 사용합니다. 
+          본 서비스는 안전한 통신(HTTPS)을 사용합니다.
         </Typography.Text>
       </div>
     </Card>
