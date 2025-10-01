@@ -205,9 +205,8 @@ export default function DonationList() {
                     <div className="ignis-body">
                       {org && <Tag color="blue" className="donation-org-tag">{org}</Tag>}
                       <p className="ignis-title">{item.title}</p>
-                      {max > 0 && (
+
                         <Progress percent={percent} size="small" status="active" />
-                      )}
                     </div>
                   </div>
                 );

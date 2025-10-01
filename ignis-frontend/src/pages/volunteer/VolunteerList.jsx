@@ -15,6 +15,24 @@ const toImageUrl = (p) => {
   return `/${encodeURI(clean)}`;
 };
 
+// 숫자/타임스탬프 보조
+const num = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+const pickTs = (o) => {
+  if (!o) return 0;
+  const s = o.createdAt ?? o.created_at ?? o.created ?? o.startTime ?? o.start_time ?? o.date ?? o.updatedAt ?? o.updated_at;
+  return s ? new Date(s).getTime() : 0;
+};
+const pickArray = (d) => {
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.items)) return d.items;
+  if (Array.isArray(d?.volunteerList)) return d.volunteerList;
+  if (Array.isArray(d?.postList)) return d.postList;
+  return [];
+};
+
 export default function VolunteerList() {
   const navigate = useNavigate();
   const [list, setList] = useState([]);
@@ -25,24 +43,17 @@ export default function VolunteerList() {
   const [page, setPage] = useState(0);
   const size = 20;
 
+  // ✅ 쿼리스트링 (DonationList와 동일)
   const query = useMemo(() => {
     const q = new URLSearchParams();
     q.set('sort', sort);
     q.set('page', String(page));
     q.set('size', String(size));
     return `?${q.toString()}`;
-  }, [sort, page]);
+  }, [sort, page, size]);
 
   useEffect(() => {
     let mounted = true;
-
-    const pickArray = (d) => {
-      if (Array.isArray(d)) return d;
-      if (Array.isArray(d?.items)) return d.items;
-      if (Array.isArray(d?.volunteerList)) return d.volunteerList;
-      if (Array.isArray(d?.postList)) return d.postList;
-      return [];
-    };
 
     const tryFetch = async (url) => {
       const res = await fetch(url, { credentials: 'include' });
@@ -54,22 +65,40 @@ export default function VolunteerList() {
     (async () => {
       setLoading(true);
       try {
-        // 백엔드가 아래 중 하나라도 구현돼 있으면 작동
+        // ✅ DonationList와 동일한 후보 + 쿼리 포함
         const candidates = [
-          `/volunteer/react/list${query}`, // ← 권장 (Donation과 동일 포맷)
+          `/volunteer/react/list${query}`,
           `/api/volunteer/list${query}`,
-          '/volunteer/react/list', // 기존 단순 리스트
+          '/volunteer/react/list',
         ];
 
         for (const url of candidates) {
           try {
             const arr = await tryFetch(url);
+
+            // ✅ 프론트 정렬 fallback (서버가 sort 무시해도 즉시 반응)
+            let sorted = [...arr];
+            if (sort === 'views') {
+              sorted.sort(
+                (a, b) =>
+                  num(b.viewCount ?? b.views ?? b.view ?? 0) -
+                  num(a.viewCount ?? a.views ?? a.view ?? 0)
+              );
+            } else {
+              // 최신순: 시간 ↓, 없으면 id ↓
+              sorted.sort((a, b) => {
+                const dt = pickTs(b) - pickTs(a);
+                if (dt !== 0) return dt;
+                return num(b.volunteerId ?? b.id ?? 0) - num(a.volunteerId ?? a.id ?? 0);
+              });
+            }
+
             if (mounted) {
-              setList(arr);
+              setList(sorted);
               return;
             }
           } catch {
-            /* 다음 후보 시도 */
+            // 다음 후보 시도
           }
         }
 
@@ -85,20 +114,12 @@ export default function VolunteerList() {
     })();
 
     return () => { mounted = false; };
-  }, [query]);
+  }, [query]); // ✅ 정렬/페이지 변경 시 재요청
 
-  // 광고형 배너
+  // 광고형 배너 (기존 그대로)
   const adBanners = [
-    {
-      img: '/assets/vol_ad1.jpg',
-      title: '작은 시간으로 큰 나눔',
-      desc: '당신의 손길이 누군가에겐 희망입니다.',
-    },
-    {
-      img: '/assets/vol_ad2.jpg',
-      title: '함께하는 봉사',
-      desc: '지역사회를 따뜻하게 바꾸는 첫 걸음.',
-    },
+    { img: '/assets/vol_ad1.jpg', title: '작은 시간으로 큰 나눔', desc: '당신의 손길이 누군가에겐 희망입니다.' },
+    { img: '/assets/vol_ad2.jpg', title: '함께하는 봉사', desc: '지역사회를 따뜻하게 바꾸는 첫 걸음.' },
   ].map((b) => ({ ...b, img: toImageUrl(b.img) }));
 
   return (
@@ -134,7 +155,7 @@ export default function VolunteerList() {
           <Paragraph className="vol-sub">함께할수록 더 따뜻해집니다 🤝</Paragraph>
         </div>
 
-        {/* ===== 컨트롤 (최신/조회순 + 생성 버튼) ===== */}
+        {/* ===== 컨트롤 (최신/조회순 + 생성) ===== */}
         <div className="vol-controls">
           <Space>
             <Segmented
@@ -160,7 +181,7 @@ export default function VolunteerList() {
           <div className="vol-grid">
             {list.map((item) => {
               const id = item.volunteerId ?? item.id;
-              const views = Number(item.viewCount ?? item.views ?? 0);
+              const views = num(item.viewCount ?? item.views ?? item.view ?? 0);
 
               return (
                 <article
@@ -190,7 +211,7 @@ export default function VolunteerList() {
           </div>
         )}
 
-        {/* 간단 페이지 버튼 */}
+        {/* 페이지 버튼 */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', margin: '24px 0' }}>
           <Button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
             이전

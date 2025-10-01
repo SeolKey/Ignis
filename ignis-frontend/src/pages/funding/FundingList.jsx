@@ -1,3 +1,4 @@
+// src/pages/funding/FundingList.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { message, Button, Carousel, Typography, Spin, Segmented, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -15,36 +16,49 @@ const toImageUrl = (p) => {
   return `/${encodeURI(clean)}`;
 };
 
+// 숫자/타임스탬프/배열 보조 (봉사/기부와 동일 패턴)
+const num = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+const pickTs = (o) => {
+  if (!o) return 0;
+  const s =
+    o.createdAt ?? o.created_at ?? o.created ??
+    o.startTime ?? o.start_time ?? o.date ??
+    o.updatedAt ?? o.updated_at;
+  return s ? new Date(s).getTime() : 0;
+};
+const pickArray = (d) => {
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.items)) return d.items;
+  if (Array.isArray(d?.fundingList)) return d.fundingList;
+  if (Array.isArray(d?.postList)) return d.postList;
+  return [];
+};
+
 const FundingList = () => {
   const navigate = useNavigate();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ 기부 리스트와 동일한 컨트롤
+  // ✅ 기부/봉사와 동일 컨트롤
   const [sort, setSort] = useState('latest'); // latest | views
   const [page, setPage] = useState(0);
   const size = 20;
 
-  // 쿼리스트링 조립
+  // ✅ 쿼리스트링 (서버 지원 시 사용)
   const query = useMemo(() => {
     const q = new URLSearchParams();
     q.set('sort', sort);
     q.set('page', String(page));
     q.set('size', String(size));
     return `?${q.toString()}`;
-  }, [sort, page]);
+  }, [sort, page, size]);
 
   // 데이터 로딩
   useEffect(() => {
     let mounted = true;
-
-    const pickArray = (d) => {
-      if (Array.isArray(d)) return d;
-      if (Array.isArray(d?.items)) return d.items;
-      if (Array.isArray(d?.fundingList)) return d.fundingList;
-      if (Array.isArray(d?.postList)) return d.postList;
-      return [];
-    };
 
     const tryFetch = async (url) => {
       const res = await fetch(url, { credentials: 'include' });
@@ -56,9 +70,8 @@ const FundingList = () => {
     (async () => {
       setLoading(true);
       try {
-        // 백엔드가 아래 중 하나라도 구현돼 있으면 작동
         const candidates = [
-          `/funding/react/list${query}`,  // ← 권장 (Donation과 동일 포맷)
+          `/funding/react/list${query}`,
           `/api/funding/list${query}`,
           '/funding/list',
         ];
@@ -66,8 +79,25 @@ const FundingList = () => {
         for (const url of candidates) {
           try {
             const arr = await tryFetch(url);
+
+            // ✅ 프론트 정렬 fallback: 서버가 sort 무시해도 즉시 반응
+            let sorted = [...arr];
+            if (sort === 'views') {
+              sorted.sort(
+                (a, b) =>
+                  num(b.viewCount ?? b.views ?? b.view ?? 0) -
+                  num(a.viewCount ?? a.views ?? a.view ?? 0)
+              );
+            } else {
+              sorted.sort((a, b) => {
+                const dt = pickTs(b) - pickTs(a);
+                if (dt !== 0) return dt;
+                return num(b.fundingId ?? b.id ?? 0) - num(a.fundingId ?? a.id ?? 0);
+              });
+            }
+
             if (mounted) {
-              setList(arr);
+              setList(sorted);
               return;
             }
           } catch {
@@ -75,7 +105,6 @@ const FundingList = () => {
           }
         }
 
-        // 최종 실패 시 빈 배열
         if (mounted) setList([]);
       } catch (e) {
         if (mounted) {
@@ -163,10 +192,12 @@ const FundingList = () => {
           <div className="funding-grid">
             {list.map((item) => {
               const id = item.fundingId ?? item.id;
-              const current = Number(item.currentPrice ?? 0);
-              const max = Number(item.maxPrice ?? 0);
+
+              const current = num(item.currentPrice ?? item.currentAmount ?? item.collected ?? item.raised ?? 0);
+              const max = num(item.maxPrice ?? item.goal ?? item.target ?? 0);
               const percent = max > 0 ? Math.min(100, Math.round((current / max) * 100)) : 0;
-              const views = Number(item.viewCount ?? item.views ?? 0);
+
+              const views = num(item.viewCount ?? item.views ?? item.view ?? 0);
 
               return (
                 <article
@@ -188,11 +219,10 @@ const FundingList = () => {
                     <h3 className="funding-title">{item.title}</h3>
 
                     <div className="funding-foot">
-                      {max > 0 && (
-                        <div className="funding-progress" style={{ ['--pct']: `${percent}%` }}>
-                          <span />
-                        </div>
-                      )}
+                      {/* ✅ 항상 진행바 표시 (0% 포함) */}
+                      <div className="funding-progress" style={{ ['--pct']: `${percent}%` }}>
+                        <span />
+                      </div>
                       <span className="funding-stats">{percent}%</span>
                       <span className="funding-views"><EyeOutlined /> {views.toLocaleString()}</span>
                     </div>
