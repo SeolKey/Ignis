@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.Ignis.search.mapper.SearchMapper">
+
+    <!-- 공통: FULLTEXT 조건 -->
+    <sql id="FT_COND">
+            (MATCH(title, description) AGAINST(#{q} IN BOOLEAN MODE))
+    </sql>
+    <sql id="FT_COND_VOL">
+            (MATCH(title, description, location) AGAINST(#{q} IN BOOLEAN MODE))
+    </sql>
+    <sql id="FT_COND_POST">
+            (MATCH(title, content) AGAINST(#{q} IN BOOLEAN MODE))
+    </sql>
+    <sql id="FT_COND_NOTICE">
+            (MATCH(title, content) AGAINST(#{q} IN BOOLEAN MODE))
+    </sql>
+
+    <!-- 공통: LIKE 조건 (부분 문자열) -->
+    <sql id="LIKE_COND_DON">
+        (title LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))
+    </sql>
+    <sql id="LIKE_COND_VOL">
+        (title LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%') OR location LIKE CONCAT('%', #{q}, '%'))
+    </sql>
+    <sql id="LIKE_COND_POST">
+        (title LIKE CONCAT('%', #{q}, '%') OR content LIKE CONCAT('%', #{q}, '%'))
+    </sql>
+    <sql id="LIKE_COND_NOTICE">
+        (title LIKE CONCAT('%', #{q}, '%') OR content LIKE CONCAT('%', #{q}, '%'))
+    </sql>
+    <sql id="LIKE_COND_FUN">
+        (title LIKE CONCAT('%', #{q}, '%') OR description LIKE CONCAT('%', #{q}, '%'))
+    </sql>
+
+    <!-- types 필터 유틸 -->
+    <sql id="TYPE_ENABLED">
+        <!-- types 파라미터에 해당 type 문자열이 포함된 경우만 해당 SELECT를 포함 -->
+        <!-- MyBatis에서 조건부 UNION을 구현하기 위해 choose/when 사용 -->
+    </sql>
+
+    <!-- ========== SELECT (목록) ========== -->
+    <select id="searchAll" resultType="com.Ignis.search.domain.SearchResult">
+            SELECT *
+            FROM (
+            <!-- donation -->
+            <if test="types == null || types.isEmpty() || types.contains('donation')">
+                SELECT
+                'donation' AS type,
+                d.donation_id AS id,
+                d.title AS title,
+                SUBSTRING(
+                <choose>
+                    <when test="useFulltext">d.description</when>
+                    <otherwise>d.description</otherwise>
+                </choose>, 1, 180
+                ) AS snippet,
+                d.image_path AS imagePath,
+                d.created_at AS createdAt,
+                d.view_count AS viewCount
+                FROM donation d
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_DON"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('volunteer')">
+                UNION ALL
+                SELECT
+                'volunteer' AS type,
+                v.volunteer_id AS id,
+                v.title,
+                SUBSTRING(v.description, 1, 180) AS snippet,
+                v.image_path,
+                v.created_at,
+                v.view_count
+                FROM volunteer v
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_VOL"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_VOL"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('funding')">
+                UNION ALL
+                SELECT
+                'funding' AS type,
+                f.funding_id AS id,
+                f.title,
+                SUBSTRING(f.description, 1, 180) AS snippet,
+                f.image_path,
+                f.created_at,
+                f.view_count
+                FROM funding f
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_FUN"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('post')">
+                UNION ALL
+                SELECT
+                'post' AS type,
+                p.post_id AS id,
+                p.title,
+                SUBSTRING(p.content, 1, 180) AS snippet,
+                p.image_path,
+                p.created_at,
+                p.view_count
+                FROM post p
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_POST"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_POST"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('notice')">
+                UNION ALL
+                SELECT
+                'notice' AS type,
+                n.notice_id AS id,
+                n.title,
+                SUBSTRING(n.content, 1, 180) AS snippet,
+                n.image_path,
+                n.created_at,
+                NULL AS view_count
+                FROM notice n
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_NOTICE"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_NOTICE"/>
+                    </otherwise>
+                </choose>
+            </if>
+            ) t
+            ORDER BY createdAt DESC
+            LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- ========== COUNT (페이지네이션용) ========== -->
+    <select id="countAll" resultType="int">
+            SELECT SUM(cnt) FROM (
+            <if test="types == null || types.isEmpty() || types.contains('donation')">
+                SELECT COUNT(*) AS cnt
+                FROM donation d
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_DON"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('volunteer')">
+                UNION ALL
+                SELECT COUNT(*) AS cnt
+                FROM volunteer v
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_VOL"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_VOL"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('funding')">
+                UNION ALL
+                SELECT COUNT(*) AS cnt
+                FROM funding f
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_FUN"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('post')">
+                UNION ALL
+                SELECT COUNT(*) AS cnt
+                FROM post p
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_POST"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_POST"/>
+                    </otherwise>
+                </choose>
+            </if>
+
+            <if test="types == null || types.isEmpty() || types.contains('notice')">
+                UNION ALL
+                SELECT COUNT(*) AS cnt
+                FROM notice n
+                WHERE
+                <choose>
+                    <when test="useFulltext">
+                        <include refid="FT_COND_NOTICE"/>
+                    </when>
+                    <otherwise>
+                        <include refid="LIKE_COND_NOTICE"/>
+                    </otherwise>
+                </choose>
+            </if>
+            ) x
+    </select>
+
+</mapper>
