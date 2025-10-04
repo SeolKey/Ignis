@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Tooltip } from 'antd';
+import {
+  Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Spin, Tooltip
+} from 'antd';
 import { CalendarOutlined, ShareAltOutlined, HeartOutlined, HeartFilled, EyeOutlined } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import { Carousel } from 'antd';
 import '../../styles/funding/FundingDetail.css';
 import testImage from '../../assets/testImage.png';
 import Comments from '../common/Comments';
-import useViewOnce from '../../hooks/useViewOnce'; // ✅ 조회수 훅 임포트
+import useViewOnce from '../../hooks/useViewOnce';
+import FundingSideMiniGrid from './FundingSideMiniGrid';
 
 const { Title, Text, Paragraph } = Typography;
-const { TabPane } = Tabs;
 
 // 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
@@ -38,6 +40,8 @@ export default function FundingDetail() {
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState(null);
   const [liked, setLiked] = useState(false);
+  const [relatedFundings, setRelatedFundings] = useState([]);
+
   const toggleLike = () => setLiked((v) => !v);
 
   // 상세 불러오기
@@ -62,16 +66,48 @@ export default function FundingDetail() {
         if (!ignore) setLoading(false);
       }
     })();
+
+    // 함께 보는 펀딩 (관련 → 인기순 → 최신순 폴백)
+    (async () => {
+      try {
+        const candidates = [
+          `/funding/react/related?fundingId=${encodeURIComponent(id)}&limit=6`,
+          `/funding/react/list?sort=views&page=0&size=6`,
+          `/funding/react/list?page=0&size=6`,
+        ];
+        for (const url of candidates) {
+          try {
+            const res = await fetch(url, { credentials: 'include' });
+            if (!res.ok) throw new Error(`${res.status}`);
+            const data = await res.json();
+            const arr = Array.isArray(data)
+              ? data
+              : (Array.isArray(data?.items)
+                  ? data.items
+                  : (Array.isArray(data?.fundingList) ? data.fundingList : []));
+            const sorted = [...arr].sort(
+              (a, b) => Number(b.viewCount ?? b.views ?? 0) - Number(a.viewCount ?? a.views ?? 0)
+            );
+            if (!ignore) setRelatedFundings(sorted.slice(0, 6));
+            return;
+          } catch {
+            // 다음 후보 시도
+          }
+        }
+        if (!ignore) setRelatedFundings([]);
+      } catch {/* ignore */}
+    })();
+
     return () => { ignore = true; };
   }, [id]);
 
   const contentId = item?.fundingId ?? item?.id ?? Number(id);
 
-  // ✅ 조회수: 최초 진입 1회만 증가 (6시간 쿨다운)
+  // 조회수 1회 증가 (쿨다운은 훅 내부)
   useViewOnce({
     id,
     type: 'funding',
-    endpoints: [`/funding/api/${id}/view`],
+    endpoints: [`/funding/api/${id}/view`, `/funding/${id}/view`],
     onUpdated: (views) => {
       setItem((prev) => (prev ? { ...prev, viewCount: views, views } : prev));
     },
@@ -139,7 +175,7 @@ export default function FundingDetail() {
         <Row gutter={[24, 24]}>
           {/* 메인 상세 */}
           <Col xs={24} md={16}>
-            <Card bordered={false} className="funding-thumbnail-card">
+            <Card variant="bordered" className="funding-thumbnail-card">
               <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
                 {imagesForCarousel.map((src, idx) => (
                   <div key={idx}>
@@ -154,32 +190,50 @@ export default function FundingDetail() {
               </Carousel>
             </Card>
 
-            <Tabs defaultActiveKey="1" className="funding-custom-tabs">
-              <TabPane tab="상세내용" key="1">
-                <Title level={4} className="funding-detail-title">{item?.title || '펀딩 상세'}</Title>
-                <Card className="funding-content-card" bordered={false}>
-                  <Paragraph className="funding-detail-paragraph" style={{ whiteSpace: 'pre-wrap' }}>
-                    {item?.description || '프로젝트 설명이 등록되지 않았습니다.'}
-                  </Paragraph>
-                </Card>
-              </TabPane>
-              <TabPane tab="안내사항" key="2">
-                <Paragraph className="funding-detail-paragraph">
-                  - 본 프로젝트는 <strong>모금형 펀딩</strong>이며, 목표 금액 달성도에 따라 보상이 달라질 수 있습니다.<br />
-                  - 결제·환불 정책은 프로젝트별로 상이할 수 있으니 반드시 확인해주세요.<br />
-                  - 허위 정보 기재 및 부정 참여는 사전 고지 없이 제한될 수 있습니다.<br />
-                  - 문의는 댓글 또는 고객센터를 이용해주세요.
-                </Paragraph>
-              </TabPane>
-              <TabPane tab="댓글" key="3">
-                <Comments contentType="funding" contentId={contentId} />
-              </TabPane>
-            </Tabs>
+            <Tabs
+              defaultActiveKey="detail"
+              className="funding-custom-tabs"
+              items={[
+                {
+                  key: 'detail',
+                  label: '상세내용',
+                  children: (
+                    <>
+                      <Title level={4} className="funding-detail-title">{item?.title || '펀딩 상세'}</Title>
+                      <Card className="funding-content-card" variant="bordered">
+                        <Paragraph className="funding-detail-paragraph" style={{ whiteSpace: 'pre-wrap' }}>
+                          {item?.description || '프로젝트 설명이 등록되지 않았습니다.'}
+                        </Paragraph>
+                      </Card>
+                    </>
+                  ),
+                },
+                {
+                  key: 'notice',
+                  label: '안내사항',
+                  children: (
+                    <Paragraph className="funding-detail-paragraph">
+                      - 본 프로젝트는 <strong>모금형 펀딩</strong>이며, 목표 금액 달성도에 따라 보상이 달라질 수 있습니다.<br />
+                      - 결제·환불 정책은 프로젝트별로 상이할 수 있으니 반드시 확인해주세요.<br />
+                      - 허위 정보 기재 및 부정 참여는 사전 고지 없이 제한될 수 있습니다.<br />
+                      - 문의는 댓글 또는 고객센터를 이용해주세요.
+                    </Paragraph>
+                  ),
+                },
+                {
+                  key: 'comment',
+                  label: '댓글',
+                  children: (
+                    <Comments contentType="funding" contentId={contentId} />
+                  ),
+                },
+              ]}
+            />
           </Col>
 
-          {/* 사이드 정보 */}
+          {/* 사이드 정보 + 함께 보는 펀딩 */}
           <Col xs={24} md={8}>
-            <Card className="funding-info-card" variant="borderless">
+            <Card className="funding-info-card" variant="bordered">
               <Title level={5} className="funding-side-title">{item?.title || '펀딩 상세'}</Title>
 
               <div className="funding-project-period">
@@ -205,7 +259,7 @@ export default function FundingDetail() {
                 </div>
               </div>
 
-              {/* ✅ 조회수 표시 */}
+              {/* 조회수 */}
               <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <EyeOutlined />
                 <Text type="secondary">
@@ -244,6 +298,14 @@ export default function FundingDetail() {
                 </Button>
               </div>
             </Card>
+
+            {/* 함께 보는 펀딩 */}
+            <FundingSideMiniGrid
+              title="함께 보는"
+              items={relatedFundings}
+              onMore={() => navigate('/funding')}
+              onClickItem={(fid) => navigate(`/funding/${fid}`)}
+            />
           </Col>
         </Row>
       </div>

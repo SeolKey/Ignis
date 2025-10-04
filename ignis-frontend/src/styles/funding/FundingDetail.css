@@ -1,153 +1,87 @@
-/* ===== 레이아웃 ===== */
+/* ===== 공통 컨테이너 ===== */
 .funding-content {
-  width: 100%;
-  padding: 40px 5vw;
-  background-color: #ffffff;
-  box-sizing: border-box;
-  overflow: visible;
+  width: 85%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 0 40px;
 }
 
-/* ===== 썸네일 카드/이미지 ===== */
+/* ===== 썸네일(캐러셀) 카드 ===== */
 .funding-thumbnail-card {
-  background: #fff;
-  border: none;
-  box-shadow: none;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
 }
-
-/* 이미지가 잘리지 않게 전체 보이도록 + 반응형 */
 .funding-thumbnail-image {
   width: 100%;
-  height: auto;              /* 원본 비율 유지 */
-  max-height: 520px;         /* 너무 커지지 않도록 상한 */
-  object-fit: contain;       /* 잘리지 않고 전체 보이기 */
-  image-rendering: auto;     /* 기본 화질 보정 */
-  border-radius: 8px;
-  background: #f0f0f0;
+  height: 420px;
+  object-fit: cover;
+  display: block;
+}
+@media (max-width: 768px) {
+  .funding-thumbnail-image { height: 300px; }
 }
 
-/* ===== 탭/본문 카드 ===== */
-.funding-custom-tabs .ant-tabs-nav {
-  margin: 0 0 12px 0;
+/* ===== 탭/본문 ===== */
+.funding-custom-tabs .ant-tabs-nav { margin: 12px 0; }
+.funding-detail-title {
+  margin: 14px 0 10px;
+  font-weight: 800;
 }
-.funding-content-card {
-  margin-top: 16px;
-}
-
-/* 상세내용 탭 - 제목/본문 크게 */
-.funding-detail-title,
-.funding-custom-tabs .ant-typography h4 {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #222;
-}
-.funding-content-card .ant-typography,
-.funding-content-card .ant-typography p,
+.funding-content-card { margin-top: 8px; }
 .funding-detail-paragraph {
-  font-size: 18px;
+  font-size: 15px;
   line-height: 1.8;
-  color: #333;
+  color: #444;
   margin: 0;
+  white-space: pre-wrap;
 }
 
 /* ===== 우측 정보 카드 ===== */
 .funding-info-card {
-  background: #fff;
-  border: 1px solid #f0f0f0;
-  border-radius: 8px;
+  border-radius: 10px;
 }
-
-.funding-side-title,
-.funding-info-card .ant-typography {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
-
+.funding-side-title { margin-bottom: 6px; }
 .funding-project-period {
-  margin-bottom: 12px;
   color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
 }
 
-/* 진행 퍼센트 텍스트 */
+/* 진행률/금액 */
 .funding-progress-text {
-  font-size: 22px;
-  font-weight: 700;
-  color: #000;
   display: inline-block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  font-weight: 700;
 }
-
-/* 금액/목표금액 */
 .funding-stats-v2 {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   margin-top: 8px;
 }
-.funding-current-amount .funding-amount {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #111;
-  line-height: 1;
-}
-.funding-amount-label {
-  margin-left: 6px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #666;
-}
+.funding-current-amount { display: flex; align-items: baseline; gap: 6px; }
+.funding-amount { font-size: 18px; font-weight: 800; }
+.funding-amount-label { color: #666; }
 .funding-goal-pill {
   padding: 6px 10px;
-  border-radius: 9999px;
-  background: #e6f7ff;
-  color: #1677ff;
-  font-size: 13px;
-  font-weight: 700;
-  white-space: nowrap;
-  line-height: 1;
+  border-radius: 999px;
+  background: #f5f7ff;
+  color: #3a5ed8;
+  font-size: 12px;
+  border: 1px solid #e6ecff;
 }
 
-/* 좁은 화면에서는 세로로 쌓이게 */
-@media (max-width: 767px) {
-  .funding-stats-v2 {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-}
-
-/* 오른쪽 컨테이너만 sticky */
-@media (min-width: 768px) {
-  .funding-info-card {
-    position: sticky;
-    top: 88px;        /* 헤더 높이에 맞게 조정 */
-    align-self: flex-start;
-    z-index: 2;
-    background: #fff;
-  }
-  /* 혹시 남아있을 리워드 sticky를 무력화 */
-  .reward-wrap.sticky {
-    position: static;
-    top: auto;
-    z-index: auto;
-  }
-}
-
-/* ===== 하단 버튼 ===== */
+/* 액션 영역 */
 .funding-action-row {
   display: flex;
   gap: 12px;
   align-items: stretch;
-  margin-top: 12px;
+  margin-top: 14px;
 }
-.funding-icon-group {
-  display: flex;
-  gap: 8px;
-}
+.funding-icon-group { display: flex; gap: 8px; }
 .funding-icon-btn {
   width: 48px;
   height: 48px;
@@ -163,18 +97,9 @@
   box-shadow: 0 1px 0 rgba(0,0,0,0.02);
   padding: 0;
 }
-.funding-icon-btn:hover {
-  background: #f7f8fa;
-  border-color: #e1e1e1;
-}
-.funding-icon-btn:active {
-  transform: translateY(1px);
-}
-.funding-icon-btn.active {
-  color: #ff4d4f;
-  background: #fff7f7;
-  border-color: rgba(255,77,79,.25);
-}
+.funding-icon-btn:hover { background: #f7f8fa; border-color: #e1e1e1; }
+.funding-icon-btn:active { transform: translateY(1px); }
+.funding-icon-btn.active { color: #ff4d4f; }
 .funding-cta-btn {
   flex: 1;
   height: 48px;
@@ -183,6 +108,78 @@
 }
 @media (max-width: 767px) {
   .funding-action-row { gap: 10px; }
-  .funding-icon-btn  { width: 44px; height: 44px; }
-  .funding-cta-btn   { height: 44px; }
+  .funding-icon-btn { width: 44px; height: 44px; }
+  .funding-cta-btn { height: 44px; }
 }
+
+/* ===== 사이드 미니그리드 (함께 보는 펀딩) ===== */
+/* 지금 공용 SideMiniGrid가 donation- 접두를 쓰고 있을 수 있어서,
+   충돌 없이 바로 작동하도록 donation- 클래스를 그대로 정의해둔다. */
+.donation-side-section {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #fff;
+}
+.donation-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.donation-side-title { margin: 0; font-size: 16px; font-weight: 700; }
+.donation-side-accent { color: #1677ff; }
+.donation-side-more {
+  border: none;
+  background: transparent;
+  color: #1677ff;
+  cursor: pointer;
+  padding: 0;
+}
+.donation-side-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .donation-side-grid { grid-template-columns: 1fr; }
+}
+.donation-mini-card { cursor: pointer; }
+.donation-mini-thumb-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.donation-mini-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.donation-mini-progress {
+  position: absolute;
+  right: 6px; bottom: 6px;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+}
+.donation-mini-title {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: #333;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ===== 세부 마감 ===== */
+.ant-progress-inner { border-radius: 999px !important; }
+.ant-progress-bg { border-radius: 999px !important; }

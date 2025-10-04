@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message, Tooltip } from 'antd';
+import {
+  Row, Col, Card, Typography, Progress, Button, Tabs, Divider, Tooltip, message
+} from 'antd';
 import {
   CalendarOutlined,
   ShareAltOutlined,
@@ -8,71 +10,22 @@ import {
   HeartFilled,
   EyeOutlined,
 } from '@ant-design/icons';
-import "../../styles/donation/DonationDetail.css";
 import Layout from '../../components/Layout';
-import testImage from '../../assets/testImage.png';
-import { Carousel } from 'antd';
+import '../../styles/donation/DonationDetail.css';
 import { Modal, Form, Input as AntInput } from 'antd';
 import Comments from '../common/Comments.jsx';
-import useViewOnce from '../../hooks/useViewOnce'; // ✅ 조회수 훅
+import useViewOnce from '../../hooks/useViewOnce';
+import testImage from '../../assets/testImage.png';
+import SideMiniGrid from './SideMiniGrid.jsx';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
-// 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${y}.${m}.${dd}`;
-};
-
-// 이미지 후보 필드에서 URL 뽑아오기
-const pickImageFields = (obj) => {
-  if (!obj) return [];
-  const candidates = [
-    obj.url, obj.path, obj.imagePath, obj.image_url, obj.image, obj.thumbnailUrl,
-    obj.thumbnail_path, obj.thumbnailPath, obj.mainImage, obj.coverImage
-  ].filter(Boolean);
-
-  // 문자열이 아니라 {url: "..."} 형태가 섞였을 가능성 처리
-  const flat = candidates.map((c) => (typeof c === 'string' ? c : c?.url || c?.path || c?.imagePath)).filter(Boolean);
-
-  // 로컬 파일 경로가 내려오는 경우(예: C:\...)는 프론트에서 못 씀 → 그대로 두되 서버가 /uploads/** 로 매핑되면 표시됨
-  return flat;
-};
-
-// 배열 형태 images에서 URL 뽑기
-const extractFromImagesArray = (arr) => {
-  if (!Array.isArray(arr)) return [];
-  return arr
-    .map((it) => (typeof it === 'string' ? it : pickImageFields(it)[0]))
-    .filter(Boolean);
-};
-
-// Donation 응답에서 이미지 후보 추출
-const extractDonationImages = (don) => {
-  if (!don) return [];
-  // 선호 순서: images[] → 대표 이미지 필드들
-  const list = [
-    ...extractFromImagesArray(don.images),
-    ...pickImageFields(don),
-  ].filter(Boolean);
-  // 중복 제거
-  return Array.from(new Set(list));
-};
-
-// Funding 응답에서 이미지 후보 추출
-const extractFundingImages = (fund) => {
-  if (!fund) return [];
-  const list = [
-    ...extractFromImagesArray(fund.images),
-    ...pickImageFields(fund),
-  ].filter(Boolean);
-  return Array.from(new Set(list));
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 };
 
 export default function DonationDetail() {
@@ -80,118 +33,82 @@ export default function DonationDetail() {
   const navigate = useNavigate();
 
   const [donation, setDonation] = useState(null);
-  const [imageUrls, setImageUrls] = useState([]); // ✅ 캐러셀에 쓸 최종 이미지들
+  const [liked, setLiked] = useState(false);
+
+  // 사이드 추천 데이터
+  const [relatedDonations, setRelatedDonations] = useState([]);
+  const [setHotFundings] = useState([]);
+
+  // 전화번호 확인 모달
   const [phoneModalOpen, setPhoneModalOpen] = useState(false);
   const [phoneInput, setPhoneInput] = useState('');
   const [phoneSaving, setPhoneSaving] = useState(false);
-
-  //  좋아요 상태
-  const [liked, setLiked] = useState(false);
-
   const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
 
-  // 기부 상세 데이터 불러오기 (+ 이미지 폴백: 펀딩)
+  // 상세 로드
   useEffect(() => {
-    let ignore = false;
     (async () => {
       try {
         const res = await fetch(`/donation/api/${id}`, { credentials: 'include' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (ignore) return;
-
         setDonation(data);
-
-        // 1) Donation에서 이미지 추출
-        let images = extractDonationImages(data);
-
-        // 2) 이미지가 없거나 너무 적다면 → Funding에서 폴백
-        if (!images || images.length === 0) {
-          // 매칭용 키: donation.fundingId 가 있으면 우선, 없으면 동일 id로 시도
-          const fundingKey = data?.fundingId ?? id;
-          try {
-            const fres = await fetch(`/funding/api/${fundingKey}`, { credentials: 'include' });
-            if (fres.ok) {
-              const fdata = await fres.json();
-              const fimgs = extractFundingImages(fdata);
-              if (fimgs.length > 0) {
-                images = fimgs;
-              }
-            }
-          } catch {
-            // 펀딩 폴백 실패는 무시하고 아래로 진행
-          }
-        }
-
-        setImageUrls(images);
       } catch {
         message.error('기부 상세 정보를 불러오지 못했어요.');
+      }
+    })();
+  }, [id]);
+
+  // 추천 섹션 로드 (엔드포인트 상황에 따라 2단계 폴백)
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        // 1) 관련 모금함
+        let r = await fetch(`/donation/api/related?donationId=${id}&limit=6`, { credentials: 'include' });
+        if (!r.ok) r = await fetch(`/donation/api/list?limit=6&sort=popular`, { credentials: 'include' });
+        if (r.ok) {
+          const arr = await r.json();
+          if (!ignore) setRelatedDonations(Array.isArray(arr) ? arr.slice(0, 6) : []);
+        }
+
+        // 2) 인기 펀딩
+        let f = await fetch(`/funding/api/list?limit=6&sort=hot`, { credentials: 'include' });
+        if (!f.ok) f = await fetch(`/funding/api?limit=6`, { credentials: 'include' });
+        if (f.ok) {
+          const arr = await f.json();
+          if (!ignore) setHotFundings(Array.isArray(arr) ? arr.slice(0, 6) : []);
+        }
+      } catch {
+        // 조용히 폴백 무시
       }
     })();
     return () => { ignore = true; };
   }, [id]);
 
-  const contentId = donation?.donationId ?? donation?.id ?? Number(id);
-
-  // ✅ 조회수 훅: 최초 진입 1회만 증가 (6시간 쿨다운)
+  // 조회수 1회 증가
   useViewOnce({
     id,
     type: 'donation',
-    endpoints: [`/donation/api/${id}/view`], // 컨트롤러 분리형 엔드포인트
-    onUpdated: (views) => {
-      // 서버가 최신 viewCount를 내려줬다면 UI에 반영
-      setDonation((prev) => (prev ? { ...prev, viewCount: views, views } : prev));
-    },
+    endpoints: [`/donation/api/${id}/view`],
+    onUpdated: (views) => setDonation((p) => (p ? { ...p, viewCount: views, views } : p)),
   });
 
-  // 진행률 계산
-  const progress = useMemo(() => {
-    const cur = Number(donation?.currentPrice || 0);
-    const max = Number(donation?.maxPrice || 0);
-    if (!max) return 0;
-    return Math.max(0, Math.min(100, Math.floor((cur * 100) / max)));
-  }, [donation]);
-
-  // 캐러셀 이미지 세팅 (없으면 테스트 이미지 3장)
-  const imagesForCarousel = useMemo(() => {
-    if (imageUrls && imageUrls.length >= 1) return imageUrls;
-    return [testImage, testImage, testImage];
-  }, [imageUrls]);
+  const contentId = donation?.donationId ?? Number(id);
+  const current = Number(donation?.currentPrice || 0);
+  const target = Number(donation?.maxPrice || 0);
+  const progress = useMemo(() => (target ? Math.min(100, Math.floor((current * 100) / target)) : 0), [current, target]);
 
   const start = fmtDate(donation?.createdAt);
   const end = donation?.endAt ? fmtDate(donation.endAt) : '';
 
-  // 참여하기 버튼
-  const handleParticipate = async () => {
-    try {
-      const res = await fetch('/user/me/phone', {
-        credentials: 'include',
-        headers: { Accept: 'application/json' },
-      });
-      if (res.status === 401) {
-        message.warning('로그인 후 이용 가능합니다.');
-        navigate('/login');
-        return;
-      }
-      const isJson = (res.headers.get('content-type') || '').includes('application/json');
-      const data = isJson ? await res.json() : null;
-      const phoneRaw =
-        data?.phone || data?.phoneNumber || data?.user?.phone || '';
-      const digits = (phoneRaw || '').replace(/\D/g, '');
-      const isUnset = digits.length === 0 || /^0+$/.test(digits);
-      if (isUnset) {
-        setPhoneInput(phoneRaw || '');
-        setPhoneModalOpen(true);
-      } else {
-        message.success('연락처 확인 완료! 결제 페이지로 이동합니다.');
-        navigate(`/donation-payment?id=${id}&amount=${donation?.minPrice || 0}`);
-      }
-    } catch {
-      message.error('전화번호 확인 중 오류가 발생했어.');
-    }
-  };
+  // D-day
+  const dDay = (() => {
+    if (!donation?.endAt) return null;
+    const rest = Math.ceil((new Date(donation.endAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return rest >= 0 ? `D-${rest}` : '종료';
+  })();
 
-  // 공유하기
   const share = async () => {
     try {
       if (navigator.share) {
@@ -200,135 +117,160 @@ export default function DonationDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch (e) {
-      console.warn('공유 처리 중 중단/실패:', e);
+    } catch {
+      //
     }
   };
 
-  // 좋아요 토글
-  const toggleLike = async () => {
+  const toggleLike = () => setLiked((v) => !v);
+
+  const handleParticipate = async () => {
     try {
-      // await fetch(`/like/toggle?contentType=donation&contentId=${contentId}`, { method: 'POST', credentials: 'include' });
-      setLiked((v) => !v);
+      const res = await fetch('/user/me/phone', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      const isJson = (res.headers.get('content-type') || '').includes('application/json');
+      const data = isJson ? await res.json() : null;
+      const phoneRaw = data?.phone || data?.phoneNumber || data?.user?.phone || '';
+      const digits = (phoneRaw || '').replace(/\D/g, '');
+      const isUnset = digits.length === 0 || /^0+$/.test(digits);
+      if (isUnset) {
+        setPhoneInput(phoneRaw || '');
+        setPhoneModalOpen(true);
+      } else {
+        navigate(`/donation-payment?id=${id}&amount=${donation?.minPrice || 0}`);
+      }
     } catch {
-      message.error('좋아요 처리 중 오류가 발생했어요.');
+      message.error('전화번호 확인 중 오류가 발생했어.');
     }
   };
+
+  const goDonation = (did) => navigate(`/donation/${did}`);
 
   return (
     <Layout>
-      <div className="donation-detail-content">
-        <Row gutter={[24, 24]}>
-          {/* 메인 상세 영역 */}
-          <Col xs={24} md={16}>
-            <Card bordered={false} className="donation-thumbnail-card">
-              <Carousel autoplay autoplaySpeed={3000} pauseOnHover={false} dots>
-                {imagesForCarousel.map((src, idx) => (
-                  <div key={idx}>
-                    <img
-                      className="donation-thumbnail-image"
-                      src={src || testImage}
-                      alt={`이미지-${idx}`}
-                      onError={(e) => { e.currentTarget.src = testImage; }}
-                    />
-                  </div>
-                ))}
-              </Carousel>
-            </Card>
+      {/* ───────── Hero ───────── */}
+      <section className="donation-hero">
+        <div className="donation-hero-container">
+          <img
+            src={donation?.imagePath || donation?.image_url || donation?.thumbnailPath || testImage}
+            alt="hero"
+            onError={(e) => (e.currentTarget.src = testImage)}
+          />
+          <div className="donation-hero-overlay" />
+          <div className="donation-hero-inner">
+            {dDay && <span className={`donation-dtag ${dDay === '종료' ? 'ended' : ''}`}>{dDay}</span>}
+            <h1 className="donation-hero-title">{donation?.title || '기부 프로젝트'}</h1>
+            <div className="donation-hero-progress">
+              <Progress percent={progress} showInfo={false} status="active" />
+              <div className="donation-hero-progress-meta">
+                <span>{progress}%</span>
+                <span>{current.toLocaleString()}원 / {target.toLocaleString()}원</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <Tabs defaultActiveKey="1" className="donation-custom-tabs">
-              {/* 상세내용 */}
-              <TabPane tab="상세내용" key="1">
-                <Title level={4}>{donation?.title}</Title>
+      {/* ───────── 본문 (폭 Hero와 맞춤) ───────── */}
+      <div className="donation-main-section">
+        <Row gutter={[24, 24]}>
+          {/* 좌측: 내용 */}
+          <Col xs={24} md={16}>
+            <Tabs defaultActiveKey="intro" className="donation-custom-tabs">
+              <TabPane tab="모금소개" key="intro">
                 <Card className="donation-content-card" bordered={false}>
                   <Paragraph>{donation?.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
+
+                {/* ✅ 주의사항 카드 여기 추가 */}
+                <Card className="donation-warning-card" bordered={false}>
+                  <Title level={5} className="donation-warning-title">기부 전 꼭 확인해주세요</Title>
+                  <ul className="donation-warning-list">
+                    <li>기부금은 지정된 목적 외에는 사용되지 않습니다.</li>
+                    <li>모금함 개설자의 사정으로 조기 종료되거나 변경될 수 있습니다.</li>
+                    <li>기부는 신중하게 결정해 주시기 바라며, 완료된 기부는 취소나 환불이 어렵습니다.</li>
+                    <li>기부 내역과 사용 결과는 모금 단체의 보고를 통해 확인하실 수 있습니다.</li>
+                    <li>세제 혜택(기부금 영수증 발급 등)은 해당 모금 단체의 정책에 따라 달라질 수 있습니다.</li>
+                  </ul>
+                </Card>
               </TabPane>
 
-              {/* 안내사항 */}
-              <TabPane tab="안내사항" key="2">
-                <Paragraph>
-                  - 본 프로젝트는 <strong>실제 기부금 전달</strong>을 기반으로 운영됩니다.<br />
-                  - 모든 기부금은 투명한 절차를 거쳐 수혜자에게 전달됩니다.<br />
-                  - 기부 참여 전, <strong>내용·목적·기부처</strong>를 반드시 확인해주세요.<br />
-                  - 기부 완료 후에는 <strong>환불 불가</strong>이니 신중히 결정해주세요.<br />
-                  - 내역과 사용 결과는 마이페이지 및 상세 페이지에서 확인 가능합니다.<br />
-                </Paragraph>
-              </TabPane>
-
-              {/* 댓글 */}
-              <TabPane tab="댓글" key="3">
+              <TabPane tab="댓글" key="comment">
                 <Comments contentType="donation" contentId={contentId} />
               </TabPane>
             </Tabs>
           </Col>
 
-          {/* 사이드 정보 영역 */}
+          {/* 우측: 기부 위젯 + 추천 섹션 */}
           <Col xs={24} md={8}>
-            <Card className="donation-info-card" variant="borderless">
+            <Card className="donation-info-card" bordered>
               <Title level={5}>{donation?.title}</Title>
               <div className="donation-project-period">
                 <CalendarOutlined className="donation-calendar-icon" />
                 <Text>{start}{end ? ` ~ ${end}` : ''}</Text>
               </div>
-
-              <Divider className="donation-divider-tight" />
-
-              <Text strong>{progress}% 달성</Text>
-              <Progress percent={progress} showInfo={false} status="active" />
-              {end && <Text type="secondary" className="donation-end-text">{end} 종료</Text>}
-
-              <div className="donation-stats">
-                <Paragraph>
-                  <Text>목표 금액</Text><br />
-                  <Text>{Number(donation?.maxPrice || 0).toLocaleString()}원</Text>
-                </Paragraph>
-                <Paragraph>
-                  <Text>현재 금액</Text><br />
-                  <Text>{Number(donation?.currentPrice || 0).toLocaleString()}원</Text>
-                </Paragraph>
-                <Paragraph style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <EyeOutlined />
-                  <Text type="secondary">
-                    {Number(donation?.viewCount ?? donation?.views ?? 0).toLocaleString()}회 조회
-                  </Text>
-                </Paragraph>
+              <Divider />
+              <div className="donation-stacked-metrics">
+                <div className="donation-metric"><Text type="secondary">목표 금액</Text><Text strong>{target.toLocaleString()}원</Text></div>
+                <div className="donation-metric"><Text type="secondary">현재 금액</Text><Text strong>{current.toLocaleString()}원</Text></div>
+                <div className="donation-metric"><Text type="secondary">달성률</Text><Text strong className="donation-accent">{progress}%</Text></div>
+                <div className="donation-metric"><EyeOutlined /><Text type="secondary" style={{ marginLeft: 6 }}>
+                  {(Number(donation?.viewCount ?? donation?.views ?? 0)).toLocaleString()}회 조회</Text></div>
               </div>
+              <Progress percent={progress} showInfo={false} status="active" />
 
-              {/* 하단 액션 */}
-              <div className="donation-action-row">
-                <div className="donation-icon-group">
-                  <Tooltip title={liked ? '좋아요 취소' : '좋아요'}>
-                    <button
-                      type="button"
-                      className={`donation-icon-btn ${liked ? 'active' : ''}`}
-                      aria-label="좋아요"
-                      onClick={toggleLike}
-                    >
-                      {liked ? <HeartFilled /> : <HeartOutlined />}
-                    </button>
-                  </Tooltip>
-                  <Tooltip title="공유하기">
-                    <button
-                      type="button"
-                      className="donation-icon-btn"
-                      aria-label="공유하기"
-                      onClick={share}
-                    >
-                      <ShareAltOutlined />
-                    </button>
-                  </Tooltip>
+              <div className="action-row">
+                <div className="icon-group">
+                  <button
+                    type="button"
+                    className={`icon-btn like ${liked ? 'active' : ''}`}
+                    aria-label={liked ? '좋아요 취소' : '좋아요'}
+                    onClick={toggleLike}
+                  >
+                    {liked ? <HeartFilled /> : <HeartOutlined />}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="공유하기"
+                    onClick={share}
+                  >
+                    <ShareAltOutlined />
+                  </button>
                 </div>
-                <Button type="primary" size="large" className="donation-cta-btn" onClick={handleParticipate}>
+
+                <Button
+                  type="primary"
+                  size="large"
+                  className="cta-btn"
+                  onClick={handleParticipate}
+                >
                   기부하기
                 </Button>
               </div>
+
             </Card>
+
+            {/* 함께 보는 모금함 */}
+            <SideMiniGrid
+              title="함께 보는"
+              type="기부"
+              items={relatedDonations}
+              onMore={() => navigate('/donation')}
+              onClickItem={(did) => goDonation(did)}
+            />
+
+
           </Col>
         </Row>
       </div>
 
-      {/* 전화번호 입력 모달 */}
+      {/* 연락처 확인 모달 */}
       <Modal
         title="연락처 확인"
         open={phoneModalOpen}
@@ -349,7 +291,7 @@ export default function DonationDetail() {
             });
             const out = await res.json().catch(() => ({}));
             if (out?.result === 'success') {
-              message.success('감사합니다! 결제 페이지로 이동합니다.');
+              message.success('확인되었습니다. 결제 페이지로 이동합니다.');
               setPhoneModalOpen(false);
               navigate(`/donation-payment?id=${id}&amount=${donation?.minPrice || 0}`);
             } else {

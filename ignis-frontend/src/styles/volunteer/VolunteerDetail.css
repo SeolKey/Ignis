@@ -1,62 +1,103 @@
-/* 레이아웃 */
-.volunteer-content {
+/* ===== Hero (기부 상세 느낌) ===== */
+.volunteer-hero {
   width: 100%;
-  padding: 40px 5vw;
-  background-color: #ffffff;
-  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 8px;
+}
+.volunteer-hero-container {
+  position: relative;
+  width: 85%;
+  max-width: 1100px;
+  height: 460px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+.volunteer-hero-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.92);
+}
+.volunteer-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.62) 100%);
+}
+.volunteer-hero-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px;
+  color: #fff;
+}
+.volunteer-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+}
+.volunteer-hero-progress { width: 100%; }
+.volunteer-hero-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #eee;
+  margin-top: 6px;
 }
 
-/* 썸네일 카드 */
-.thumbnail-card {
-  background: #fff;
-  border: none;
-  box-shadow: none;
-  margin-bottom: 12px;
-}
-.thumbnail-image {
-  width: 1000px;
-  height: 440px;
-  object-fit: cover; /* 이미지를 비율에 맞춰 잘라서 채우기 */
-  border-radius: 8px;
-  background: #f0f0f0;
+/* ===== 본문 (기부 상세와 동일 폭) ===== */
+.volunteer-main-section {
+  width: 85%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 0 40px 0;
 }
 
 /* 탭/본문 카드 */
-.custom-tabs .ant-tabs-nav {
-  margin: 0 0 12px 0;
-}
-.content-card {
-  margin-top: 16px;
-}
+.volunteer-custom-tabs .ant-tabs-nav { margin: 0 0 12px 0; }
+.volunteer-content-card { margin-top: 12px; }
 
 /* 우측 정보 카드 */
-.info-card {
-  background: #fff;
+.volunteer-info-card {
   border: 1px solid #f0f0f0;
-  border-radius: 8px;
+  border-radius: 10px;
+  padding-bottom: 14px;
 }
-.project-period {
-  margin-bottom: 12px;
+.volunteer-project-period {
+  margin: 6px 0 10px 0;
   color: #888;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
+.volunteer-calendar-icon { color: #999; }
 
-/* 숫자 정보 블록(필요 시 확장) */
-.stats p {
-  margin-bottom: 12px;
+/* 스택형 지표 */
+.volunteer-stacked-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin-bottom: 6px;
 }
+.volunteer-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.volunteer-accent { color: #1677ff; }
 
-
-/* --- 하단 버튼 스타일 (펀딩과 동일) --- */
+/* 액션 버튼 영역 (기존 공용 클래스 재사용) */
 .action-row {
   display: flex;
   gap: 12px;
   align-items: stretch;
   margin-top: 12px;
 }
-.icon-group {
-  display: flex;
-  gap: 8px;
-}
+.icon-group { display: flex; gap: 8px; }
 .icon-btn {
   width: 48px;
   height: 48px;
@@ -72,13 +113,8 @@
   box-shadow: 0 1px 0 rgba(0,0,0,0.02);
   padding: 0;
 }
-.icon-btn:hover {
-  background: #f7f8fa;
-  border-color: #e1e1e1;
-}
-.icon-btn:active {
-  transform: translateY(1px);
-}
+.icon-btn:hover { background: #f7f8fa; border-color: #e1e1e1; }
+.icon-btn:active { transform: translateY(1px); }
 .cta-btn {
   flex: 1;
   height: 48px;
@@ -89,4 +125,73 @@
   .action-row { gap: 10px; }
   .icon-btn  { width: 44px; height: 44px; }
   .cta-btn   { height: 44px; }
+}
+
+/* 사이드 컴팩트 추천 영역 (SideMiniGrid용 최소 복제) */
+.donation-side-section {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #fff;
+}
+.donation-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.donation-side-title { margin: 0; font-size: 16px; font-weight: 700; }
+.donation-side-accent { color: #1677ff; }
+.donation-side-more {
+  border: none; background: transparent; color: #1677ff; cursor: pointer; padding: 0;
+}
+.donation-side-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 봉사 상세는 2열 고정 */
+  gap: 10px;
+}
+@media (max-width: 420px) {
+  .donation-side-grid { grid-template-columns: 1fr; }
+}
+.donation-mini-card { cursor: pointer; }
+.donation-mini-thumb-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+.donation-mini-thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+.donation-mini-progress {
+  position: absolute;
+  right: 6px; bottom: 6px;
+  font-size: 11px; padding: 2px 6px; border-radius: 999px;
+  background: rgba(0,0,0,0.55); color: #fff;
+}
+.donation-mini-title {
+  margin-top: 6px; font-size: 12px; line-height: 1.3; color: #333;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* 주의사항 카드 (기부 스타일 차용) */
+.volunteer-warning-card {
+  margin-top: 16px;
+  background: #fff8f0;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  padding: 16px;
+}
+.volunteer-warning-title { color: #d48806; margin-bottom: 8px !important; }
+.volunteer-warning-list {
+  padding-left: 20px; margin: 0; color: #595959; font-size: 14px; line-height: 1.6;
+}
+.volunteer-warning-list li { margin-bottom: 4px; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .volunteer-hero-container { height: 340px; width: 94%; }
+  .volunteer-main-section   { width: 94%; }
+  .volunteer-hero-title     { font-size: 22px; }
 }
