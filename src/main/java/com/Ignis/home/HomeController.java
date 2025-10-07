@@ -33,9 +33,10 @@ public class HomeController {
     /**   기존 Thymeleaf 홈 페이지 (서버 렌더링) */
     @GetMapping("/")
     public String showHomePage(Model model) {
-        List<Donation> donationList = donationBO.getRecentDonationList(4);
-        List<Volunteer> volunteerList = volunteerBO.getRecentVolunteerList(4);
-        List<Funding> fundingList = fundingBO.getRecentFundingList(4);
+        int limit = 4;
+        List<Donation> donationList = donationBO.getMostViewedDonationList(limit);
+        List<Volunteer> volunteerList = volunteerBO.getMostViewedVolunteerList(limit);
+        List<Funding> fundingList = fundingBO.getMostViewedFundingList(limit);
 
         model.addAttribute("donationList", donationList);
         model.addAttribute("volunteerList", volunteerList);
@@ -48,10 +49,11 @@ public class HomeController {
     @GetMapping("/api/home")
     @ResponseBody
     public Map<String, Object> getHomeData() {
+        int limit = 4;
         // 서비스(BO)에서 최신 4개씩 가져오기
-        List<Donation> donations = donationBO.getRecentDonationList(4);
-        List<Volunteer> volunteers = volunteerBO.getRecentVolunteerList(4);
-        List<Funding> fundings = fundingBO.getRecentFundingList(4);
+        List<Donation> donations = donationBO.getMostViewedDonationList(limit);
+        List<Volunteer> volunteers = volunteerBO.getMostViewedVolunteerList(limit);
+        List<Funding> fundings = fundingBO.getMostViewedFundingList(limit);
 
         // 프론트에서 필요한 필드만 얇게 매핑
         List<Map<String, Object>> donationList = donations.stream()
@@ -60,6 +62,7 @@ public class HomeController {
                     m.put("donationId", d.getDonationId()); // 도메인 필드명에 맞게 사용
                     m.put("title", d.getTitle());
                     m.put("imagePath", d.getImagePath());
+                    m.put("views", d.getViewCount());
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -71,6 +74,7 @@ public class HomeController {
                     m.put("title", v.getTitle());
                     m.put("location", v.getLocation());
                     m.put("imagePath", v.getImagePath());
+                    m.put("views", v.getViewCount());
                     return m;
                 })
                 .collect(Collectors.toList());
@@ -82,6 +86,7 @@ public class HomeController {
                     m.put("title", f.getTitle());
                     m.put("imagePath", f.getImagePath());
                     m.put("maxPrice", f.getMaxPrice());
+                    m.put("views", f.getViewCount());
                     return m;
                 })
                 .collect(Collectors.toList());
