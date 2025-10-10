@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Typography,
+  InputNumber,
   Input,
   Button,
   Radio,
@@ -10,240 +11,444 @@ import {
   Checkbox,
   Divider,
   message,
+  Row,
+  Col,
+  Steps,
+  Tag,
+  Tooltip,
+  Progress,
+  Skeleton,
+  Affix,
 } from "antd";
-import "../../styles/funding/PaymentPage.css";
+import {
+  CreditCardOutlined,
+  SafetyOutlined,
+  InfoCircleOutlined,
+  CalendarOutlined,
+} from "@ant-design/icons";
 import Layout from "../../components/Layout";
+import "../../styles/funding/PaymentPage.css";
 
-const { Title, Text } = Typography;
-const { TextArea } = Input;
+const { Title, Text, Paragraph } = Typography;
 
 export default function PaymentPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
-  const typeParam = params.get("type") || "funding";
-  const idParam = params.get("id");
+  // URL 파라미터
+  const idParam = params.get("id"); // fundingId
   const amountParam = Number(params.get("amount") || 0);
 
-  const [amount, setAmount] = useState(amountParam);
-  const [paymentMethod, setPaymentMethod] = useState("kakaopay");
-  const [agree, setAgree] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // 상태
+  const [funding, setFunding] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  const [amount, setAmount] = useState(amountParam || 10000);
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [agree, setAgree] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerTel, setBuyerTel] = useState("");
+
+  // 펀딩 정보 로드
   useEffect(() => {
-    if (window.IMP && !window.__impInited) {
-      window.IMP.init(import.meta.env.VITE_IAMPORT_ID);
+    let ignore = false;
+    (async () => {
+      try {
+        setLoading(true);
+        if (!idParam) return;
+
+        // 기본 엔드포인트
+        const tryFetch = async (url) => {
+          const res = await fetch(url, {
+            credentials: "include",
+            headers: { Accept: "application/json" },
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        };
+
+        let data;
+        try {
+          // 1순위: api
+          data = await tryFetch(`/funding/api/${idParam}`);
+        } catch {
+          try {
+            // 2순위: react/detail (프로젝트 호환)
+            data = await tryFetch(`/funding/react/detail/${idParam}`);
+          } catch {
+            data = {};
+          }
+        }
+
+        const f =
+          data?.funding ??
+          data?.data ??
+          data ??
+          null;
+
+        if (!ignore) setFunding(f);
+      } catch (e) {
+        console.error(e);
+        message.error("펀딩 정보를 불러오지 못했습니다.");
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, [idParam]);
+
+  // PortOne(아임포트) 초기화
+  useEffect(() => {
+    const IMP = window.IMP;
+    const IMP_CODE = import.meta.env.VITE_IAMPORT_ID;
+    if (!IMP || !IMP_CODE) return;
+    if (!window.__impInited) {
+      IMP.init(IMP_CODE);
       window.__impInited = true;
     }
   }, []);
 
-  // 결제 금액에 값 추가하기 (버튼 클릭 시)
-  const addAmount = (value) => setAmount((prev) => prev + value);
+  const formatWon = (n) => `₩ ${Number(n || 0).toLocaleString()}`;
+  const disabled = useMemo(
+    () => !idParam || amount <= 0 || !agree || loading,
+    [idParam, amount, agree, loading]
+  );
 
-  // 버튼 비활성화 조건
-  const disabled = useMemo(() => {
-    return !idParam || amount <= 0 || !agree || loading;
-  }, [idParam, amount, agree, loading]);
+  const target = Number(funding?.maxPrice || funding?.targetAmount || 0);
+  const current = Number(funding?.currentPrice || funding?.currentAmount || 0);
+  const progress = target ? Math.min(100, Math.floor((current * 100) / target)) : 0;
 
-  // 결제 요청 함수
+  // 결제 요청
   const requestPay = async () => {
-    if (paymentMethod !== "kakaopay") {
-      message.info("현재는 카드/카카오페이(포트원)만 지원합니다.");
-      return;
-    }
-    if (!idParam) {
-      message.error("대상 ID가 없습니다. 상세 페이지에서 다시 시도해주세요.");
-      return;
-    }
-    if (amount <= 0) {
-      message.error("결제 금액을 입력해주세요.");
-      return;
-    }
+    if (!idParam) return message.error("펀딩 ID가 없습니다.");
+    if (amount <= 0) return message.error("결제 금액을 입력해주세요.");
 
     try {
       setLoading(true);
 
-      // 결제 준비 요청
-      const readyRes = await fetch(`/api/payments/prepare`, {
+      // 1) 서버 사전등록 (백엔드 규약에 맞춰 사용)
+      const prepRes = await fetch("/api/payments/prepare", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          targetType: "FUNDING",  // 펀딩
-          targetId: Number(idParam),  // 펀딩 ID
-          amount: amount,  // 결제 금액
-          buyerName: "구매자 이름",  // 예시로 넣은 값
-          buyerEmail: "buyer@example.com",  // 예시로 넣은 값
-          buyerTel: "010-1234-5678",  // 예시로 넣은 값
+          targetType: "FUNDING",
+          targetId: Number(idParam),
+          amount,
+          buyerName: isAnonymous ? "" : buyerName,
+          buyerEmail: isAnonymous ? "" : buyerEmail,
+          buyerTel: isAnonymous ? "" : buyerTel,
+          name: `[Funding] ${funding?.title || idParam}`,
         }),
-        credentials: "include",  // 세션 사용 시
       });
+      if (!prepRes.ok) throw new Error("결제 준비에 실패했습니다.");
+      const prep = await prepRes.json(); // { merchantUid, amount, name, ... }
 
-      if (!readyRes.ok) throw new Error("결제 준비에 실패했습니다.");
-      const ready = await readyRes.json(); // { merchantUid, amount, name, ... }
-
+      // 2) 포트원 결제창
       const IMP = window.IMP;
+      if (!IMP) throw new Error("PortOne SDK 초기화 실패");
       IMP.request_pay(
-  {
-    pg: "html5_inicis",       // PG사
-    pay_method: "card",       // 결제 방법 (카드)
-    merchant_uid: ready.merchantUid,  // 주문 고유 ID
-    name: ready.name || `[Funding] ${idParam}`,  // 펀딩 이름
-    amount: ready.amount,     // 결제 금액
-    buyer_name: ready.buyerName || '',
-    buyer_email: ready.buyerEmail || '',
-    buyer_tel: ready.buyerTel || ''
-  },
-  async (rsp) => {  // 결제 성공/실패 후 호출되는 콜백 함수
-    if (rsp.success) {
-      // 결제 성공 후 결제 정보 콘솔에 출력
-      console.log("결제 성공!");
-      console.log("결제 정보:", rsp);  // 결제 정보 전체 출력
-      console.log("imp_uid:", rsp.imp_uid);
-      console.log("merchant_uid:", rsp.merchant_uid);
-      console.log("결제 금액:", rsp.paid_amount);  // 금액 확인
-      console.log("결제 수단:", rsp.pay_method);  // 결제 수단 확인
+        {
+          pg: "html5_inicis",
+          pay_method: paymentMethod,
+          merchant_uid: prep.merchantUid,
+          name: prep.name || `[Funding] ${idParam}`,
+          amount: prep.amount ?? amount,
+          buyer_name: isAnonymous ? "익명 참여자" : buyerName || "",
+          buyer_email: isAnonymous ? "" : buyerEmail || "",
+          buyer_tel: isAnonymous ? "" : buyerTel || "",
+        },
+        async (rsp) => {
+          if (!rsp.success) {
+            message.error(rsp.error_msg || "결제가 실패/취소되었습니다.");
+            setLoading(false);
+            return;
+          }
 
-      // 결제 성공 후, 결제 정보를 서버로 보내는 부분
-      const payload = {
-        imp_uid: rsp.imp_uid,               // 결제 고유 ID
-        merchant_uid: rsp.merchant_uid,     // 주문 고유 ID
-        fundingId: idParam,                  // 펀딩 ID
-        paidAmount: rsp.paid_amount,         // 실제 결제 금액
-        payMethod: rsp.pay_method            // 결제 수단
-      };
-
-      try {
-        // 서버에 결제 정보를 전달하여 금액을 반영
-        const completeRes = await fetch(`/api/payments/webhook`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-          credentials: "include", // 세션 사용 시
-        });
-
-        if (completeRes.ok) {
-          message.success("결제 완료! 금액이 반영되었습니다.");
-          // 결제 성공 후, 결제 완료 페이지로 리디렉션 (결제 정보와 함께)
-          const queryParams = new URLSearchParams({
+          // 3) 서버 완료 알림
+          const payload = {
             imp_uid: rsp.imp_uid,
             merchant_uid: rsp.merchant_uid,
             fundingId: idParam,
-            paidAmount: rsp.paid_amount,  // 결제 금액
-            payMethod: rsp.pay_method    // 결제 수단
-          }).toString();
-          navigate(`/funding/participate-complete?${queryParams}`);
-        } else {
-          message.error("서버에서 결제 완료 처리가 실패했습니다.");
+            paidAmount: rsp.paid_amount,
+            payMethod: rsp.pay_method,
+          };
+
+          try {
+            const completeRes = await fetch(`/api/payments/webhook`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              credentials: "include",
+            });
+            if (!completeRes.ok) throw new Error("결제 완료 처리 실패");
+
+            // 4) 성공 페이지 이동 (제목/이름/익명 여부 전달)
+            const q = new URLSearchParams({
+              fundingId: String(idParam),
+              imp_uid: rsp.imp_uid,
+              merchant_uid: rsp.merchant_uid,
+              paidAmount: String(rsp.paid_amount ?? ""),
+              payMethod: String(rsp.pay_method ?? ""),
+              title: funding?.title || "",
+              buyerName: isAnonymous ? "" : (buyerName || ""),
+              anonymous: isAnonymous ? "1" : "0",
+            }).toString();
+            navigate(`/funding/participate-complete?${q}`, { replace: true });
+          } catch (err) {
+            console.error(err);
+            message.error("결제 완료 처리 중 오류가 발생했습니다.");
+          } finally {
+            setLoading(false);
+          }
         }
-      } catch (error) {
-        console.error(error);
-        message.error("결제 완료 처리가 실패했습니다.");
-      }
-    } else {
-      message.error(rsp.error_msg || "결제가 실패/취소되었습니다.");
-    }
-  }
-);
-
-
+      );
     } catch (e) {
       console.error(e);
       message.error(e.message || "결제 요청 중 오류가 발생했습니다.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <Layout>
-      <div className="payment-content">
-        <Card className="payment-card">
-          <Title level={3}>결제하기</Title>
+      <div className="fpay-wrap">
+        {/* 단계 표시 */}
+        <div className="fpay-steps">
+          <Steps current={1} items={[{ title: "상세보기" }, { title: "결제" }, { title: "완료" }]} />
+        </div>
 
-          <div className="section">
-            <Text strong>대상</Text>
-            <div style={{ marginTop: 6, color: "#666" }}>
-              타입: {typeParam} / ID: {idParam || "-"}
-            </div>
-          </div>
+        <Row gutter={[24, 24]}>
+          {/* 좌측: 결제 폼 */}
+          <Col xs={24} md={14} lg={15}>
+            <Card className="fpay-card">
+              {loading ? (
+                <Skeleton active paragraph={{ rows: 6 }} />
+              ) : (
+                <>
+                  <div className="fpay-head">
+                    <div className="fpay-title-row">
+                      <Title level={4} className="fpay-title">
+                        {funding?.title || "펀딩 프로젝트"}
+                      </Title>
+                      <Space size={8} wrap>
+                        {target > 0 && (
+                          <Tag color="blue" bordered={false}>
+                            <CalendarOutlined /> 진행률 {progress}%
+                          </Tag>
+                        )}
+                        {target > 0 && (
+                          <Tag color="default" bordered={false}>
+                            목표 {formatWon(target)}
+                          </Tag>
+                        )}
+                      </Space>
+                    </div>
 
-          <Divider />
+                    {target > 0 && (
+                      <>
+                        <Progress percent={progress} showInfo={false} />
+                        <div className="fpay-progress-meta">
+                          <span>{formatWon(current)}</span>
+                          <span>{formatWon(target)}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-          <div className="section">
-            <Text strong>결제 금액</Text>
-            <Input
-              prefix="₩"
-              value={amount}
-              onChange={(e) => {
-                const onlyNumber = e.target.value.replace(/[^0-9]/g, "");
-                setAmount(Number(onlyNumber));
-              }}
-              style={{ marginTop: 8 }}
-            />
-            <Space style={{ marginTop: 12 }} wrap>
-              <Button onClick={() => addAmount(1000)}>1,000원</Button>
-              <Button onClick={() => addAmount(5000)}>5,000원</Button>
-              <Button onClick={() => addAmount(10000)}>1만원</Button>
-              <Button onClick={() => addAmount(100000)}>10만원</Button>
-              <Button onClick={() => setAmount(0)}>직접입력</Button>
-            </Space>
-          </div>
+                  <Divider />
 
-          <Divider />
+                  {/* 금액 */}
+                  <div className="fpay-section">
+                    <div className="fpay-section-head">
+                      <Title level={5}>참여 금액</Title>
+                      <Tooltip title="원터치로 금액을 빠르게 선택하세요">
+                        <InfoCircleOutlined />
+                      </Tooltip>
+                    </div>
+                    <InputNumber
+                      size="large"
+                      className="fpay-amount"
+                      min={1}
+                      step={1000}
+                      value={amount}
+                      onChange={(v) => setAmount(Number(v || 0))}
+                      formatter={(v) =>
+                        `₩ ${String(v || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+                      }
+                      parser={(v) => Number(String(v).replace(/[^\d]/g, ""))}
+                    />
+                    <Space wrap className="fpay-quick">
+                      {[1000, 5000, 10000, 30000, 50000, 100000].map((v) => (
+                        <Button key={v} onClick={() => setAmount(v)}>
+                          {v.toLocaleString()}원
+                        </Button>
+                      ))}
+                      <Button onClick={() => setAmount(0)} type="text">
+                        직접 입력
+                      </Button>
+                    </Space>
+                  </div>
 
-          <div className="section">
-            <Text strong>결제 수단</Text>
-            <Radio.Group
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              style={{ width: "100%" }}
-            >
-              <Space direction="vertical" style={{ width: "100%", marginTop: 12 }}>
-                <Card className="payment-option" bordered>
-                  <Radio value="kakaopay">KC 결제하기</Radio>
-                </Card>
-                <Card className="payment-option" bordered>
-                  <Radio value="account" disabled>
-                    계좌이체 (준비중)
-                  </Radio>
-                </Card>
-              </Space>
-            </Radio.Group>
-          </div>
+                  <Divider />
 
-          <Divider />
+                  {/* 참여자 정보 */}
+                  <div className="fpay-section">
+                    <div className="fpay-section-head">
+                      <Title level={5}>참여자 정보</Title>
+                      <Tag icon={<SafetyOutlined />} color="success">
+                        안전하게 암호화
+                      </Tag>
+                    </div>
 
-          <div className="section total-section">
-            <Text strong>총 결제금액</Text>
-            <Text className="total-amount">₩ {amount.toLocaleString()}</Text>
-          </div>
+                    <Checkbox
+                      checked={isAnonymous}
+                      onChange={(e) => setIsAnonymous(e.target.checked)}
+                      style={{ marginBottom: 12 }}
+                    >
+                      익명으로 참여하기
+                    </Checkbox>
 
-          <Divider />
+                    {!isAnonymous && (
+                      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                        <Input
+                          size="large"
+                          placeholder="이름 (선택)"
+                          value={buyerName}
+                          onChange={(e) => setBuyerName(e.target.value)}
+                        />
+                        <Input
+                          size="large"
+                          placeholder="이메일 (선택)"
+                          value={buyerEmail}
+                          onChange={(e) => setBuyerEmail(e.target.value)}
+                        />
+                        <Input
+                          size="large"
+                          placeholder="연락처 (선택)"
+                          value={buyerTel}
+                          onChange={(e) => setBuyerTel(e.target.value)}
+                        />
+                      </Space>
+                    )}
+                  </div>
 
-          <div className="section">
-            <Text strong>결제 및 이용 동의</Text>
-            <TextArea
-              rows={4}
-              placeholder="약관 내용을 여기에 넣을 수 있습니다"
-              style={{ marginTop: 8 }}
-            />
-            <Checkbox style={{ marginTop: 12 }} checked={agree} onChange={(e) => setAgree(e.target.checked)}>
-              결제 및 이용에 동의합니다. (필수)
-            </Checkbox>
-          </div>
+                  <Divider />
 
-          <Button
-            className="payment-button"
-            type="primary"
-            block
-            loading={loading}
-            disabled={disabled}
-            style={{ marginTop: 24 }}
-            onClick={requestPay} // 버튼 클릭 시 함수 호출
-          >
-            {loading ? "결제 준비 중..." : "결제하기"}
-          </Button>
-        </Card>
+                  {/* 결제 수단 */}
+                  <div className="fpay-section">
+                    <div className="fpay-section-head">
+                      <Title level={5}>결제 수단</Title>
+                    </div>
+                    <Radio.Group
+                      className="fpay-pay-methods"
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                    >
+                      <Space direction="vertical" style={{ width: "100%" }} size="middle">
+                        <Card
+                          className={`fpay-pay-card ${paymentMethod === "card" ? "active" : ""}`}
+                          onClick={() => setPaymentMethod("card")}
+                          hoverable
+                        >
+                          <Radio value="card">
+                            <Space align="center">
+                              <CreditCardOutlined />
+                              <span>카드 결제 (PortOne)</span>
+                            </Space>
+                          </Radio>
+                        </Card>
+                        <Card className="fpay-pay-card" hoverable>
+                          <Radio value="account" disabled>
+                            계좌이체
+                          </Radio>
+                        </Card>
+                      </Space>
+                    </Radio.Group>
+                  </div>
+
+                  <Divider />
+
+                  {/* 약관 */}
+                  <div className="fpay-section">
+                    <Checkbox checked={agree} onChange={(e) => setAgree(e.target.checked)}>
+                      결제 및 이용 약관에 동의합니다. (필수)
+                    </Checkbox>
+                    <Paragraph className="fpay-terms">
+                      결제는 PortOne/이니시스를 통해 안전하게 처리됩니다. 취소/환불 규정은
+                      해당 펀딩 프로젝트 정책을 따릅니다.
+                    </Paragraph>
+                  </div>
+
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    className="fpay-submit"
+                    loading={loading}
+                    disabled={disabled}
+                    onClick={requestPay}
+                  >
+                    {loading ? "결제 준비 중..." : "결제하기"}
+                  </Button>
+                </>
+              )}
+            </Card>
+          </Col>
+
+          {/* 우측: 요약 스티키 */}
+          <Col xs={24} md={10} lg={9}>
+            <Affix offsetTop={88}>
+              <Card className="fpay-summary" title="결제 요약" bordered>
+                {loading ? (
+                  <Skeleton active paragraph={{ rows: 4 }} />
+                ) : (
+                  <>
+                    <div className="fpay-summary-row">
+                      <Text type="secondary">프로젝트</Text>
+                      <Text strong className="fpay-ellipsis">{funding?.title || "-"}</Text>
+                    </div>
+
+                    {target > 0 && (
+                      <>
+                        <div className="fpay-summary-row">
+                          <Text type="secondary">목표 금액</Text>
+                          <Text>{formatWon(target)}</Text>
+                        </div>
+                        <div className="fpay-summary-row">
+                          <Text type="secondary">현재 금액</Text>
+                          <Text>{formatWon(current)}</Text>
+                        </div>
+                        <Divider />
+                      </>
+                    )}
+
+                    <div className="fpay-summary-row total">
+                      <Text strong>총 결제금액</Text>
+                      <Text strong className="fpay-total">{formatWon(amount)}</Text>
+                    </div>
+
+                    <Divider />
+
+                    <Space direction="vertical" style={{ width: "100%" }}>
+                      <Button onClick={() => setAmount((v) => v + 1000)} block>
+                        1,000원 더하기
+                      </Button>
+                      <Button ghost block onClick={() => window.history.back()}>
+                        뒤로가기
+                      </Button>
+                    </Space>
+                  </>
+                )}
+              </Card>
+            </Affix>
+          </Col>
+        </Row>
       </div>
     </Layout>
   );

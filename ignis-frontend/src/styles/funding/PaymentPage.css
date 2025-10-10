@@ -1,50 +1,97 @@
-.payment-card {
-  border-radius: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  padding: 24px;
-  background-color: #fff;
+/* ===== 레이아웃 ===== */
+.fpay-wrap {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
 }
 
-.payment-content {
+.fpay-steps {
+  width: 100%;
+  margin: 8px 0 20px;
+}
+
+/* ===== 좌측 카드 ===== */
+.fpay-card {
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.05);
+}
+
+/* 헤더 */
+.fpay-head .fpay-title-row {
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fpay-title {
+  margin: 0;
+  line-height: 1.2;
+}
+.fpay-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-top: 6px;
 }
 
-.section {
-  margin-bottom: 24px;
+/* 공통 섹션 */
+.fpay-section { margin: 12px 0 4px; }
+.fpay-section-head { display: flex; align-items: center; gap: 8px; }
+
+/* 금액 입력 */
+.fpay-amount { width: 100%; margin-top: 10px; }
+.fpay-quick { margin-top: 10px; }
+
+/* 결제수단 카드 */
+.fpay-pay-methods .fpay-pay-card {
+  border-radius: 12px;
+  transition: all .18s ease;
+}
+.fpay-pay-methods .fpay-pay-card:hover {
+  border-color: #1677ff;
+  box-shadow: 0 6px 18px rgba(22, 119, 255, 0.08);
+}
+.fpay-pay-methods .fpay-pay-card.active {
+  border-color: #1677ff;
+  background: #f0f6ff;
 }
 
-.payment-option {
-  border-radius: 8px;
-  background-color: #f7f7f7;
+/* 약관 */
+.fpay-terms { margin: 8px 0 0; color: #8c8c8c; }
+
+/* 제출 버튼 */
+.fpay-submit {
+  height: 48px;
+  font-weight: 700;
+  border-radius: 10px;
 }
 
-.total-section {
+/* ===== 우측 요약 (스티키) ===== */
+.fpay-summary {
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+.fpay-summary .fpay-summary-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+.fpay-summary .fpay-summary-row.total { padding: 10px 0; }
+.fpay-total { color: #1677ff; font-size: 18px; font-weight: 800; }
+
+/* 긴 제목 줄임 */
+.fpay-ellipsis {
+  max-width: 58%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.total-amount {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-button {
-  border-radius: 25px;
-}
-
-.payment-button {
-  background-color: #007aff;
-  border: none;
-  color: white;
-  padding: 16px;
-  font-size: 18px;
-  text-align: center;
-}
-
-.payment-button:hover {
-  background-color: #005bb5;
+/* 반응형 */
+@media (max-width: 768px) {
+  .fpay-ellipsis { max-width: 64%; }
 }

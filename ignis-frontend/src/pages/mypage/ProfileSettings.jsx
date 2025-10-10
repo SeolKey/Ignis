@@ -27,18 +27,15 @@ const passwordStrength = (pwd = '') => {
 export default function ProfileSettings({ user, setUser }) {
   const [noti, notiCtx] = notification.useNotification();
 
-  // 보안 상태
   const [secLoading, setSecLoading] = useState(false);
   const [secLevel, setSecLevel] = useState('양호');
   const [lastPwdChangedAt, setLastPwdChangedAt] = useState(null);
   const [lastEmailChangedAt, setLastEmailChangedAt] = useState(null);
 
-  // 비밀번호
   const [pwdForm] = Form.useForm();
   const [changingPwd, setChangingPwd] = useState(false);
   const [pwdMeter, setPwdMeter] = useState(0);
 
-  // 이메일
   const [emailForm] = Form.useForm();
   const [emailBusy, setEmailBusy] = useState({ send: false, verify: false, change: false });
   const [emailHint, setEmailHint] = useState('');
@@ -52,7 +49,6 @@ export default function ProfileSettings({ user, setUser }) {
     return () => clearInterval(t);
   }, [resendSec]);
 
-  // 401 재인증
   const [verifyOpen, setVerifyOpen] = useState(false);
   const [verifyBusy, setVerifyBusy] = useState(false);
   const [verifyErr, setVerifyErr] = useState('');
@@ -79,10 +75,8 @@ export default function ProfileSettings({ user, setUser }) {
     finally { setVerifyBusy(false); }
   };
 
-  // 초기 보안 상태 로드
   useEffect(() => {
     (async () => {
-      // 폼 초기값
       emailForm.setFieldsValue({ newEmail: user.email });
       setSecLoading(true);
       try {
@@ -93,15 +87,12 @@ export default function ProfileSettings({ user, setUser }) {
           if (d.emailLastChangedAt) setLastEmailChangedAt(new Date(d.emailLastChangedAt));
           if (d.level) setSecLevel(d.level === 'SAFE' ? '양호' : d.level === 'WARN' ? '주의' : '위험');
         }
-      } catch {
-        //
-      }
+      } catch { /* noop */ }
       finally { setSecLoading(false); }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 비밀번호 변경
   const handleChangePassword = async ({ currentPassword, newPassword, confirmPassword }) => {
     if (newPassword !== confirmPassword) {
       pwdForm.setFields([{ name: 'confirmPassword', errors: ['새 비밀번호와 일치하지 않습니다.'] }]);
@@ -139,7 +130,6 @@ export default function ProfileSettings({ user, setUser }) {
     }
   };
 
-  // 이메일 발송/검증/변경
   const sendEmailCode = async () => {
     setEmailHint(''); setEmailVerified(false); setShowCodeRow(false); setEmailStep(0);
     try {
@@ -149,9 +139,7 @@ export default function ProfileSettings({ user, setUser }) {
         const chk = await fetch(`/user/check-email?email=${encodeURIComponent(newEmail)}`);
         const exists = await chk.json().catch(() => ({}));
         if (exists?.exists) { setEmailHint('이미 가입된 이메일입니다.'); return; }
-      } catch {
-        //
-      }
+      } catch { /* noop */ }
       const res = await fetch('/user/email-auth/send', {
         method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ email: newEmail }),
@@ -224,10 +212,13 @@ export default function ProfileSettings({ user, setUser }) {
       <Title level={3} style={{ marginBottom: 12 }}>프로필 관리</Title>
 
       {/* 보안 카드 */}
-      <Card bordered={false} className="security-card"
-            title={<Space><SafetyOutlined /> 계정 보안</Space>}
-            extra={SecurityLevelTag}
-            loading={secLoading}>
+      <Card
+        bordered={false}
+        className="security-card glass-card"
+        title={<Space><SafetyOutlined /> 계정 보안</Space>}
+        extra={SecurityLevelTag}
+        loading={secLoading}
+      >
         <Row gutter={[16, 8]}>
           <Col span={24}>
             <div className="sec-row">
@@ -255,7 +246,7 @@ export default function ProfileSettings({ user, setUser }) {
       <Row gutter={[16, 16]}>
         {/* 비밀번호 변경 */}
         <Col xs={24} lg={12}>
-          <Card title={<span><SafetyOutlined /> 비밀번호 변경</span>} bordered={false}>
+          <Card title={<span><SafetyOutlined /> 비밀번호 변경</span>} bordered={false} className="glass-card">
             <Form form={pwdForm} layout="vertical" onFinish={handleChangePassword}>
               <Form.Item
                 label="현재 비밀번호" name="currentPassword"
@@ -313,7 +304,7 @@ export default function ProfileSettings({ user, setUser }) {
 
         {/* 이메일 변경 */}
         <Col xs={24} lg={12}>
-          <Card title={<span><MailOutlined /> 이메일 변경</span>} bordered={false}>
+          <Card title={<span><MailOutlined /> 이메일 변경</span>} bordered={false} className="glass-card">
             <Steps
               current={emailStep}
               items={[{ title: '이메일 입력' }, { title: '코드 인증' }, { title: '변경 완료' }]}
@@ -377,7 +368,7 @@ export default function ProfileSettings({ user, setUser }) {
         </Col>
       </Row>
 
-      <Card bordered={false} className="tips-card">
+      <Card bordered={false} className="tips-card glass-card">
         <Paragraph type="secondary" style={{ margin: 0 }}>
           로그인 알림 및 영수증은 등록된 이메일 주소로 발송됩니다. 이메일 변경 시 수신함/스팸함도 함께 확인해주세요.
         </Paragraph>

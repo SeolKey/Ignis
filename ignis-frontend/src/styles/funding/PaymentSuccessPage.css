@@ -1,4 +1,4 @@
-.donation-success-wrap {
+.fsuccess-wrap {
   width: 100%;
   min-height: calc(100vh - 64px);
   padding: 56px 5vw;
@@ -9,7 +9,7 @@
   align-items: center;
 }
 
-.donation-success-card {
+.fsuccess-card {
   width: 100%;
   max-width: 680px;
   border: none;
@@ -20,27 +20,22 @@
   animation: fadeInUp .6s ease;
 }
 
-.success-detail {
+.fsuccess-detail {
   margin: 8px 8px 0;
   border: 1px dashed #f0f0f0;
   border-radius: 12px;
   padding: 12px 16px;
   background: #fafafa;
 }
-.success-row {
+.fsuccess-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 6px 0;
 }
-.success-amount {
-  font-weight: 800;
-  color: #1677ff;
-}
-
-/* 긴 제목 말줄임 */
-.succ-ellipsis {
+.fsuccess-amount { font-weight: 800; color: #1677ff; }
+.fsuccess-ellipsis {
   max-width: 62%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -48,48 +43,28 @@
 }
 
 /* 버튼 묶음 */
-.success-actions {
+.fsuccess-actions {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 12px;            /* 균일 간격 */
   margin: 16px 0 0;
 }
-
-.success-actions .ant-btn {
+.fsuccess-actions .ant-btn {
   min-width: 180px;
   height: 46px;
   font-weight: 600;
   border-radius: 10px;
   transition: all 0.2s ease;
 }
-
-.success-actions .ant-btn-primary {
-  background: #1677ff;
-  border: none;
-}
-
-.success-actions .ant-btn-primary:hover {
-  background: #165dcc;
-}
-
-.success-actions .ant-btn-ghost {
-  color: #1677ff;
-  border-color: #1677ff;
-}
-
-.success-actions .ant-btn-ghost:hover {
-  color: #165dcc;
-  border-color: #165dcc;
-}
+.fsuccess-actions .ant-btn-primary { background: #1677ff; border: none; }
+.fsuccess-actions .ant-btn-primary:hover { background: #165dcc; }
+.fsuccess-actions .ant-btn-ghost { color: #1677ff; border-color: #1677ff; }
+.fsuccess-actions .ant-btn-ghost:hover { color: #165dcc; border-color: #165dcc; }
 
 /* hint */
-.success-tip {
-  margin-top: 18px;
-  text-align: center;
-  color: #595959;
-}
+.fsuccess-tip { margin-top: 18px; text-align: center; color: #595959; }
 
 /* 애니메이션 */
 @keyframes fadeInUp {

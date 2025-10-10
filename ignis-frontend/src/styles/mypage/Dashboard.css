@@ -1,22 +1,15 @@
-/* ===== 스코프: 마이페이지 영역 안에서만 적용 ===== */
+/* ===== 인사/헤더 영역 ===== */
 .mypage-wrap .greeting-bar {
   margin-bottom: 16px;
   padding: 16px 18px;
-  border-radius: 14px;
-  background:
-    radial-gradient(1000px 200px at -10% -80%, rgba(22,119,255,0.10), transparent 40%),
-    radial-gradient(800px 160px at 120% -40%, rgba(105,177,255,0.12), transparent 45%),
-    #fff;
-  border: 1px solid #f0f3f8;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.04);
 }
 
-/* ===== 상단 지표 카드 ===== */
+/* 통계 카드 */
 .mypage-wrap .stat-card {
   border-radius: 16px !important;
   border: 1px solid #f1f5ff !important;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.92)),
+    linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.96)),
     radial-gradient(120% 100% at 0% -20%, rgba(22,119,255,0.06), transparent 40%),
     #ffffff !important;
   box-shadow:
@@ -35,7 +28,7 @@
   letter-spacing: -0.2px;
 }
 
-/* ===== 섹션 헤더 (제목 + 컨트롤) ===== */
+/* 섹션 헤더 */
 .mypage-wrap .section-head {
   display: flex;
   align-items: center;
@@ -43,19 +36,9 @@
   gap: 12px;
   margin-bottom: 10px;
 }
-.mypage-wrap .section-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.mypage-wrap .section-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.mypage-wrap .section-head .ant-typography {
-  margin: 0;
-}
+.mypage-wrap .section-left { display: flex; align-items: center; gap: 12px; }
+.mypage-wrap .section-right { display: flex; align-items: center; gap: 8px; }
+.mypage-wrap .section-head .ant-typography { margin: 0; }
 
 /* 캡슐형 컨트롤 */
 .mypage-wrap .section-head .ant-checkbox-wrapper {
@@ -70,63 +53,34 @@
   border-color: #dbe7ff;
 }
 
-/* 새로고침 버튼 – 라운드(우측 정렬 유지) */
-.mypage-wrap .section-head .ant-btn {
-  border-radius: 999px;
-  padding: 0 14px;
-}
+/* 버튼 둥글게 */
+.round-btn { border-radius: 999px !important; padding: 0 14px !important; }
 
-/* ===== 카드(표 컨테이너) 비주얼 일관성 ===== */
+/* 카드 공통 */
 .mypage-wrap .ant-card {
   border-radius: 16px;
   border: 1px solid #eef2f8;
   box-shadow: 0 8px 24px rgba(0,0,0,0.04);
 }
 
-/* ===== 테이블 스타일 업그레이드 + 너비 고정으로 컬럼 정렬 일치 ===== */
-.mypage-wrap .ant-table {
-  border-radius: 12px;
-  overflow: hidden; /* 둥근 모서리 */
-  table-layout: fixed; /* 컬럼 폭 고정으로 줄 정렬 일치 */
-}
+/* 테이블 */
+.mypage-wrap .ant-table { border-radius: 12px; overflow: hidden; table-layout: fixed; }
 .mypage-wrap .ant-table-thead > tr > th {
-  background:
-    linear-gradient(180deg, #f9fbff 0%, #f4f8ff 100%) !important;
-  color: #1f1f1f;
-  font-weight: 600;
+  background: linear-gradient(180deg, #f9fbff 0%, #f4f8ff 100%) !important;
+  color: #1f1f1f; font-weight: 600;
   border-bottom: 1px solid #e9eef7 !important;
 }
-.mypage-wrap .ant-table-tbody > tr > td {
-  border-bottom: 1px solid #f2f4f7;
-}
+.mypage-wrap .ant-table-tbody > tr > td { border-bottom: 1px solid #f2f4f7; }
+.mypage-wrap .ant-table-tbody > tr:hover > td { background: #f9fbff !important; }
+.mypage-wrap .ant-table-tbody > tr { transition: background .15s ease; }
+.mypage-wrap .ant-table-cell[align="right"] { font-variant-numeric: tabular-nums; }
+.mypage-wrap .ant-table-empty .ant-table-placeholder { background: #fff; }
 
-/* 행 호버 & 포커스 */
-.mypage-wrap .ant-table-tbody > tr:hover > td {
-  background: #f9fbff !important;
-}
-.mypage-wrap .ant-table-tbody > tr {
-  transition: background .15s ease;
-}
+/* 간격 */
+.mypage-wrap .greeting-bar .ant-typography + .ant-typography { margin-top: 2px; }
+.mypage-wrap .ant-card + .ant-card { margin-top: 12px; }
 
-/* 금액 컬럼 정렬을 돕는 숫자 폰트 느낌 */
-.mypage-wrap .ant-table-cell[align="right"] {
-  font-variant-numeric: tabular-nums;
-}
-
-/* 비어있는 상태 */
-.mypage-wrap .ant-table-empty .ant-table-placeholder {
-  background: #fff;
-}
-
-/* ===== 타이포 & 여백 미세 조정 ===== */
-.mypage-wrap .greeting-bar .ant-typography + .ant-typography {
-  margin-top: 2px;
-}
-.mypage-wrap .ant-card + .ant-card {
-  margin-top: 12px;
-}
-
-/* ===== 반응형 최적화 ===== */
+/* 반응형 */
 @media (max-width: 992px) {
   .mypage-wrap .stat-card { border-radius: 14px; }
   .mypage-wrap .section-head { flex-direction: column; align-items: stretch; gap: 10px; }

@@ -4,6 +4,7 @@ import './App.css';
 /* ========== 공통/홈 ========== */
 import Home from './pages/home/Home';
 import MyPage from './pages/mypage/MyPage';
+import SearchAll from './pages/search/SearchAll.jsx';
 
 /* ========== 인증 ========== */
 import LoginPage from './pages/LoginPage';
@@ -34,7 +35,7 @@ import FundingDetail from './pages/funding/FundingDetail';
 import FundingCreate from './pages/funding/FundingCreate';
 import FundingEdit from './pages/funding/FundingEdit';
 import PaymentSuccessPage from './pages/funding/PaymentSuccessPage';
-import PaymentPage from './pages/funding/PaymentPage'; // 결제 페이지
+import PaymentPage from './pages/funding/PaymentPage'; 
 
 
 /* ========== 봉사( Volunteer ) ========== */
@@ -49,6 +50,7 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/payment" element={<PaymentPage />} />
       <Route path="/mypage" element={<MyPage />} />
+      <Route path="/search" element={<SearchAll endpoint="/search" />} />
 
       {/* ===== 인증 ===== */}
       <Route path="/login" element={<LoginPage />} />
@@ -79,7 +81,7 @@ function App() {
       <Route path="/funding/:id" element={<FundingDetail />} />
       <Route path="/funding/:id/edit" element={<FundingEdit />} />
       <Route path="/funding/participate-complete" element={<PaymentSuccessPage />} />
-
+      <Route path="/funding/payment-success" element={<PaymentSuccessPage />} />
       {/* ===== 봉사( Volunteer ) ===== */}
       <Route path="/volunteer" element={<VolunteerList />} />
       <Route path="/volunteer/create" element={<VolunteerCreate />} />

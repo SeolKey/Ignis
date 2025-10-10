@@ -1,85 +1,128 @@
-/* ===== 공통 컨테이너 ===== */
-.funding-content {
+/* ========== Hero (기부상세 스타일 복제/적용) ========== */
+.funding-hero {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 8px;
+}
+
+.funding-hero-container {
+  position: relative;
+  width: 85%;
+  max-width: 1100px;
+  height: 460px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+}
+
+.funding-hero-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.92);
+}
+
+.funding-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.55) 65%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.funding-hero-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px;
+  color: #fff;
+}
+
+.funding-dtag {
+  align-self: flex-start;
+  display: inline-block;
+  background: #13c2c2;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.funding-dtag.ended { background: #999; }
+
+.funding-hero-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 10px 0;
+}
+
+.funding-hero-progress { width: 100%; }
+.funding-hero-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #eee;
+  margin-top: 6px;
+}
+
+/* ========== 메인 섹션 (Hero와 폭 맞춤) ========== */
+.funding-main-section {
   width: 85%;
   max-width: 1100px;
   margin: 0 auto;
-  padding: 20px 0 40px;
+  padding: 20px 0 40px 0;
 }
 
-/* ===== 썸네일(캐러셀) 카드 ===== */
-.funding-thumbnail-card {
-  border-radius: 12px;
-  overflow: hidden;
-}
-.funding-thumbnail-image {
-  width: 100%;
-  height: 420px;
-  object-fit: cover;
-  display: block;
-}
-@media (max-width: 768px) {
-  .funding-thumbnail-image { height: 300px; }
-}
+/* 탭/본문 */
+.funding-custom-tabs .ant-tabs-nav { margin: 0 0 12px 0; }
+.funding-content-card { margin-top: 12px; }
 
-/* ===== 탭/본문 ===== */
-.funding-custom-tabs .ant-tabs-nav { margin: 12px 0; }
-.funding-detail-title {
-  margin: 14px 0 10px;
-  font-weight: 800;
+/* 안내/주의 카드 */
+.funding-warning-card {
+  margin-top: 16px;
+  background: #fff8f0;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  padding: 16px;
 }
-.funding-content-card { margin-top: 8px; }
-.funding-detail-paragraph {
-  font-size: 15px;
-  line-height: 1.8;
-  color: #444;
+.funding-warning-title { color: #d48806; margin-bottom: 8px !important; }
+.funding-warning-list {
+  padding-left: 20px;
   margin: 0;
-  white-space: pre-wrap;
+  color: #595959;
+  font-size: 14px;
+  line-height: 1.6;
 }
+.funding-warning-list li { margin-bottom: 4px; }
 
-/* ===== 우측 정보 카드 ===== */
+/* 우측 정보 카드 */
 .funding-info-card {
+  border: 1px solid #f0f0f0;
   border-radius: 10px;
+  padding-bottom: 14px;
 }
-.funding-side-title { margin-bottom: 6px; }
-.funding-project-period {
-  color: #888;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-/* 진행률/금액 */
-.funding-progress-text {
-  display: inline-block;
+.funding-stacked-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
   margin-bottom: 6px;
-  font-weight: 700;
 }
-.funding-stats-v2 {
+.funding-metric {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 8px;
 }
-.funding-current-amount { display: flex; align-items: baseline; gap: 6px; }
-.funding-amount { font-size: 18px; font-weight: 800; }
-.funding-amount-label { color: #666; }
-.funding-goal-pill {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #f5f7ff;
-  color: #3a5ed8;
-  font-size: 12px;
-  border: 1px solid #e6ecff;
-}
+.funding-accent { color: #1677ff; }
 
-/* 액션 영역 */
+/* 액션 버튼/아이콘 */
 .funding-action-row {
   display: flex;
   gap: 12px;
   align-items: stretch;
-  margin-top: 14px;
+  margin-top: 12px;
 }
 .funding-icon-group { display: flex; gap: 8px; }
 .funding-icon-btn {
@@ -99,12 +142,23 @@
 }
 .funding-icon-btn:hover { background: #f7f8fa; border-color: #e1e1e1; }
 .funding-icon-btn:active { transform: translateY(1px); }
-.funding-icon-btn.active { color: #ff4d4f; }
+.funding-icon-btn.active {
+  color: #ff4d4f;
+  border-color: #ffd6d6;
+  background: #fff5f5;
+}
 .funding-cta-btn {
   flex: 1;
   height: 48px;
   font-weight: 600;
   border-radius: 10px;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .funding-hero-container { height: 340px; width: 94%; }
+  .funding-main-section { width: 94%; }
+  .funding-hero-title { font-size: 22px; }
 }
 @media (max-width: 767px) {
   .funding-action-row { gap: 10px; }
@@ -112,9 +166,7 @@
   .funding-cta-btn { height: 44px; }
 }
 
-/* ===== 사이드 미니그리드 (함께 보는 펀딩) ===== */
-/* 지금 공용 SideMiniGrid가 donation- 접두를 쓰고 있을 수 있어서,
-   충돌 없이 바로 작동하도록 donation- 클래스를 그대로 정의해둔다. */
+/* ── 사이드 컴팩트 추천 영역 (2열, Donation과 동일 규격) ───────────────── */
 .donation-side-section {
   margin-top: 18px;
   padding: 16px;
@@ -139,7 +191,7 @@
 }
 .donation-side-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* 펀딩은 기본 2열 */
   gap: 10px;
 }
 @media (max-width: 420px) {
@@ -180,6 +232,6 @@
   overflow: hidden;
 }
 
-/* ===== 세부 마감 ===== */
+/* 세부 마감 */
 .ant-progress-inner { border-radius: 999px !important; }
 .ant-progress-bg { border-radius: 999px !important; }

@@ -1,14 +1,53 @@
-.mypage-wrap { padding: 32px 24px; background: #fff; }
+/* ===== 페이지 베이스 ===== */
+.mypage-wrap {
+  background: linear-gradient(180deg, #f7faff 0%, #ffffff 75%);
+  padding: 40px 30px;
+  min-height: 100vh;
+}
 
-.profile-card, .menu-card, .stat-card { border-radius: 16px; }
-.menu-btn { width: 100%; justify-content: flex-start; height: 44px; border-radius: 12px; }
-.menu-btn.active, .menu-btn:hover { background: #f0f5ff; }
+/* 글래스 카드 공통 */
+.glass-card {
+  border-radius: 16px !important;
+  border: 1px solid rgba(22, 119, 255, 0.08) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,0.88), rgba(255,255,255,0.96)) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.glass-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.09); }
 
-.greeting-bar { display: flex; align-items: center; background: #fff; padding: 20px 24px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
-.stat-card .stat-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: #f0f5ff; }
+/* 프로필 카드 */
+.profile-avatar { box-shadow: 0 8px 22px rgba(22,119,255,0.18); }
+.profile-badges { display:flex; gap:8px; flex-wrap: wrap; }
+.pill {
+  background: #eef5ff; color:#1d39c4; border-radius: 999px; padding: 2px 10px; font-size: 12px;
+}
+.pill-secondary { background:#f6ffed; color:#009a29; }
 
-.activity-icon { width: 32px; height: 32px; display: grid; place-items: center; }
-.activity-title { font-weight: 600; }
+/* 사이드 메뉴 */
+.side-menu {
+  border: none !important;
+  background: transparent !important;
+}
+.side-menu .ant-menu-item {
+  border-radius: 10px;
+  margin: 4px 6px;
+  height: 42px;
+}
+.side-menu .ant-menu-item:hover {
+  background: linear-gradient(90deg, #f0f5ff 0%, #ffffff 100%);
+}
+.side-menu .ant-menu-item-selected {
+  background: linear-gradient(90deg, #e6f0ff 0%, #ffffff 100%) !important;
+  border-left: 3px solid #1677ff !important;
+  box-shadow: 0 6px 14px rgba(22,119,255,0.10);
+}
+
+/* 재사용 */
+.menu-card, .profile-card, .stat-card { border-radius: 16px; }
+.stat-card .stat-icon {
+  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: #f0f5ff;
+}
 
 /* 보안 카드 */
 .security-card { border-radius: 16px; margin-bottom: 12px; }
@@ -36,10 +75,6 @@
 
 .tips-card { border-radius: 14px; background: #fbfbfb; }
 
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+@media (max-width: 576px) {
+  .mypage-wrap { padding: 20px 16px; }
 }
-.stat-card { min-height: 92px; }
