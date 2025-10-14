@@ -74,37 +74,41 @@
     </select>
     
     <!-- 등록 -->
-    <insert id="insertDonation" parameterType="com.Ignis.home.donation.domain.Donation">
-	    INSERT INTO donation (
-	        user_id,
-	        title,
-	        description,
-	        account_info,
-	        max_price,
-	        current_price,
-	        status,
-	        reject_reason,
-	        image_path,
-	        created_at,
-	        updated_at,
-			view_count
-	    ) VALUES (
-	        #{userId},
-	        #{title},
-	        #{description},
-	        #{accountInfo},
-	        #{maxPrice},
-	        #{currentPrice},
-	        #{status},
-	        #{rejectReason},
-	        #{imagePath},
-	        NOW(),
-	        NOW(),
-	    	0
-	    )
-	</insert>
+    <insert id="insertDonation"
+             parameterType="com.Ignis.home.donation.domain.Donation"
+             useGeneratedKeys="true"
+             keyProperty="donationId">
+    INSERT INTO donation (
+        user_id,
+        title,
+        description,
+        account_info,
+        max_price,
+        current_price,
+        status,
+        reject_reason,
+        image_path,
+        created_at,
+        updated_at,
+        view_count
+    ) VALUES (
+                 #{userId},
+                 #{title},
+                 #{description},
+                 #{accountInfo},
+                 #{maxPrice},
+                 #{currentPrice},
+                 #{status},
+                 #{rejectReason},
+                 #{imagePath},
+                 NOW(),
+                 NOW(),
+                 0
+             )
+</insert>
 
-	<!-- 최신 승인된 n개 -->
+
+    <!-- 최신 승인된 n개 -->
 	<select id="selectRecentDonationList" resultType="com.Ignis.home.donation.domain.Donation">
 	    SELECT
 	        donation_id AS donationId,
