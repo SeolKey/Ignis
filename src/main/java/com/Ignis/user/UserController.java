@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
+
     private final UserRepository userRepository;
 
     @GetMapping("/login")
@@ -65,7 +66,17 @@ public class UserController {
         }
         return "user/welcome";
     }
-    
+
+    /**
+     * ✅ 로그아웃 기능
+     * 세션에 저장된 모든 사용자 정보를 제거하고 홈 화면으로 리다이렉트
+     */
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate(); // 세션 전체 초기화 (userId, userName, role 등 모두 제거)
+        return "redirect:/";  // 홈 화면으로 이동
+    }
+
     @GetMapping("/logout-success")
     public String logoutSuccess() {
         return "redirect:/user/login"; // 로그인 페이지로 리다이렉트

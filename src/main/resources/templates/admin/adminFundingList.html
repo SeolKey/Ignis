@@ -1,55 +1,109 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <th:block th:replace="fragments/headerStyle :: headerStyle" />
     <meta charset="UTF-8">
-    <title>펀딩글 목록</title>
-</head>
-<body>
-<h1>관리자 - 펀딩글 목록</h1>
-<table border="1">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>상태</th>
-        <th>작성일</th>
-        <th>관리</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="funding : ${fundingList}">
-        <td th:text="${funding.fundingId}"></td>
-        <td>
-            <a th:href="@{'/admin/funding-detail-view/' + ${funding.fundingId}}"
-               th:text="${funding.title}"></a>
-        </td>
-        <td th:text="${funding.userId}"></td>
-        <td th:text="${funding.status}"></td>
-        <td th:text="${#temporals.format(funding.createdAt, 'yyyy-MM-dd HH:mm')}"></td> <!-- 날짜 포맷 추가 -->
-        <td>
-       <form th:action="@{'/admin/funding-status-update'}" method="post">
-		    <input type="hidden" name="fundingId" th:value="${funding.fundingId}" />
-		    <select name="status" onchange="toggleRejectReason(this, [[${funding.fundingId}]])">
-		        <option value="PENDING">보류</option>
-		        <option value="APPROVED">승인</option>
-		        <option value="REJECTED">거절</option>
-		    </select>
-		    <div th:id="'reject-reason-' + ${funding.fundingId}" style="display: none;">
-		        <input type="text" name="rejectReason" placeholder="거절 사유 입력" />
-		    </div>
-		    <button type="submit">변경</button>
-		</form>
+    <title>펀딩글 목록 (관리자용)</title>
 
-            <form th:action="@{'/admin/Funding-delete/' + ${funding.fundingId}}" method="post" onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                <input type="hidden" name="_method" value="delete" />
-                <button type="submit">삭제</button>
-            </form>
-        </td>
-    </tr>
-    </tbody>
-</table>
+    <!-- ✅ Bootstrap -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous">
+
+    <!-- ✅ 공통 스타일 -->
+    <th:block th:replace="~{fragments/headerStyle :: headerStyle}" />
+</head>
+
+<body>
+<!-- ✅ 공통 헤더 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<main class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">펀딩글 목록 (관리자용)</h2>
+        <a href="/admin/main" class="btn btn-outline-secondary">← 관리자 메인으로</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle text-center">
+            <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>상태</th>
+                <th>조회수</th>
+                <th>작성일</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="funding : ${fundingList}">
+                <td th:text="${funding.fundingId}">1</td>
+                <td>
+                    <a th:href="@{'/admin/funding-detail-view/' + ${funding.fundingId}}"
+                       th:text="${funding.title}"
+                       class="text-decoration-none fw-semibold text-primary">
+                        샘플 제목
+                    </a>
+                </td>
+                <td th:text="${funding.userId}">1</td>
+
+                <!-- ✅ 상태 뱃지 -->
+                <td>
+                            <span th:switch="${funding.status}">
+                                <span th:case="'APPROVED'" class="badge bg-success" th:text="${funding.status}"></span>
+                                <span th:case="'REJECTED'" class="badge bg-danger" th:text="${funding.status}"></span>
+                                <span th:case="*" class="badge bg-warning text-dark" th:text="${funding.status}"></span>
+                            </span>
+                </td>
+
+                <!-- ✅ 조회수 -->
+                <td th:text="${funding.viewCount}">0</td>
+
+                <td th:text="${#temporals.format(funding.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-19</td>
+
+                <!-- ✅ 관리 -->
+                <td>
+                    <form th:action="@{'/admin/funding-status-update'}" method="post" class="d-inline">
+                        <input type="hidden" name="fundingId" th:value="${funding.fundingId}" />
+
+                        <select name="status" class="form-select form-select-sm d-inline w-auto"
+                                th:attr="onchange=|toggleRejectReason(this, '${funding.fundingId}')|">
+                            <option value="PENDING" th:selected="${funding.status eq 'PENDING'}">보류</option>
+                            <option value="APPROVED" th:selected="${funding.status eq 'APPROVED'}">승인</option>
+                            <option value="REJECTED" th:selected="${funding.status eq 'REJECTED'}">거절</option>
+                        </select>
+
+                        <div th:id="'reject-reason-' + ${funding.fundingId}"
+                             th:style="${funding.status eq 'REJECTED'} ? 'display:block' : 'display:none'"
+                             class="mt-2">
+                            <input type="text" name="rejectReason" class="form-control form-control-sm"
+                                   placeholder="거절 사유 입력" />
+                        </div>
+
+                        <button type="submit" class="btn btn-sm btn-outline-primary mt-2">변경</button>
+                    </form>
+
+                    <form th:action="@{'/admin/funding-delete/' + ${funding.fundingId}}"
+                          method="post"
+                          class="d-inline"
+                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+                        <input type="hidden" name="_method" value="delete" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger ms-1 mt-2">삭제</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(fundingList)}">
+                <td colspan="7" class="text-muted py-4">등록된 펀딩글이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
 <script>
     function toggleRejectReason(selectElement, fundingId) {
         const targetDiv = document.getElementById("reject-reason-" + fundingId);
@@ -60,5 +114,10 @@
         }
     }
 </script>
+
+<!-- ✅ Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
 </body>
 </html>

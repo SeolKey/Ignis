@@ -51,7 +51,7 @@
 
     <div th:if="${fundingList != null}">
         <div th:each="f : ${fundingList}" class="funding-box">
-            <a th:href="@{'/funding/funding-detail-view/' + ${f.fundingId}}" class="funding-title-link" th:text="${f.title}">제목</a>
+            <a th:href="@{/funding/funding-detail-view(fundingId=${f.fundingId})}" class="funding-title-link" th:text="${f.title}">제목</a>
             <p th:text="'목표 금액: ' + ${f.maxPrice} + '원'"></p>
             <p th:text="'현재 금액: ' + ${f.currentPrice} + '원'"></p>
             <p th:text="${f.description}">설명</p>

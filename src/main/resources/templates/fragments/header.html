@@ -1,17 +1,74 @@
 <!-- fragments/header.html -->
 <div th:fragment="commonHeader">
-    <header class="header">
-        <div class="logo">
-            <span class="logo-icon"></span>
-            IGNIS
+    <header class="header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; border-bottom: 1px solid #ddd; background-color: #fff;">
+
+        <!-- 로고 -->
+        <div class="logo" style="font-weight: 700; font-size: 22px; cursor: pointer;" onclick="location.href='/'">
+            <span class="logo-icon"></span> IGNIS
         </div>
-        <nav class="nav-links">
+
+        <!-- 검색 영역 -->
+        <div class="search-area" style="display: flex; align-items: center; gap: 10px; flex: 1; max-width: 500px; margin: 0 20px;">
+
+            <!-- 카테고리 선택 -->
+            <select id="searchType" style="border: 1px solid #ccc; border-radius: 20px; padding: 8px 12px; font-size: 14px; background: #fff; cursor: pointer;">
+                <option value="">전체</option>
+                <option value="donation">기부</option>
+                <option value="volunteer">봉사</option>
+                <option value="funding">펀딩</option>
+                <option value="post">게시글</option>
+                <option value="notice">공지</option>
+            </select>
+
+            <!-- 검색창 -->
+            <div class="search-box" style="flex: 1; display: flex; align-items: center; border: 1px solid #ccc; border-radius: 20px; padding: 5px 10px;">
+                <input
+                        type="text"
+                        id="globalSearchInput"
+                        placeholder="검색어를 입력하세요"
+                        style="flex: 1; border: none; outline: none; font-size: 14px;"
+                        onkeydown="if(event.key === 'Enter') doGlobalSearch()"
+                />
+                <button
+                        onclick="doGlobalSearch()"
+                        style="background: none; border: none; cursor: pointer; font-size: 16px; color: #333;"
+                        title="검색"
+                >
+                    🔍
+                </button>
+            </div>
+        </div>
+
+        <!-- 네비게이션 -->
+        <nav class="nav-links" style="display: flex; gap: 12px; align-items: center;">
             <a href="/">홈</a>
             <a href="/donation/donation-list-view">기부</a>
             <a href="/volunteer/volunteer-list-view">봉사</a>
             <a href="/funding/funding-list-view">펀딩</a>
-            <a href="/mypage">마이페이지</a>
-            <a href="/user/login">로그인</a>
+
+            <a th:if="${session.userId != null}" href="/mypage">마이페이지</a>
+            <a th:if="${session.userId == null}" href="/user/login">로그인</a>
+
+            <span th:if="${session.userId != null}" class="user-name">
+                안녕하세요, <strong th:text="${session.userName}">사용자</strong>님
+            </span>
+
+            <a th:if="${session.role == 'admin'}" href="/admin/main">관리자 메뉴</a>
+            <a th:if="${session.userId != null}" href="/user/logout">로그아웃</a>
         </nav>
     </header>
+
+    <script>
+        function doGlobalSearch() {
+            const query = document.getElementById("globalSearchInput").value.trim();
+            const type = document.getElementById("searchType").value;
+
+            if (query) {
+                const url = new URL(window.location.origin + "/search");
+                url.searchParams.append("q", query);
+                if (type) url.searchParams.append("types", type);
+                window.location.href = url.toString();
+            }
+        }
+    </script>
 </div>

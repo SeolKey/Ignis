@@ -2,6 +2,7 @@ package com.Ignis.home.donation.bo;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.Ignis.common.upload.UploadCategory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,4 +99,34 @@ public class DonationBO {
     public List<Donation> getMostViewedDonationList(int limit) {
         return donationMapper.selectMostViewedDonationList(limit);
     }
+
+    public void toggleEmergency(Long donationId, boolean isEmergency) {
+        Donation donation = donationMapper.selectDonationById(donationId);
+        if (donation == null) return;
+
+        // ✅ 제목 자동 수정 로직
+        String title = donation.getTitle();
+        if (isEmergency) {
+            if (!title.startsWith("[긴급]")) {
+                title = "[긴급] " + title;
+            }
+        } else {
+            // "[긴급]" 제거
+            title = title.replaceFirst("^\\[긴급\\]\\s*", "");
+        }
+
+        // ✅ DB 업데이트 (is_emergency, title 동시에)
+        donationMapper.updateDonationEmergencyStatusAndTitle(
+                Map.of("donationId", donationId,
+                        "isEmergency", isEmergency ? 1 : 0,
+                        "title", title)
+        );
+    }
+
+
+    public Donation getEmergencyDonation() {
+        return donationMapper.selectEmergencyDonation();
+    }
+
+
 }

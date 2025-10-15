@@ -67,31 +67,33 @@ public class OAuth2Controller {
                 sub = kakaoId != null ? String.valueOf(kakaoId) : null;
             }
 
-            // 1) 기존 회원 찾기
+            // ✅ 기존 회원 찾기
             UserEntity exists = userRepository.findByEmail(email);
 
             if (exists == null) {
-                // 🔹 자동 회원가입
+                // ✅ 자동 회원가입 (기본 ROLE_USER)
                 UserEntity newUser = new UserEntity();
                 newUser.setEmail(email);
                 newUser.setName(name);
                 newUser.setUserLoginId(registrationId + "_" + sub);
-                newUser.setPassword(""); // 소셜 계정은 비번 없이
-                newUser.setPhoneNumber("000-0000-0000"); // ✅ 임시 기본값
+                newUser.setPassword(""); // 소셜 계정은 비밀번호 X
+                newUser.setPhoneNumber("000-0000-0000");
                 newUser.setRole("USER");
                 userRepository.save(newUser);
 
+                // ✅ 세션 저장
                 session.setAttribute("userName", name);
                 session.setAttribute("userId", newUser.getUserId());
+                session.setAttribute("role", newUser.getRole().toLowerCase()); // ★ 추가
             } else {
-                // 🔹 기존 회원이면 로그인 세션 저장
+                // ✅ 기존 회원이면 role 포함해서 세션 저장
                 session.setAttribute("userName", exists.getName());
                 session.setAttribute("userId", exists.getUserId());
+                session.setAttribute("role", exists.getRole().toLowerCase()); // ★ 추가
             }
 
-            // 🔹 로그인 후 홈 또는 프론트로 이동
+            // 로그인 후 홈으로 이동
             return "redirect:http://localhost:5173/";
-
         }
 
         return "redirect:/user/login";
@@ -170,6 +172,7 @@ public class OAuth2Controller {
             }
             res.put("authenticated", true);
             res.put("userName", name);
+            res.put("role", session.getAttribute("role")); // ★ 추가 (프론트에서도 확인 가능)
             return res;
         }
     }

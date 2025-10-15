@@ -1,17 +1,16 @@
 package com.Ignis.home.funding.mapper;
 
 import java.util.List;
+import java.util.Map;
 
-import com.Ignis.common.enums.Status;
-import com.Ignis.home.donation.domain.Donation;
 import org.apache.ibatis.annotations.Mapper;
-
-import com.Ignis.home.funding.domain.Funding;
 import org.apache.ibatis.annotations.Param;
+import com.Ignis.home.funding.domain.Funding;
 
 @Mapper
 public interface FundingMapper {
-    List<Funding> selectFundingList();
+
+    List<Funding> selectFundingList(); // 승인된 목록
 
     Funding selectFundingById(Long fundingId);
 
@@ -19,18 +18,23 @@ public interface FundingMapper {
 
     List<Funding> selectRecentFundingList(int limit);
 
-    void updateCurrentPrice(@Param("fundingId") Long fundingId, @Param("amount") Integer amount);
-    //관리자 기능
+    void updateCurrentPrice(@Param("fundingId") Long fundingId,
+                            @Param("amount") Integer amount);
+
     List<Funding> selectPendingFundingList();
-    
+
     void updateFundingStatus(@Param("fundingId") Long fundingId,
-            @Param("status") String status,
-            @Param("rejectReason") String rejectReason);
-    
+                             @Param("status") String status,
+                             @Param("rejectReason") String rejectReason);
+
     void deleteFunding(int fundingId);
 
-    void incrementViewCount(Long fundingId); // 조회수 증가
+    void incrementViewCount(Long fundingId);
 
     List<Funding> selectMostViewedFundingList(int limit);
-}
 
+    void updateFundingEmergencyStatusAndTitle(Map<String, Object> params);
+
+    // ✅ 긴급 펀딩글 1개 조회
+    Funding selectEmergencyFunding();
+}

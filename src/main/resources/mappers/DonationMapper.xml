@@ -1,133 +1,138 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.Ignis.home.donation.mapper.DonationMapper">
 
     <!-- 전체 리스트 -->
     <select id="selectDonationList" resultType="com.Ignis.home.donation.domain.Donation">
-	     SELECT 
-	        donation_id AS donationId,
-	        user_id AS userId,
-	        title,
-	        description,
-	        account_info AS accountInfo,
-	        max_price AS maxPrice,
-	        current_price AS currentPrice,
-	        status,
-	        reject_reason AS rejectReason,
-	        image_path AS imagePath,
-	        created_at AS createdAt,
-	        updated_at AS updatedAt,
-			view_count AS viewCount
-	    FROM donation
-	    WHERE status = 'APPROVED'
-	    ORDER BY created_at DESC
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            reject_reason AS rejectReason,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency
+        FROM donation
+        WHERE status = 'APPROVED'
+        ORDER BY created_at DESC
     </select>
-    
+
     <!-- Pending 리스트 -->
     <select id="selectPendingDonationList" resultType="com.Ignis.home.donation.domain.Donation">
-	     SELECT 
-	        donation_id AS donationId,
-	        user_id AS userId,
-	        title,
-	        description,
-	        account_info AS accountInfo,
-	        max_price AS maxPrice,
-	        current_price AS currentPrice,
-	        status,
-	        reject_reason AS rejectReason,
-	        image_path AS imagePath,
-	        created_at AS createdAt,
-	        updated_at AS updatedAt,
-			view_count AS viewCount
-	    FROM donation
-	    WHERE status = 'PENDING'
-	    ORDER BY created_at DESC
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            reject_reason AS rejectReason,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency
+        FROM donation
+        WHERE status = 'PENDING'
+        ORDER BY created_at DESC
     </select>
 
     <!-- 최신순 n개 -->
     <select id="selectLatestDonation" resultType="com.Ignis.home.donation.domain.Donation">
         SELECT * FROM donation
         ORDER BY created_at DESC
-        LIMIT #{limit}
+            LIMIT #{limit}
     </select>
 
     <!-- 단건 상세 -->
     <select id="selectDonationById" resultType="com.Ignis.home.donation.domain.Donation">
-        SELECT 
-        donation_id AS donationId,
-        user_id AS userId,
-        title,
-        description,
-        account_info AS accountInfo,
-        max_price AS maxPrice,
-        current_price AS currentPrice,
-        status,
-        reject_reason AS rejectReason,
-        image_path AS imagePath,
-        created_at AS createdAt,
-        updated_at AS updatedAt,
-		view_count AS viewCount
-	    FROM donation
-	    WHERE donation_id = #{donationId}
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            account_info AS accountInfo,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            reject_reason AS rejectReason,
+            image_path AS imagePath,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency
+        FROM donation
+        WHERE donation_id = #{donationId}
     </select>
-    
+
     <!-- 등록 -->
     <insert id="insertDonation"
-             parameterType="com.Ignis.home.donation.domain.Donation"
-             useGeneratedKeys="true"
-             keyProperty="donationId">
-    INSERT INTO donation (
-        user_id,
-        title,
-        description,
-        account_info,
-        max_price,
-        current_price,
-        status,
-        reject_reason,
-        image_path,
-        created_at,
-        updated_at,
-        view_count
-    ) VALUES (
-                 #{userId},
-                 #{title},
-                 #{description},
-                 #{accountInfo},
-                 #{maxPrice},
-                 #{currentPrice},
-                 #{status},
-                 #{rejectReason},
-                 #{imagePath},
-                 NOW(),
-                 NOW(),
-                 0
-             )
-</insert>
-
+            parameterType="com.Ignis.home.donation.domain.Donation"
+            useGeneratedKeys="true"
+            keyProperty="donationId">
+        INSERT INTO donation (
+            user_id,
+            title,
+            description,
+            account_info,
+            max_price,
+            current_price,
+            status,
+            reject_reason,
+            image_path,
+            created_at,
+            updated_at,
+            view_count,
+            is_emergency
+        ) VALUES (
+                     #{userId},
+                     #{title},
+                     #{description},
+                     #{accountInfo},
+                     #{maxPrice},
+                     #{currentPrice},
+                     #{status},
+                     #{rejectReason},
+                     #{imagePath},
+                     NOW(),
+                     NOW(),
+                     0,
+                     0
+                 )
+    </insert>
 
     <!-- 최신 승인된 n개 -->
-	<select id="selectRecentDonationList" resultType="com.Ignis.home.donation.domain.Donation">
-	    SELECT
-	        donation_id AS donationId,
-	        user_id AS userId,
-	        title,
-	        description,
-	        image_path AS imagePath,
-	        status,
-	        created_at AS createdAt,
-	        updated_at AS updatedAt,
-			view_count AS viewCount
-	    FROM donation
-	    WHERE status = 'APPROVED'
-	    ORDER BY created_at DESC
-	    LIMIT #{limit}
-	</select>
+    <select id="selectRecentDonationList" resultType="com.Ignis.home.donation.domain.Donation">
+        SELECT
+            donation_id AS donationId,
+            user_id AS userId,
+            title,
+            description,
+            image_path AS imagePath,
+            status,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency
+        FROM donation
+        WHERE status = 'APPROVED'
+        ORDER BY created_at DESC
+            LIMIT #{limit}
+    </select>
 
-	<!-- 상태 업데이트 -->
-	<update id="updateDonationStatus">
+    <!-- 상태 업데이트 -->
+    <update id="updateDonationStatus">
         UPDATE donation
         SET status = #{status}, updated_at = NOW()
         WHERE donation_id = #{donationId}
@@ -138,7 +143,7 @@
         DELETE FROM donation WHERE donation_id = #{donationId}
     </delete>
 
-    <!-- ✅ [추가] current_price 업데이트 (참여 시 금액 반영) -->
+    <!-- ✅ current_price 업데이트 (참여 시 금액 반영) -->
     <update id="updateDonationCurrentPrice">
         UPDATE donation
         SET current_price = #{currentPrice},
@@ -146,38 +151,61 @@
         WHERE donation_id = #{donationId}
     </update>
 
-	<update id="incrementViewCount" parameterType="Long">
-		UPDATE donation
-		SET view_count = view_count + 1, updated_at = NOW()
-		WHERE donation_id = #{donationId}
-	</update>
+    <update id="incrementViewCount" parameterType="Long">
+        UPDATE donation
+        SET view_count = view_count + 1, updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
 
-	<select id="selectMostViewedDonationList" resultType="com.Ignis.home.donation.domain.Donation">
-		SELECT
-			donation_id AS donationId,
-			user_id     AS userId,
-			title,
-			description,
-			account_info  AS accountInfo,
-			max_price     AS maxPrice,
-			current_price AS currentPrice,
-			status,
-			reject_reason AS rejectReason,
-			image_path    AS imagePath,
-			created_at    AS createdAt,
-			updated_at    AS updatedAt,
-			view_count    AS viewCount
-		FROM donation
-		WHERE status = 'APPROVED'
-		ORDER BY view_count DESC, created_at DESC
-			LIMIT #{limit}
-	</select>
+    <select id="selectMostViewedDonationList" resultType="com.Ignis.home.donation.domain.Donation">
+        SELECT
+            donation_id AS donationId,
+            user_id     AS userId,
+            title,
+            description,
+            account_info  AS accountInfo,
+            max_price     AS maxPrice,
+            current_price AS currentPrice,
+            status,
+            reject_reason AS rejectReason,
+            image_path    AS imagePath,
+            created_at    AS createdAt,
+            updated_at    AS updatedAt,
+            view_count    AS viewCount,
+            is_emergency  AS emergency
+        FROM donation
+        WHERE status = 'APPROVED'
+        ORDER BY view_count DESC, created_at DESC
+            LIMIT #{limit}
+    </select>
 
-	<update	id="updateCurrentPrice">
-		UPDATE donation
-		SET current_price = current_price + #{delta},
-			updated_at = NOW()
-		WHERE donation_id = #{donationId}
-	</update>
+    <update	id="updateCurrentPrice">
+        UPDATE donation
+        SET current_price = current_price + #{delta},
+            updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
+    <!-- ✅ 긴급 상태 업데이트 -->
+    <update id="updateDonationEmergencyStatus">
+        UPDATE donation
+        SET is_emergency = #{isEmergency}, updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
+    <select id="selectEmergencyDonation" resultType="com.Ignis.home.donation.domain.Donation">
+        SELECT * FROM donation
+        WHERE is_emergency = 1
+        ORDER BY created_at DESC
+            LIMIT 1
+    </select>
+
+    <update id="updateDonationEmergencyStatusAndTitle">
+        UPDATE donation
+        SET is_emergency = #{isEmergency},
+            title = #{title},
+            updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
 
 </mapper>

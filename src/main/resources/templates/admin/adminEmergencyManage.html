@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>긴급 관리 (기부 / 펀딩 / 봉사)</title>
+
+    <!-- ✅ Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- ✅ 공통 스타일 -->
+    <th:block th:replace="~{fragments/headerStyle :: headerStyle}" />
+</head>
+
+<body>
+<!-- ✅ 공통 헤더 -->
+<div th:replace="~{fragments/header :: commonHeader}"></div>
+
+<main class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">긴급 관리 (기부 / 펀딩 / 봉사)</h2>
+        <a href="/admin/main" class="btn btn-outline-secondary">← 관리자 메인으로</a>
+    </div>
+
+    <div class="alert alert-info">
+        현재 <b>승인된(Approved)</b> 게시글을 조회하고, 긴급 설정 / 해제를 수행할 수 있습니다.
+    </div>
+
+    <!-- ✅ 탭 메뉴 -->
+    <ul class="nav nav-tabs" id="emergencyTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="donation-tab" data-bs-toggle="tab" data-bs-target="#donation" type="button" role="tab">기부</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="funding-tab" data-bs-toggle="tab" data-bs-target="#funding" type="button" role="tab">펀딩</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="volunteer-tab" data-bs-toggle="tab" data-bs-target="#volunteer" type="button" role="tab">봉사</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="emergencyTabContent">
+
+        <!-- 🩵 기부 탭 -->
+        <div class="tab-pane fade show active" id="donation" role="tabpanel" aria-labelledby="donation-tab">
+            <h4 class="fw-bold mb-3">기부글 목록</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>상태</th>
+                        <th>긴급 여부</th>
+                        <th>작성일</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="donation : ${approvedDonations}">
+                        <td th:text="${donation.donationId}">1</td>
+                        <td>
+                            <a th:href="@{'/admin/donation-detail-view/' + ${donation.donationId}}"
+                               class="text-decoration-none fw-semibold text-primary"
+                               th:text="${donation.title}">샘플 제목</a>
+                        </td>
+                        <td th:text="${donation.userId}">1</td>
+                        <td><span class="badge bg-success">APPROVED</span></td>
+
+                        <td>
+                            <span th:if="${donation.emergency}" class="badge bg-danger">긴급</span>
+                            <span th:if="${!donation.emergency}" class="badge bg-secondary">일반</span>
+                        </td>
+
+                        <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">2025-10-15</td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn"
+                                    th:classappend="${donation.emergency ? 'btn-sm btn-outline-warning' : 'btn-sm btn-outline-danger'}"
+                                    th:text="${donation.emergency ? '긴급 해제' : '긴급 설정'}"
+                                    th:attr="data-type='donation', data-id=${donation.donationId}, data-emergency=${donation.emergency}">
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(approvedDonations)}">
+                        <td colspan="7" class="text-muted py-4">승인된 기부글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 💛 펀딩 탭 -->
+        <div class="tab-pane fade" id="funding" role="tabpanel" aria-labelledby="funding-tab">
+            <h4 class="fw-bold mb-3">펀딩글 목록</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>상태</th>
+                        <th>긴급 여부</th>
+                        <th>작성일</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="funding : ${approvedFundings}">
+                        <td th:text="${funding.fundingId}">1</td>
+                        <td>
+                            <a th:href="@{'/admin/funding-detail-view/' + ${funding.fundingId}}"
+                               class="text-decoration-none fw-semibold text-primary"
+                               th:text="${funding.title}">샘플 제목</a>
+                        </td>
+                        <td th:text="${funding.userId}">1</td>
+                        <td><span class="badge bg-success">APPROVED</span></td>
+
+                        <td>
+                            <span th:if="${funding.emergency}" class="badge bg-danger">긴급</span>
+                            <span th:if="${!funding.emergency}" class="badge bg-secondary">일반</span>
+                        </td>
+
+                        <td th:text="${#temporals.format(funding.createdAt, 'yyyy-MM-dd HH:mm')}">2025-10-15</td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn"
+                                    th:classappend="${funding.emergency ? 'btn-sm btn-outline-warning' : 'btn-sm btn-outline-danger'}"
+                                    th:text="${funding.emergency ? '긴급 해제' : '긴급 설정'}"
+                                    th:attr="data-type='funding', data-id=${funding.fundingId}, data-emergency=${funding.emergency}">
+                            </button>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(approvedFundings)}">
+                        <td colspan="7" class="text-muted py-4">승인된 펀딩글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 💚 봉사 탭 -->
+        <div class="tab-pane fade" id="volunteer" role="tabpanel" aria-labelledby="volunteer-tab">
+            <h4 class="fw-bold mb-3">봉사글 목록</h4>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>상태</th>
+                        <th>긴급 여부</th>
+                        <th>작성일</th>
+                        <th>관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="volunteer : ${approvedVolunteers}">
+                        <td th:text="${volunteer.volunteerId}">1</td>
+                        <td>
+                            <a th:href="@{'/admin/volunteer-detail-view/' + ${volunteer.volunteerId}}"
+                               class="text-decoration-none fw-semibold text-primary"
+                               th:text="${volunteer.title}">샘플 제목</a>
+                        </td>
+                        <td th:text="${volunteer.userId}">1</td>
+                        <td><span class="badge bg-success">APPROVED</span></td>
+
+                        <td>
+                            <span th:if="${volunteer.emergency}" class="badge bg-danger">긴급</span>
+                            <span th:if="${!volunteer.emergency}" class="badge bg-secondary">일반</span>
+                        </td>
+
+                        <td th:text="${#temporals.format(volunteer.createdAt, 'yyyy-MM-dd HH:mm')}">2025-10-15</td>
+
+                        <td>
+                            <button type="button"
+                                    class="btn"
+                                    th:classappend="${volunteer.emergency ? 'btn-sm btn-outline-warning' : 'btn-sm btn-outline-danger'}"
+                                    th:text="${volunteer.emergency ? '긴급 해제' : '긴급 설정'}"
+                                    th:attr="data-type='volunteer', data-id=${volunteer.volunteerId}, data-emergency=${volunteer.emergency}">
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(approvedVolunteers)}">
+                        <td colspan="7" class="text-muted py-4">승인된 봉사글이 없습니다.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ✅ Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ✅ 비동기 긴급 변경 JS -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const buttons = document.querySelectorAll("button[data-id]");
+
+        // 🔹 1. 탭 상태 복원
+        const activeTab = localStorage.getItem("activeTab");
+        if (activeTab) {
+            const trigger = document.querySelector(`[data-bs-target='${activeTab}']`);
+            if (trigger) new bootstrap.Tab(trigger).show();
+        }
+
+        // 🔹 2. 탭 변경 시 현재 탭 저장
+        const tabButtons = document.querySelectorAll("#emergencyTab button[data-bs-toggle='tab']");
+        tabButtons.forEach(tab => {
+            tab.addEventListener("shown.bs.tab", function (event) {
+                localStorage.setItem("activeTab", event.target.dataset.bsTarget);
+            });
+        });
+
+        // 🔹 3. 긴급 설정 버튼 이벤트
+        buttons.forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const type = btn.dataset.type;  // donation / funding / volunteer
+                const id = btn.dataset.id;
+                const currentState = btn.dataset.emergency === "true";
+                const nextState = currentState ? 0 : 1;
+
+                if (!confirm(`이 ${type === 'donation' ? '기부글' : type === 'funding' ? '펀딩글' : '봉사글'}을 ${currentState ? '일반으로 변경' : '긴급으로 설정'}하시겠습니까?`)) return;
+
+                try {
+                    const response = await fetch(`/admin/${type}-toggle-emergency/${id}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: `emergency=${nextState}`
+                    });
+
+                    if (response.ok) {
+                        alert("변경이 완료되었습니다.");
+                        window.location.reload(); // ✅ 새로고침 후에도 탭 유지됨!
+                    } else {
+                        alert("변경 중 오류가 발생했습니다.");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("서버 연결 오류가 발생했습니다.");
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

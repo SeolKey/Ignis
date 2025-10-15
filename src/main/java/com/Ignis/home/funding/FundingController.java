@@ -45,8 +45,8 @@ public class FundingController {
         return "funding/fundingCreate";
     }
 
-    @GetMapping("/funding-detail-view/{fundingId}")
-    public String fundingDetailPage(@PathVariable("fundingId") Long fundingId, Model model) {
+    @GetMapping("/funding-detail-view")
+    public String fundingDetailPage(@RequestParam("fundingId") Long fundingId, Model model) {
         fundingBO.increaseViewCount(fundingId);
         Funding funding = fundingBO.getFundingById(fundingId);
         model.addAttribute("funding", funding);

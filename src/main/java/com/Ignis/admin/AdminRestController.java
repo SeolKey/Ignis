@@ -3,6 +3,7 @@ package com.Ignis.admin;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.Ignis.home.volunteer.bo.VolunteerBO;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,7 @@ public class AdminRestController {
     private final PostBO postBO;
     private final DonationBO donationBO;
     private final FundingBO fundingBO;
+    private final VolunteerBO volunteerBO;
 
     @DeleteMapping("/delete-post/{id}")
     public Map<String, Object> deletePost(@PathVariable int id) {
@@ -57,4 +59,26 @@ public class AdminRestController {
         fundingBO.updateFundingStatus(fundingId, status, rejectReason);
         return "상태 변경 완료";
     }
+
+    @PostMapping("/donation-toggle-emergency/{donationId}")
+    public String toggleDonationEmergency(@PathVariable Long donationId,
+                                          @RequestParam("emergency") boolean isEmergency) {
+        donationBO.toggleEmergency(donationId, isEmergency);
+        return "긴급 상태 변경 완료";
+    }
+
+    @PostMapping("/funding-toggle-emergency/{fundingId}")
+    public String toggleFundingEmergency(@PathVariable Long fundingId,
+                                         @RequestParam("emergency") boolean isEmergency) {
+        fundingBO.toggleEmergency(fundingId, isEmergency);
+        return "긴급 상태 변경 완료";
+    }
+
+    @PostMapping("/volunteer-toggle-emergency/{volunteerId}")
+    public String toggleVolunteerEmergency(@PathVariable Long volunteerId,
+                                           @RequestParam("emergency") boolean isEmergency) {
+        volunteerBO.toggleEmergency(volunteerId, isEmergency);
+        return "긴급 상태 변경 완료";
+    }
+
 }

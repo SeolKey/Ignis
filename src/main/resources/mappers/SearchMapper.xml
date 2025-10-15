@@ -41,10 +41,10 @@
         <!-- MyBatis에서 조건부 UNION을 구현하기 위해 choose/when 사용 -->
     </sql>
 
-    <!-- ========== SELECT (목록) ========== -->
     <select id="searchAll" resultType="com.Ignis.search.domain.SearchResult">
-            SELECT *
-            FROM (
+        SELECT *
+        FROM (
+        <trim prefixOverrides="UNION ALL">
             <!-- donation -->
             <if test="types == null || types.isEmpty() || types.contains('donation')">
                 SELECT
@@ -72,6 +72,7 @@
                 </choose>
             </if>
 
+            <!-- volunteer -->
             <if test="types == null || types.isEmpty() || types.contains('volunteer')">
                 UNION ALL
                 SELECT
@@ -79,9 +80,9 @@
                 v.volunteer_id AS id,
                 v.title,
                 SUBSTRING(v.description, 1, 180) AS snippet,
-                v.image_path,
-                v.created_at,
-                v.view_count
+                v.image_path AS imagePath,
+                v.created_at AS createdAt,
+                v.view_count AS viewCount
                 FROM volunteer v
                 WHERE
                 <choose>
@@ -94,6 +95,7 @@
                 </choose>
             </if>
 
+            <!-- funding -->
             <if test="types == null || types.isEmpty() || types.contains('funding')">
                 UNION ALL
                 SELECT
@@ -101,9 +103,9 @@
                 f.funding_id AS id,
                 f.title,
                 SUBSTRING(f.description, 1, 180) AS snippet,
-                f.image_path,
-                f.created_at,
-                f.view_count
+                f.image_path AS imagePath,
+                f.created_at AS createdAt,
+                f.view_count AS viewCount
                 FROM funding f
                 WHERE
                 <choose>
@@ -116,6 +118,7 @@
                 </choose>
             </if>
 
+            <!-- post -->
             <if test="types == null || types.isEmpty() || types.contains('post')">
                 UNION ALL
                 SELECT
@@ -123,9 +126,9 @@
                 p.post_id AS id,
                 p.title,
                 SUBSTRING(p.content, 1, 180) AS snippet,
-                p.image_path,
-                p.created_at,
-                p.view_count
+                p.image_path AS imagePath,
+                p.created_at AS createdAt,
+                p.view_count AS viewCount
                 FROM post p
                 WHERE
                 <choose>
@@ -138,6 +141,7 @@
                 </choose>
             </if>
 
+            <!-- notice -->
             <if test="types == null || types.isEmpty() || types.contains('notice')">
                 UNION ALL
                 SELECT
@@ -145,9 +149,9 @@
                 n.notice_id AS id,
                 n.title,
                 SUBSTRING(n.content, 1, 180) AS snippet,
-                n.image_path,
-                n.created_at,
-                NULL AS view_count
+                n.image_path AS imagePath,
+                n.created_at AS createdAt,
+                NULL AS viewCount
                 FROM notice n
                 WHERE
                 <choose>
@@ -159,14 +163,19 @@
                     </otherwise>
                 </choose>
             </if>
-            ) t
-            ORDER BY createdAt DESC
-            LIMIT #{limit} OFFSET #{offset}
+        </trim>
+        ) t
+        ORDER BY createdAt DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
+
+
 
     <!-- ========== COUNT (페이지네이션용) ========== -->
     <select id="countAll" resultType="int">
-            SELECT SUM(cnt) FROM (
+        SELECT SUM(cnt)
+        FROM (
+        <trim prefixOverrides="UNION ALL">
             <if test="types == null || types.isEmpty() || types.contains('donation')">
                 SELECT COUNT(*) AS cnt
                 FROM donation d
@@ -240,7 +249,9 @@
                     </otherwise>
                 </choose>
             </if>
-            ) x
+        </trim>
+        ) x
     </select>
+
 
 </mapper>

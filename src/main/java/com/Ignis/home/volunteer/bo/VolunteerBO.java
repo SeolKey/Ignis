@@ -3,20 +3,21 @@ package com.Ignis.home.volunteer.bo;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
+import com.Ignis.common.FileManagerService;
 import com.Ignis.common.upload.UploadCategory;
+import com.Ignis.home.volunteer.domain.Volunteer;
 import com.Ignis.home.volunteer.domain.VolunteerParticipant;
+import com.Ignis.home.volunteer.mapper.VolunteerMapper;
 import com.Ignis.home.volunteer.mapper.VolunteerPeopleMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.Ignis.common.FileManagerService;
-import com.Ignis.home.volunteer.domain.Volunteer;
-import com.Ignis.home.volunteer.mapper.VolunteerMapper;
-
 @Service
+@Transactional
 public class VolunteerBO {
 
     @Autowired
@@ -42,17 +43,15 @@ public class VolunteerBO {
     }
 
     public int addVolunteer(Long userId, String title, String description, String location,
-            String startTime, String endTime, int maxParticipants, MultipartFile imageFile) {
+                            String startTime, String endTime, int maxParticipants, MultipartFile imageFile) {
 
         // 이미지 저장 처리
         String imageUrl;
         try {
-                imageUrl = fileManagerService.saveFile(UploadCategory.VOLUNTEER, imageFile);
+            imageUrl = fileManagerService.saveFile(UploadCategory.VOLUNTEER, imageFile);
         } catch (IOException e) {
             throw new RuntimeException("봉사 이미지 저장 실패", e);
         }
-
-
 
         Volunteer volunteer = new Volunteer();
         volunteer.setUserId(userId);
@@ -68,16 +67,6 @@ public class VolunteerBO {
         volunteer.setCreatedAt(LocalDateTime.now());
 
         return volunteerMapper.insertVolunteer(volunteer);
-    }
-
-
-    public String saveImage(MultipartFile imageFile) {
-        if (imageFile == null || imageFile.isEmpty()) return null;
-        try {
-            return fileManagerService.saveFile(UploadCategory.VOLUNTEER, imageFile);
-        } catch (IOException e) {
-            throw new RuntimeException("봉사 이미지 저장 실패", e);
-        }
     }
 
     public void increaseViewCount(Long volunteerId) {
@@ -122,21 +111,43 @@ public class VolunteerBO {
         volunteerMapper.decreaseCurrentPeople(volunteerId);
     }
 
-    // ▼ 내가 참여했는지 여부
     public boolean isJoined(Long volunteerId, Long userId) {
         Integer exists = volunteerPeopleMapper.exists(volunteerId, userId);
         return exists != null && exists > 0;
     }
 
-    // VolunteerBO.java
     public Long createVolunteerFromReact(Volunteer v) {
-        // Mapper의 <insert id="insertVolunteer" useGeneratedKeys="true" keyProperty="volunteerId"> 필요
         volunteerMapper.insertVolunteer(v);
         return v.getVolunteerId();
     }
 
     public List<VolunteerParticipant> getParticipantList(Long volunteerId) {
         return volunteerPeopleMapper.selectParticipantsByVolunteerId(volunteerId);
+    }
+
+    // ✅ [추가] 긴급 상태 토글 (+ 제목 자동 변경)
+    public void toggleEmergency(Long volunteerId, boolean isEmergency) {
+        Volunteer volunteer = volunteerMapper.selectVolunteerById(volunteerId);
+        if (volunteer == null) return;
+
+        String title = volunteer.getTitle();
+        if (isEmergency) {
+            if (!title.startsWith("[긴급]")) {
+                title = "[긴급] " + title;
+            }
+        } else {
+            title = title.replaceFirst("^\\[긴급\\]\\s*", "");
+        }
+
+        volunteerMapper.updateVolunteerEmergencyStatusAndTitle(
+                Map.of("volunteerId", volunteerId,
+                        "isEmergency", isEmergency ? 1 : 0,
+                        "title", title)
+        );
+    }
+    // ✅ 긴급 상태인 봉사글 목록 조회
+    public Volunteer getEmergencyVolunteer() {
+        return volunteerMapper.selectEmergencyVolunteer();
     }
 
 }

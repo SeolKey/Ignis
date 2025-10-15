@@ -47,6 +47,7 @@ public class UserRestController {
             session.setAttribute("userId", user.getUserId());
             session.setAttribute("userLoginId", user.getUserLoginId());
             session.setAttribute("userName", user.getName());
+            session.setAttribute("role", user.getRole());  // 예: "admin" 또는 "user"
 
             // ✅ 스프링 시큐리티에게도 "인증됨"을 알려주기
             // 역할은 프로젝트 규칙에 맞게 세팅. 최소 "ROLE_USER" 하나는 넣자.
@@ -66,6 +67,7 @@ public class UserRestController {
             result.put("result", "성공");
             result.put("userId", user.getUserId());
             result.put("userName", user.getName());
+            result.put("role", user.getRole().toLowerCase());
         } else {
             result.put("code", 403);
             result.put("error_message", "아이디 또는 비밀번호가 잘못되었습니다.");

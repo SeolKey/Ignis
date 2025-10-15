@@ -23,4 +23,5 @@ public class Volunteer {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Integer viewCount;
+    private boolean Emergency;
 }

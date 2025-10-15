@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.Ignis.home.funding.bo.FundingBO;
 import com.Ignis.home.funding.domain.Funding;
+import com.Ignis.home.volunteer.bo.VolunteerBO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ public class AdminController {
     private final PostBO postBO;
     private final DonationBO donationBO;
     private final FundingBO fundingBO;
+    private final VolunteerBO volunteerBO;
 
     @GetMapping("/main")
     public String adminMainPage() {
@@ -84,5 +86,13 @@ public class AdminController {
         Funding funding = fundingBO.getFundingById(id);
         model.addAttribute("funding", funding);
         return "admin/adminFundingDetail";
+    }
+
+    @GetMapping("/emergency-manage")
+    public String emergencyManage(Model model) {
+        model.addAttribute("approvedDonations", donationBO.getDonationList());
+        model.addAttribute("approvedFundings", fundingBO.getFundingList());
+        model.addAttribute("approvedVolunteers", volunteerBO.getVolunteerList());
+        return "admin/adminEmergencyManage";
     }
 }

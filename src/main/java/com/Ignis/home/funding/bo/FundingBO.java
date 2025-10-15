@@ -2,6 +2,7 @@ package com.Ignis.home.funding.bo;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import com.Ignis.common.enums.Status;
 import com.Ignis.common.upload.UploadCategory;
@@ -67,4 +68,30 @@ public class FundingBO {
     public List<Funding> getMostViewedFundingList(int limit) {
         return fundingMapper.selectMostViewedFundingList(limit);
     }
+
+    public void toggleEmergency(Long fundingId, boolean isEmergency) {
+        Funding funding = fundingMapper.selectFundingById(fundingId);
+        if (funding == null) return;
+
+        String title = funding.getTitle();
+        if (isEmergency) {
+            if (!title.startsWith("[긴급]")) {
+                title = "[긴급] " + title;
+            }
+        } else {
+            title = title.replaceFirst("^\\[긴급\\]\\s*", "");
+        }
+
+        fundingMapper.updateFundingEmergencyStatusAndTitle(
+                Map.of("fundingId", fundingId,
+                        "emergency", isEmergency ? 1 : 0,
+                        "title", title)
+        );
+    }
+
+
+    public Funding getEmergencyFunding() {
+        return fundingMapper.selectEmergencyFunding();
+    }
+
 }

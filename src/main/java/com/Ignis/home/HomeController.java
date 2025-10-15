@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,36 +31,41 @@ public class HomeController {
     @Autowired
     private FundingBO fundingBO;
 
-    /**   기존 Thymeleaf 홈 페이지 (서버 렌더링) */
+    /** 기존 Thymeleaf 홈 페이지 (서버 렌더링) */
     @GetMapping("/")
-    public String showHomePage(Model model) {
+    public String showHomePage(Model model, HttpSession session) {
         int limit = 4;
         List<Donation> donationList = donationBO.getMostViewedDonationList(limit);
         List<Volunteer> volunteerList = volunteerBO.getMostViewedVolunteerList(limit);
         List<Funding> fundingList = fundingBO.getMostViewedFundingList(limit);
 
+        // 기본 데이터
         model.addAttribute("donationList", donationList);
         model.addAttribute("volunteerList", volunteerList);
         model.addAttribute("fundingList", fundingList);
 
+        // 세션 정보 전달 (헤더에서 사용 가능)
+        model.addAttribute("userName", session.getAttribute("userName"));
+        model.addAttribute("role", session.getAttribute("role"));
+        model.addAttribute("userId", session.getAttribute("userId"));
+
         return "home/home";
     }
 
-    /**  React용 JSON API (클라이언트에서 fetch('/api/home')) */
+    /** React용 JSON API (클라이언트에서 fetch('/api/home')) */
     @GetMapping("/api/home")
     @ResponseBody
     public Map<String, Object> getHomeData() {
         int limit = 4;
-        // 서비스(BO)에서 최신 4개씩 가져오기
+
         List<Donation> donations = donationBO.getMostViewedDonationList(limit);
         List<Volunteer> volunteers = volunteerBO.getMostViewedVolunteerList(limit);
         List<Funding> fundings = fundingBO.getMostViewedFundingList(limit);
 
-        // 프론트에서 필요한 필드만 얇게 매핑
         List<Map<String, Object>> donationList = donations.stream()
                 .map(d -> {
                     Map<String, Object> m = new HashMap<>();
-                    m.put("donationId", d.getDonationId()); // 도메인 필드명에 맞게 사용
+                    m.put("donationId", d.getDonationId());
                     m.put("title", d.getTitle());
                     m.put("imagePath", d.getImagePath());
                     m.put("views", d.getViewCount());
@@ -97,4 +103,64 @@ public class HomeController {
         res.put("fundingList", fundingList);
         return res;
     }
+
+    @GetMapping("/api/emergency/check")
+    @ResponseBody
+    public Map<String, Object> checkEmergency() {
+        Map<String, Object> result = new HashMap<>();
+
+        Donation emergencyDonation = donationBO.getEmergencyDonation();
+        Funding emergencyFunding = fundingBO.getEmergencyFunding();
+        Volunteer emergencyVolunteer = volunteerBO.getEmergencyVolunteer();
+
+        List<Map<String, Object>> emergencies = new java.util.ArrayList<>();
+
+        if (emergencyDonation != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("type", "donation");
+            map.put("id", emergencyDonation.getDonationId());
+            map.put("title", emergencyDonation.getTitle());
+            emergencies.add(map);
+        }
+
+        if (emergencyFunding != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("type", "funding");
+            map.put("id", emergencyFunding.getFundingId());
+            map.put("title", emergencyFunding.getTitle());
+            emergencies.add(map);
+        }
+
+        if (emergencyVolunteer != null) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("type", "volunteer");
+            map.put("id", emergencyVolunteer.getVolunteerId());
+            map.put("title", emergencyVolunteer.getTitle());
+            emergencies.add(map);
+        }
+
+        int total = emergencies.size();
+
+        if (total == 0) {
+            result.put("type", "none");
+            result.put("count", 0);
+            return result;
+        }
+
+        if (total == 1) {
+            Map<String, Object> single = emergencies.get(0);
+            result.put("type", single.get("type"));
+            result.put("id", single.get("id"));
+            result.put("title", single.get("title"));
+            result.put("count", 1);
+        } else {
+            result.put("type", "multiple");
+            result.put("count", total);
+            result.put("title", "긴급 공지가 총 " + total + "개 있습니다.");
+        }
+
+        return result;
+    }
+
+
 }
