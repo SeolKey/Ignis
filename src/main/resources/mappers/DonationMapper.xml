@@ -20,7 +20,8 @@
             created_at AS createdAt,
             updated_at AS updatedAt,
             view_count AS viewCount,
-            is_emergency AS emergency
+            is_emergency AS emergency,
+            like_count AS likeCount
         FROM donation
         WHERE status = 'APPROVED'
         ORDER BY created_at DESC
@@ -42,7 +43,8 @@
             created_at AS createdAt,
             updated_at AS updatedAt,
             view_count AS viewCount,
-            is_emergency AS emergency
+            is_emergency AS emergency,
+            like_count AS likeCount
         FROM donation
         WHERE status = 'PENDING'
         ORDER BY created_at DESC
@@ -71,7 +73,8 @@
             created_at AS createdAt,
             updated_at AS updatedAt,
             view_count AS viewCount,
-            is_emergency AS emergency
+            is_emergency AS emergency,
+            like_count AS likeCount
         FROM donation
         WHERE donation_id = #{donationId}
     </select>
@@ -94,7 +97,8 @@
             created_at,
             updated_at,
             view_count,
-            is_emergency
+            is_emergency,
+            like_count
         ) VALUES (
                      #{userId},
                      #{title},
@@ -107,6 +111,7 @@
                      #{imagePath},
                      NOW(),
                      NOW(),
+                     0,
                      0,
                      0
                  )
@@ -124,7 +129,8 @@
             created_at AS createdAt,
             updated_at AS updatedAt,
             view_count AS viewCount,
-            is_emergency AS emergency
+            is_emergency AS emergency,
+            like_count AS likeCount
         FROM donation
         WHERE status = 'APPROVED'
         ORDER BY created_at DESC
@@ -172,7 +178,8 @@
             created_at    AS createdAt,
             updated_at    AS updatedAt,
             view_count    AS viewCount,
-            is_emergency  AS emergency
+            is_emergency  AS emergency,
+            like_count AS likeCount
         FROM donation
         WHERE status = 'APPROVED'
         ORDER BY view_count DESC, created_at DESC
@@ -207,5 +214,46 @@
             updated_at = NOW()
         WHERE donation_id = #{donationId}
     </update>
+
+    <update id="incrementLikeCount">
+        UPDATE donation
+        SET like_count = like_count + 1,
+            updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
+    <update id="decrementLikeCount">
+        UPDATE donation
+        SET like_count = CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END,
+            updated_at = NOW()
+        WHERE donation_id = #{donationId}
+    </update>
+
+    <select id="selectLikeCount" resultType="int">
+        SELECT like_count FROM donation WHERE donation_id = #{donationId}
+    </select>
+
+    <select id="likeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM donation_like
+        WHERE donation_id = #{donationId}
+          AND user_id = #{userId}
+            LIMIT 1
+    </select>
+
+    <insert id="insertLike">
+        INSERT INTO donation_like (donation_id, user_id, created_at)
+        VALUES (#{donationId}, #{userId}, NOW())
+    </insert>
+
+    <delete id="deleteLike">
+        DELETE FROM donation_like
+        WHERE donation_id = #{donationId}
+          AND user_id = #{userId}
+    </delete>
+
+    <select id="countLikesByDonation" resultType="int">
+        SELECT COUNT(*) FROM donation_like WHERE donation_id = #{donationId}
+    </select>
 
 </mapper>

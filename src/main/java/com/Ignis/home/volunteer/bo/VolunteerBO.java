@@ -150,4 +150,37 @@ public class VolunteerBO {
         return volunteerMapper.selectEmergencyVolunteer();
     }
 
+    public boolean isLiked(Long volunteerId, Long userId) {
+        if (userId == null) return false;
+        return volunteerMapper.likeExists(volunteerId, userId) > 0;
+    }
+
+    public int likeCount(Long volunteerId) {
+        Integer cnt = volunteerMapper.selectLikeCount(volunteerId);
+        return cnt == null ? 0 : cnt;
+    }
+
+    @Transactional
+    public ToggleResult toggleLike(Long volunteerId, Long userId) {
+        if (userId == null) throw new IllegalStateException("로그인이 필요합니다.");
+        boolean already = volunteerMapper.likeExists(volunteerId, userId) > 0;
+        if (already) {
+            volunteerMapper.deleteLike(volunteerId, userId);
+            volunteerMapper.decrementLikeCount(volunteerId);
+        } else {
+            volunteerMapper.insertLike(volunteerId, userId);
+            volunteerMapper.incrementLikeCount(volunteerId);
+        }
+        return new ToggleResult(!already, likeCount(volunteerId));
+    }
+
+    public static class ToggleResult {
+        public final boolean liked;
+        public final int likeCount;
+        public ToggleResult(boolean liked, int likeCount) {
+            this.liked = liked; this.likeCount = likeCount;
+        }
+    }
+
+
 }

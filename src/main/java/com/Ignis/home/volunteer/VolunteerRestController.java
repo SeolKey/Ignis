@@ -196,6 +196,26 @@ public class VolunteerRestController {
         return Map.of("joined", joined);
     }
 
+    @GetMapping("/{id}/like/state")
+    public ResponseEntity<?> likeState(@PathVariable("id") Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = volunteerBO.isLiked(id, userId);
+        int likeCount = volunteerBO.likeCount(id);
+        return ResponseEntity.ok(Map.of("liked", liked, "likeCount", likeCount));
+    }
+
+    @PostMapping("/{id}/like/toggle")
+    public ResponseEntity<?> toggleLike(@PathVariable("id") Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+        }
+        VolunteerBO.ToggleResult tr = volunteerBO.toggleLike(id, userId);
+        return ResponseEntity.ok(Map.of("result", "success", "liked", tr.liked, "likeCount", tr.likeCount));
+    }
+
+
     // ------------------------------
     // 내부 유틸
     // ------------------------------

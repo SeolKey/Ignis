@@ -151,6 +151,33 @@
     .modal.fade.show .modal-dialog {
       transform: translateY(0);
     }
+
+    .like-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 10px 0 16px 0; /* 기부하기 버튼 바로 위에 배치 */
+    }
+    .btn-like {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: #dc3545;
+      border: 1px solid #dc3545;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-like.filled {
+      background: #dc3545;
+      color: #fff;
+      border-color: #dc3545;
+    }
+    .like-count-text {
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -208,6 +235,15 @@
       <p><strong>현재 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.currentPrice, 0, 0)} + '원'"></span></p>
       <p><strong>목표 금액:</strong> <span th:text="${#numbers.formatDecimal(donation.maxPrice, 0, 0)} + '원'"></span></p>
     </div>
+
+    <div class="like-row">
+      <button id="likeBtn" type="button" class="btn-like">
+        <span id="heartIcon">♡</span>
+        <span>좋아요</span>
+      </button>
+      <div class="like-count-text">총 좋아요: <span id="likeCount" th:text="${likeCount}">0</span></div>
+    </div>
+
     <a th:href="@{/donation/participate-view(donationId=${donation.donationId})}" class="btn">기부하기</a>
     <div class="share-box">
       <button onclick="navigator.share ? navigator.share({ title: '기부 공유', url: window.location.href }) : alert('공유 기능을 지원하지 않는 브라우저입니다.')">공유하기</button>
@@ -241,246 +277,285 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script th:inline="javascript">
-document.addEventListener('DOMContentLoaded', function () {
-  const tabs = document.querySelectorAll('.tab');
-  const contents = document.querySelectorAll('.tab-content');
-  const contentId = /*[[${donation.donationId}]]*/ 0;
-  const contentType = "donation";
+  document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.tab');
+    const contents = document.querySelectorAll('.tab-content');
+    const contentId = /*[[${donation.donationId}]]*/ 0;
+    const contentType = "donation";
 
-  // ===== 탭 전환 =====
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const targetId = 'tab-' + tab.dataset.tab;
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      contents.forEach(c => {
-        c.style.display = (c.id === targetId) ? 'block' : 'none';
-      });
-      if (tab.dataset.tab === 'comment') {
-        loadComments();
+    /* ===== ❤️ 좋아요 초기 상태/토글 ===== */
+    const likeBtn = document.getElementById('likeBtn');
+    const heartIcon = document.getElementById('heartIcon');
+    const likeCountEl = document.getElementById('likeCount');
+
+    function setHeart(liked) {
+      if (liked) {
+        heartIcon.textContent = '❤';           // 채워진 하트
+        likeBtn.classList.add('filled');
+      } else {
+        heartIcon.textContent = '♡';           // 빈 하트
+        likeBtn.classList.remove('filled');
       }
-    });
-  });
+    }
 
-  // ===== 댓글 전체 로드 =====
-  function loadComments() {
-    fetch(`/comment/list?contentType=${contentType}&contentId=${contentId}`)
-      .then(res => res.json())
-      .then(async data => {
-        const container = document.getElementById('comment-list');
-        container.innerHTML = "";
-        if (!data || data.length === 0) {
-          container.innerHTML = "<p class='text-muted'>아직 댓글이 없습니다.</p>";
+    // 서버 상태로 초기화
+    fetch(`/donation/${contentId}/like/state`)
+            .then(r => r.ok ? r.json() : { liked:false, likeCount: Number(likeCountEl.textContent || '0') })
+            .then(s => {
+              setHeart(!!s.liked);
+              if (typeof s.likeCount === 'number') likeCountEl.textContent = s.likeCount;
+            })
+            .catch(() => { /* 무시 (SSR 값 유지) */ });
+
+    // 토글
+    likeBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/donation/${contentId}/like/toggle`, { method: 'POST' });
+        if (res.status === 401) {
+          alert('로그인이 필요합니다.');
           return;
         }
-        for (const c of data) {
-          const div = document.createElement('div');
-          div.className = 'comment';
-          div.innerHTML = `
+        const data = await res.json();
+        if (data.result === 'success') {
+          setHeart(!!data.liked);
+          if (typeof data.likeCount === 'number') likeCountEl.textContent = data.likeCount;
+        } else {
+          alert(data.error || '처리 중 오류가 발생했습니다.');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('네트워크 오류가 발생했습니다.');
+      }
+    });
+
+    // ===== 탭 전환 =====
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const targetId = 'tab-' + tab.dataset.tab;
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        contents.forEach(c => {
+          c.style.display = (c.id === targetId) ? 'block' : 'none';
+        });
+        if (tab.dataset.tab === 'comment') {
+          loadComments();
+        }
+      });
+    });
+
+    // ===== 댓글 전체 로드 =====
+    function loadComments() {
+      fetch(`/comment/list?contentType=${contentType}&contentId=${contentId}`)
+              .then(res => res.json())
+              .then(async data => {
+                const container = document.getElementById('comment-list');
+                container.innerHTML = "";
+                if (!data || data.length === 0) {
+                  container.innerHTML = "<p class='text-muted'>아직 댓글이 없습니다.</p>";
+                  return;
+                }
+                for (const c of data) {
+                  const div = document.createElement('div');
+                  div.className = 'comment';
+                  div.innerHTML = `
             <div class="fw-bold">${c.userName || '익명 사용자'}</div>
             <div>${escapeHtml(c.content)}</div>
             <div class="meta">${(c.createdAt || '').replace("T", " ").substring(0, 16)}</div>
             <button class="btn btn-sm btn-outline-primary reply-btn mt-1" data-id="${c.commentId}">답글쓰기</button>
             <div class="replies mt-2" id="replies-${c.commentId}"></div>
           `;
-          container.appendChild(div);
-          loadReplies(c.commentId);
-        }
-      })
-      .catch(err => {
-        console.error("댓글 불러오기 실패:", err);
-        document.getElementById('comment-list').innerHTML = "<p class='text-danger'>댓글을 불러오는 데 실패했습니다.</p>";
-      });
-  }
+                  container.appendChild(div);
+                  loadReplies(c.commentId);
+                }
+              })
+              .catch(err => {
+                console.error("댓글 불러오기 실패:", err);
+                document.getElementById('comment-list').innerHTML = "<p class='text-danger'>댓글을 불러오는 데 실패했습니다.</p>";
+              });
+    }
 
-  // ===== 대댓글 로드 =====
-  function loadReplies(parentId) {
-    fetch(`/comment/replies?parentId=${parentId}`)
-      .then(res => res.json())
-      .then(replies => {
-        const container = document.getElementById(`replies-${parentId}`);
-        container.innerHTML = "";
-        replies.forEach(r => {
-          const rdiv = document.createElement('div');
-          rdiv.className = 'reply';
-          rdiv.innerHTML = `
+    // ===== 대댓글 로드 =====
+    function loadReplies(parentId) {
+      fetch(`/comment/replies?parentId=${parentId}`)
+              .then(res => res.json())
+              .then(replies => {
+                const container = document.getElementById(`replies-${parentId}`);
+                container.innerHTML = "";
+                replies.forEach(r => {
+                  const rdiv = document.createElement('div');
+                  rdiv.className = 'reply';
+                  rdiv.innerHTML = `
             <div class="fw-bold">${r.userName || '익명 사용자'}</div>
             <div>${escapeHtml(r.content)}</div>
             <div class="meta">${(r.createdAt || '').replace("T", " ").substring(0, 16)}</div>
           `;
-          container.appendChild(rdiv);
-        });
-      });
-  }
-
-  // ===== 댓글 등록 =====
-  document.getElementById("comment-submit").addEventListener("click", () => {
-    const content = document.getElementById("comment-content").value.trim();
-    if (!content) {
-      alert("댓글 내용을 입력해주세요.");
-      return;
-    }
-    fetch("/comment/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contentType: contentType,
-        contentId: contentId,
-        content: content,
-        parentId: null
-      })
-    }).then(res => res.json())
-      .then(result => {
-        if (result.result === "success") {
-          document.getElementById("comment-content").value = "";
-          loadComments();
-          // 댓글 탭이 보장되도록
-          showTab('comment');
-        } else {
-          alert(result.errorMessage || "댓글 등록에 실패했습니다.");
-        }
-      });
-  });
-
-  // ===== 답글 토글 및 등록(이벤트 위임) =====
-  document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("reply-btn")) {
-      const parentId = e.target.dataset.id;
-      const repliesDiv = document.getElementById(`replies-${parentId}`);
-      const existing = repliesDiv.querySelector(".reply-form");
-      if (existing) { existing.remove(); return; }
-      const form = document.createElement("div");
-      form.className = "reply-form input-group mb-2";
-      form.innerHTML = `
-        <input type="text" class="form-control reply-input" placeholder="답글을 입력하세요">
-        <button class="btn btn-primary send-reply" data-parent="${parentId}">등록</button>
-      `;
-      repliesDiv.prepend(form);
+                  container.appendChild(rdiv);
+                });
+              });
     }
 
-    if (e.target.classList.contains("send-reply")) {
-      const parentId = e.target.dataset.parent;
-      const input = e.target.closest(".reply-form").querySelector(".reply-input");
-      const content = (input.value || "").trim();
-      if (!content) return;
-
-      fetch("/comment/reply", {
+    // ===== 댓글 등록 =====
+    document.getElementById("comment-submit").addEventListener("click", () => {
+      const content = document.getElementById("comment-content").value.trim();
+      if (!content) {
+        alert("댓글 내용을 입력해주세요.");
+        return;
+      }
+      fetch("/comment/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contentType: contentType,
           contentId: contentId,
           content: content,
-          parentId: parentId
+          parentId: null
         })
       }).then(res => res.json())
-        .then(result => {
-          if (result.result === "success") {
-            loadReplies(parentId);
-          } else {
-            alert(result.errorMessage || "대댓글 등록에 실패했습니다.");
-          }
-        });
-    }
-  });
-
-  function showTab(tabKey) {
-    tabs.forEach(t => t.classList.remove('active'));
-    contents.forEach(c => c.style.display = 'none');
-    const activeTab = document.querySelector(`.tab[data-tab="${tabKey}"]`);
-    const activeContent = document.getElementById(`tab-${tabKey}`);
-    if (activeTab) activeTab.classList.add('active');
-    if (activeContent) activeContent.style.display = 'block';
-  }
-
-  function escapeHtml(str) {
-    if (!str) return "";
-    return str.replace(/[&<>"']/g, function(m) {
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+              .then(result => {
+                if (result.result === "success") {
+                  document.getElementById("comment-content").value = "";
+                  loadComments();
+                  showTab('comment');
+                } else {
+                  alert(result.errorMessage || "댓글 등록에 실패했습니다.");
+                }
+              });
     });
-  }
 
-  /* ====== 기부하기 (조건부 모달) ====== */
-  const donateBtn = document.getElementById("donateBtn");
-  const phoneModalEl = document.getElementById("phoneModal");
-  const phoneModal = new bootstrap.Modal(phoneModalEl);
-  const phoneInput = document.getElementById("phoneInput");
-  const phoneError = document.getElementById("phoneError");
-  const confirmPhoneBtn = document.getElementById("confirmPhoneBtn");
-
-  // Bootstrap 모달 열릴 때 입력 포커스
-  phoneModalEl.addEventListener('shown.bs.modal', () => {
-    phoneInput.focus();
-  });
-
-  const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
-
-  // 기부하기 버튼 클릭 시
-  donateBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/user/me/phone");
-      const data = await res.json();
-      const phone = data.phone || "000-0000-0000";
-
-      if (phone === "000-0000-0000") {
-        // 기본값이면 모달 띄워서 수정 유도
-        phoneInput.value = phone;
-        phoneError.style.display = "none";
-        phoneModal.show();
-      } else {
-        // 정상 번호면 바로 참여
-        const res2 = await fetch(`/donation/${contentId}/participate`, { method: "POST" });
-        const ok = res2.ok ? await res2.json() : { result: "fail" };
-        if (ok.result === "success") {
-          // 참여 완료 페이지로 이동하려면 아래 redirect 사용
-          // window.location.href = `/donation/complete/${contentId}`;
-          location.reload();
-        } else {
-          alert(ok.error_message || "기부 참여에 실패했습니다.");
-        }
+    // ===== 답글 토글 및 등록(이벤트 위임) =====
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("reply-btn")) {
+        const parentId = e.target.dataset.id;
+        const repliesDiv = document.getElementById(`replies-${parentId}`);
+        const existing = repliesDiv.querySelector(".reply-form");
+        if (existing) { existing.remove(); return; }
+        const form = document.createElement("div");
+        form.className = "reply-form input-group mb-2";
+        form.innerHTML = `
+        <input type="text" class="form-control reply-input" placeholder="답글을 입력하세요">
+        <button class="btn btn-primary send-reply" data-parent="\${parentId}">등록</button>
+      `;
+        repliesDiv.prepend(form);
       }
-    } catch (err) {
-      console.error(err);
-      alert("전화번호 확인 중 오류가 발생했습니다.");
-    }
-  });
 
-  // 모달에서 확인 클릭 시
-  confirmPhoneBtn.addEventListener("click", async () => {
-    const phone = (phoneInput.value || "").trim();
-    if (!phoneRegex.test(phone)) {
-      phoneError.style.display = "block";
-      return;
-    }
-    phoneError.style.display = "none";
+      if (e.target.classList.contains("send-reply")) {
+        const parentId = e.target.dataset.parent;
+        const input = e.target.closest(".reply-form").querySelector(".reply-input");
+        const content = (input.value || "").trim();
+        if (!content) return;
 
-    try {
-      const res = await fetch("/user/me/phone", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone })
+        fetch("/comment/reply", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contentType: contentType,
+            contentId: contentId,
+            content: content,
+            parentId: parentId
+          })
+        }).then(res => res.json())
+                .then(result => {
+                  if (result.result === "success") {
+                    loadReplies(parentId);
+                  } else {
+                    alert(result.errorMessage || "대댓글 등록에 실패했습니다.");
+                  }
+                });
+      }
+    });
+
+    function showTab(tabKey) {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.style.display = 'none');
+      const activeTab = document.querySelector(`.tab[data-tab="${tabKey}"]`);
+      const activeContent = document.getElementById(`tab-${tabKey}`);
+      if (activeTab) activeTab.classList.add('active');
+      if (activeContent) activeContent.style.display = 'block';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
       });
-      const result = await res.json();
-      if (result.result === "success") {
-        phoneModal.hide();
-        const res2 = await fetch(`/donation/${contentId}/participate`, { method: "POST" });
-        const ok = res2.ok ? await res2.json() : { result: "fail" };
-        if (ok.result === "success") {
-          // window.location.href = `/donation/complete/${contentId}`;
-          location.reload();
-        } else {
-          alert(ok.error_message || "기부 참여에 실패했습니다.");
-        }
-      } else {
-        alert("전화번호 업데이트 실패");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("요청 처리 중 오류가 발생했습니다.");
     }
+
+    /* ====== 기부하기 (조건부 모달) ====== */
+    const donateBtn = document.getElementById("donateBtn");
+    const phoneModalEl = document.getElementById("phoneModal");
+    const phoneModal = new bootstrap.Modal(phoneModalEl);
+    const phoneInput = document.getElementById("phoneInput");
+    const phoneError = document.getElementById("phoneError");
+    const confirmPhoneBtn = document.getElementById("confirmPhoneBtn");
+
+    // Bootstrap 모달 열릴 때 입력 포커스
+    phoneModalEl.addEventListener('shown.bs.modal', () => {
+      phoneInput.focus();
+    });
+
+    const phoneRegex = /^01[0-9]-\d{3,4}-\d{4}$/;
+
+    // 기부하기 버튼 클릭 시
+    donateBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch("/user/me/phone");
+        const data = await res.json();
+        const phone = data.phone || "000-0000-0000";
+
+        if (phone === "000-0000-0000") {
+          phoneInput.value = phone;
+          phoneError.style.display = "none";
+          phoneModal.show();
+        } else {
+          const res2 = await fetch(`/donation/${contentId}/participate`, { method: "POST" });
+          const ok = res2.ok ? await res2.json() : { result: "fail" };
+          if (ok.result === "success") {
+            location.reload();
+          } else {
+            alert(ok.error_message || "기부 참여에 실패했습니다.");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert("전화번호 확인 중 오류가 발생했습니다.");
+      }
+    });
+
+    // 모달에서 확인 클릭 시
+    confirmPhoneBtn.addEventListener("click", async () => {
+      const phone = (phoneInput.value || "").trim();
+      if (!phoneRegex.test(phone)) {
+        phoneError.style.display = "block";
+        return;
+      }
+      phoneError.style.display = "none";
+
+      try {
+        const res = await fetch("/user/me/phone", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone })
+        });
+        const result = await res.json();
+        if (result.result === "success") {
+          phoneModal.hide();
+          const res2 = await fetch(`/donation/${contentId}/participate`, { method: "POST" });
+          const ok = res2.ok ? await res2.json() : { result: "fail" };
+          if (ok.result === "success") {
+            location.reload();
+          } else {
+            alert(ok.error_message || "기부 참여에 실패했습니다.");
+          }
+        } else {
+          alert("전화번호 업데이트 실패");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("요청 처리 중 오류가 발생했습니다.");
+      }
+    });
   });
-});
 </script>
 
 </body>

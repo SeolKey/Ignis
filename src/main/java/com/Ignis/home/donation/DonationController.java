@@ -44,10 +44,16 @@ public class DonationController {
     }
     
     @GetMapping("/donation-detail-view")
-    public String donationDetail(@RequestParam("donationId") Long donationId, Model model) {
+    public String donationDetail(@RequestParam("donationId") Long donationId, HttpSession session, Model model) {
         donationBO.increaseViewCount(donationId);
         Donation donation = donationBO.getDonationById(donationId);
+        Long userId = currentUserId(session);
+        boolean liked = donationBO.isLiked(userId, donationId);
+        int likeCount = donationBO.likeCount(donationId);
+
         model.addAttribute("donation", donation);
+        model.addAttribute("liked", liked);
+        model.addAttribute("likeCount", likeCount);
         return "donation/donationDetail";
     }
 

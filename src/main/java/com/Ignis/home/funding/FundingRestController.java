@@ -59,6 +59,26 @@ public class FundingRestController {
         return result;
     }
 
+    @GetMapping("/{fundingId}/like/state")
+    public ResponseEntity<?> likeState(@PathVariable Long fundingId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = fundingBO.isLiked(userId, fundingId);
+        int likeCount = fundingBO.likeCount(fundingId);
+        return ResponseEntity.ok(Map.of("liked", liked, "likeCount", likeCount));
+    }
+
+    @PostMapping("/{fundingId}/like/toggle")
+    public ResponseEntity<?> toggleLike(@PathVariable Long fundingId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+        }
+        FundingBO.ToggleResult tr = fundingBO.toggleLike(userId, fundingId);
+        return ResponseEntity.ok(Map.of("result", "success", "liked", tr.liked, "likeCount", tr.likeCount));
+    }
+
+
     // @PostMapping("/participate")
     // public String participateFunding(
     // @RequestParam("fundingId") Long fundingId,

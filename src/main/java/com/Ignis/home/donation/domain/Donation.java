@@ -22,4 +22,5 @@ public class Donation {
     private LocalDateTime updatedAt;
     private boolean Emergency;
     private Integer viewCount; // 조회수
+    private Integer likeCount;
 }

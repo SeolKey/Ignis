@@ -94,4 +94,35 @@ public class FundingBO {
         return fundingMapper.selectEmergencyFunding();
     }
 
+    public boolean isLiked(Long userId, Long fundingId) {
+        if (userId == null) return false;
+        return fundingMapper.likeExists(fundingId, userId) > 0;
+    }
+
+    public int likeCount(Long fundingId) {
+        Integer cnt = fundingMapper.selectLikeCount(fundingId);
+        return cnt == null ? 0 : cnt;
+    }
+
+    public ToggleResult toggleLike(Long userId, Long fundingId) {
+        if (userId == null) throw new IllegalStateException("로그인이 필요합니다.");
+        boolean already = fundingMapper.likeExists(fundingId, userId) > 0;
+        if (already) {
+            fundingMapper.deleteLike(fundingId, userId);
+            fundingMapper.decrementLikeCount(fundingId);
+        } else {
+            fundingMapper.insertLike(fundingId, userId);
+            fundingMapper.incrementLikeCount(fundingId);
+        }
+        return new ToggleResult(!already, likeCount(fundingId));
+    }
+
+    public static class ToggleResult {
+        public final boolean liked;
+        public final int likeCount;
+        public ToggleResult(boolean liked, int likeCount) {
+            this.liked = liked;
+            this.likeCount = likeCount;
+        }
+    }
 }

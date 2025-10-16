@@ -46,9 +46,13 @@ public class FundingController {
     }
 
     @GetMapping("/funding-detail-view")
-    public String fundingDetailPage(@RequestParam("fundingId") Long fundingId, Model model) {
+    public String fundingDetailPage(@RequestParam("fundingId") Long fundingId, HttpSession session, Model model) {
         fundingBO.increaseViewCount(fundingId);
         Funding funding = fundingBO.getFundingById(fundingId);
+
+        Long userId = (Long) session.getAttribute("userId");
+        model.addAttribute("liked", fundingBO.isLiked(userId, fundingId));
+        model.addAttribute("likeCount", fundingBO.likeCount(fundingId));
         model.addAttribute("funding", funding);
         return "funding/fundingDetail";
     }

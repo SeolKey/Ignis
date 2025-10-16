@@ -37,4 +37,12 @@ public interface FundingMapper {
 
     // ✅ 긴급 펀딩글 1개 조회
     Funding selectEmergencyFunding();
+
+    int incrementLikeCount(@Param("fundingId") Long fundingId);
+    int decrementLikeCount(@Param("fundingId") Long fundingId);
+    Integer selectLikeCount(@Param("fundingId") Long fundingId);
+
+    int likeExists(@Param("fundingId") Long fundingId, @Param("userId") Long userId);
+    int insertLike(@Param("fundingId") Long fundingId, @Param("userId") Long userId);
+    int deleteLike(@Param("fundingId") Long fundingId, @Param("userId") Long userId);
 }

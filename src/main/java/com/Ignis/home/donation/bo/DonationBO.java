@@ -128,5 +128,41 @@ public class DonationBO {
         return donationMapper.selectEmergencyDonation();
     }
 
+    public boolean isLiked(Long userId, Long donationId) {
+        if (userId == null) return false;
+        return donationMapper.likeExists(donationId, userId) > 0;
+    }
+
+    public int likeCount(Long donationId) {
+        Integer cnt = donationMapper.selectLikeCount(donationId);
+        return cnt == null ? 0 : cnt;
+    }
+
+    public ToggleResult toggleLike(Long userId, Long donationId) {
+        if (userId == null) {
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+        boolean already = donationMapper.likeExists(donationId, userId) > 0;
+        if (already) {
+            donationMapper.deleteLike(donationId, userId);
+            donationMapper.decrementLikeCount(donationId);
+        } else {
+            donationMapper.insertLike(donationId, userId);
+            donationMapper.incrementLikeCount(donationId);
+        }
+        int now = likeCount(donationId);
+        return new ToggleResult(!already, now);
+    }
+
+    public static class ToggleResult {
+        public final boolean liked;
+        public final int likeCount;
+        public ToggleResult(boolean liked, int likeCount) {
+            this.liked = liked;
+            this.likeCount = likeCount;
+        }
+    }
+
+
 
 }

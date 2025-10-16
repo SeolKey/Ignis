@@ -57,4 +57,13 @@ public interface DonationMapper {
 
     // ✅ 긴급 기부글 1개 조회
     Donation selectEmergencyDonation();
+
+    int incrementLikeCount(@Param("donationId") Long donationId);
+    int decrementLikeCount(@Param("donationId") Long donationId);
+    Integer selectLikeCount(@Param("donationId") Long donationId);
+
+    int likeExists(@Param("donationId") Long donationId, @Param("userId") Long userId);
+    int insertLike(@Param("donationId") Long donationId, @Param("userId") Long userId);
+    int deleteLike(@Param("donationId") Long donationId, @Param("userId") Long userId);
+    int countLikesByDonation(@Param("donationId") Long donationId);
 }

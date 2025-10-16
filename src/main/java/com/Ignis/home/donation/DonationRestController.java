@@ -94,6 +94,36 @@ public class DonationRestController {
         return result;
     }
 
+    @PostMapping("/{donationId}/like/toggle")
+    public ResponseEntity<?> toggleLike(@PathVariable Long donationId, HttpSession session, HttpServletResponse resp) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+        }
+        try {
+            DonationBO.ToggleResult tr = donationBO.toggleLike(userId, donationId);
+            return ResponseEntity.ok(Map.of(
+                    "result", "success",
+                    "liked", tr.liked,
+                    "likeCount", tr.likeCount
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{donationId}/like/state")
+    public ResponseEntity<?> likeState(@PathVariable Long donationId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = donationBO.isLiked(userId, donationId);
+        int likeCount = donationBO.likeCount(donationId);
+        return ResponseEntity.ok(Map.of("liked", liked, "likeCount", likeCount));
+    }
+
     // 상세 JSON API
     // 상세 JSON (증가 X)
     @GetMapping("/api/{id}")

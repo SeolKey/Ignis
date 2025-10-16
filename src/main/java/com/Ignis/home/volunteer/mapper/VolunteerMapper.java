@@ -39,4 +39,12 @@ public interface VolunteerMapper {
     // ✅ 긴급 상태 봉사글 조회용
     Volunteer selectEmergencyVolunteer();
 
+    int incrementLikeCount(@Param("volunteerId") Long volunteerId);
+    int decrementLikeCount(@Param("volunteerId") Long volunteerId);
+    Integer selectLikeCount(@Param("volunteerId") Long volunteerId);
+
+    int likeExists(@Param("volunteerId") Long volunteerId, @Param("userId") Long userId);
+    int insertLike(@Param("volunteerId") Long volunteerId, @Param("userId") Long userId);
+    int deleteLike(@Param("volunteerId") Long volunteerId, @Param("userId") Long userId);
+
 }

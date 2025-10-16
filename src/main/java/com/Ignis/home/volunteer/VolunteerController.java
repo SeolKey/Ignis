@@ -59,6 +59,8 @@ public class VolunteerController {
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);     // 프로젝트의 권한 문자열에 맞춰 변경 가능
 
         model.addAttribute("canViewParticipantList", isOwner || isAdmin); // ✅ 이게 있어야 버튼이 보임
+        model.addAttribute("liked", volunteerBO.isLiked(volunteerId, me));
+        model.addAttribute("likeCount", volunteerBO.likeCount(volunteerId));
         return "volunteer/volunteerDetail";
     }
 }

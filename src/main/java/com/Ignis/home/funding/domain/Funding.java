@@ -21,4 +21,5 @@ public class Funding {
     private LocalDateTime updatedAt;
     private Integer viewCount;
     private boolean emergency;
+    private Integer likeCount;
 }
