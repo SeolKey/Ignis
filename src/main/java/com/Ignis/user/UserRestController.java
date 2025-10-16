@@ -83,6 +83,7 @@ public class UserRestController {
         Object rawId = session.getAttribute("userId");
         String loginId = (String) session.getAttribute("userLoginId");
         String name = (String) session.getAttribute("userName");
+        String role = (String) session.getAttribute("userRole"); // ✅ 추가
 
         Long userId = null;
         if (rawId instanceof Number) {
@@ -100,6 +101,7 @@ public class UserRestController {
         res.put("userId", userId);
         res.put("userLoginId", loginId);
         res.put("userName", name);
+        res.put("role", role != null ? role : "USER"); // ✅ 기본값 USER
         return res;
     }
 

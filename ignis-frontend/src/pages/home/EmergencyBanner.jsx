@@ -1,78 +1,118 @@
-import React from 'react';
-import { Button, Tag, Tooltip } from 'antd';
-import { AlertOutlined, ArrowRightOutlined, FireFilled } from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Button, Tag } from 'antd';
+import { ExclamationCircleOutlined, FireOutlined, AlertOutlined } from '@ant-design/icons';
 
-/**
- * 긴급 배너
- * - severity: 'critical' | 'warning' | 'info'
- * - title, message: 메인 카피
- * - updatedAt: 마지막 업데이트(문자열)
- * - actions: [{ label, onClick }] 형태(선택)
- * - donateHref / detailHref: CTA 링크(선택)
- */
 export default function EmergencyBanner({
-  severity = 'critical',
-  title = '국가적 재난 안내',
-  message = '현재 산불/재난이 발생했습니다. 안전 수칙을 확인하고, 긴급 모금에 참여해주세요.',
-  updatedAt,              // e.g. '2025-10-14 17:30'
-  donateHref,             // e.g. '/funding/emergency/123'
-  detailHref,             // e.g. '/notice/emergency'
-  actions = [],
+  ribbon = '긴급',
+  severity = 'red',        // 'red' | 'orange' | 'yellow'
+  title,                   
+  subtitle,                // 서브 카피 (있으면 사용)
+  ctaText = '자세히 보기',
+  onClickCta,
+  endAt,                   // 남은 시간 표기용 (옵션)
+  count,                   // 긴급 항목 개수(옵션) → 'N건 진행 중' 배지
 }) {
-  const colorMap = {
-    critical: '#ff4d4f',
-    warning: '#faad14',
-    info: '#1677ff',
-  };
-  const color = colorMap[severity] || colorMap.critical;
+  const color = useMemo(() => {
+    switch (severity) {
+      case 'orange': return '#fa8c16';
+      case 'yellow': return '#fadb14';
+      default: return '#ff4d4f';
+    }
+  }, [severity]);
+
+  const remain = useMemo(() => {
+    if (!endAt) return null;
+    const ms = new Date(endAt).getTime() - Date.now();
+    if (!isFinite(ms) || ms <= 0) return '마감 임박';
+    const h = Math.floor(ms / 1000 / 60 / 60);
+    const d = Math.floor(h / 24);
+    if (d >= 1) return `${d}일 남음`;
+    return `${h}시간 남음`;
+  }, [endAt]);
+
+  // 통일 카피(백엔드 타이틀 없으면 이걸 사용)
+  const headline = title || '긴급 도움이 필요합니다';
+  const subcopy  = subtitle || '지금 가장 시급한 곳에 손을 보태주세요.';
 
   return (
-    <div className="emergency-banner" role="region" aria-live="polite">
-      <div className="emg-bg" />
-      <div className="emg-left">
-        <div className="emg-badge">
-          <FireFilled />
-          <span>긴급 안내</span>
-          <Tag color="red" style={{ marginLeft: 8, borderRadius: 999 }}>
-            {severity.toUpperCase()}
+    <div
+      className="emg-banner"
+      style={{
+        // 통일 배경 (이미지 사용 안 함)
+        background:
+          'radial-gradient(1200px 400px at -10% -40%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%),' +
+          'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.78) 60%, rgba(0,0,0,0.72) 100%)',
+        border: `1px solid rgba(255,255,255,0.08)`,
+        borderRadius: 16,
+        boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
+        overflow: 'hidden',
+        position: 'relative',
+        padding: '44px 28px',
+        minHeight: 170,
+      }}
+    >
+      {/* 상단 리본 / 진행건수 / 남은시간 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 12,
+          left: 12,
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+        }}
+      >
+        <Tag color={color} style={{ fontWeight: 700 }}>
+          <FireOutlined /> {ribbon}
+        </Tag>
+        {typeof count === 'number' && count > 1 && (
+          <Tag style={{ fontWeight: 600 }}>
+            {count}건 진행 중
           </Tag>
-        </div>
-        <h2 className="emg-title">{title}</h2>
-        <p className="emg-desc">{message}</p>
-        {updatedAt && (
-          <p className="emg-update">마지막 업데이트: <b>{updatedAt}</b></p>
         )}
-        <div className="emg-actions">
-          {detailHref && (
-            <Button
-              size="large"
-              onClick={() => (window.location.href = detailHref)}
-              icon={<AlertOutlined />}
-            >
-              자세히 보기
-            </Button>
-          )}
-          {donateHref && (
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => (window.location.href = donateHref)}
-              icon={<ArrowRightOutlined />}
-            >
-              긴급 모금 참여
-            </Button>
-          )}
-          {actions?.map((a, i) => (
-            <Button key={i} size="large" onClick={a.onClick}>{a.label}</Button>
-          ))}
+        {remain && <Tag>{remain}</Tag>}
+      </div>
+
+      {/* 본문 */}
+      <div style={{ display: 'grid', gap: 10 }}>
+        <h2 style={{ color: '#fff', margin: 0, fontSize: 26, fontWeight: 800, letterSpacing: 0.2 }}>
+          <ExclamationCircleOutlined style={{ marginRight: 8, color }} />
+          {headline}
+        </h2>
+        <p style={{ color: 'rgba(255,255,255,0.92)', margin: 0, lineHeight: 1.55 }}>
+          {subcopy}
+        </p>
+
+        <div style={{ marginTop: 6 }}>
+          <Button
+            size="large"
+            type="primary"
+            onClick={onClickCta}
+            icon={<AlertOutlined />}
+            style={{
+              background: color,
+              borderColor: color,
+              fontWeight: 700,
+            }}
+          >
+            {ctaText}
+          </Button>
         </div>
       </div>
 
-      <div className="emg-right">
-        <Tooltip title="안전을 가장 먼저 확인하세요">
-          <div className="emg-pulse" style={{ borderColor: color }} />
-        </Tooltip>
-      </div>
+      {/* 하단 강조 바 */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 4,
+          background: color,
+          opacity: 0.9,
+        }}
+      />
     </div>
   );
 }

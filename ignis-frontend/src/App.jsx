@@ -5,6 +5,7 @@ import './App.css';
 import Home from './pages/home/Home';
 import MyPage from './pages/mypage/MyPage';
 import SearchAll from './pages/search/SearchAll.jsx';
+import EmergencyHub from './pages/emergency/EmergencyHub';
 
 /* ========== 인증 ========== */
 import LoginPage from './pages/LoginPage';
@@ -51,6 +52,7 @@ function App() {
       <Route path="/payment" element={<PaymentPage />} />
       <Route path="/mypage" element={<MyPage />} />
       <Route path="/search" element={<SearchAll endpoint="/search" />} />
+      <Route path="/emergency" element={<EmergencyHub />} />
 
       {/* ===== 인증 ===== */}
       <Route path="/login" element={<LoginPage />} />
