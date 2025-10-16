@@ -1,4 +1,3 @@
-// src/pages/funding/FundingList.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { message, Button, Carousel, Typography, Spin, Segmented, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +5,7 @@ import Layout from '../../components/Layout';
 import '../../styles/funding/FundingList.css';
 import fallback from '../../assets/testImage.png';
 import { EyeOutlined } from '@ant-design/icons';
+import "../../styles/Banner.css";
 
 const { Title, Paragraph } = Typography;
 
@@ -142,13 +142,12 @@ const FundingList = () => {
             {adBanners.map((b, i) => (
               <div key={i}>
                 <div
-                  className="ad-slide"
-                  style={{ backgroundImage: `url(${b.img})` }}
+                  className="ad-slide ad-funding"
+
                   onClick={() => b.href && navigate(b.href)}
                   role="button"
                 >
                   <div className="ad-overlay">
-                    <div className="ad-badge">AD</div>
                     <div className="ad-text">
                       <h3 className="ad-title">{b.title}</h3>
                       <p className="ad-desc">{b.desc}</p>

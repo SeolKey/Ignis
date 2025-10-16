@@ -131,13 +131,12 @@ export default function VolunteerList() {
             {adBanners.map((b, i) => (
               <div key={i}>
                 <div
-                  className="ad-slide"
-                  style={{ backgroundImage: `url(${b.img})` }}
+                  className="ad-slide ad-vol"
+
                   onClick={() => b.href && navigate(b.href)}
                   role="button"
                 >
                   <div className="ad-overlay">
-                    <div className="ad-badge">AD</div>
                     <div className="ad-text">
                       <h3 className="ad-title">{b.title}</h3>
                       <p className="ad-desc">{b.desc}</p>

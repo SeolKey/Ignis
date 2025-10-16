@@ -220,3 +220,105 @@
 .donation-card:hover{ transform:translateY(-5px); box-shadow:0 10px 24px rgba(0,0,0,.12); }
 .donation-card img.donation-image{ width:100%; height:180px; object-fit:cover; background:#f3f4f6; }
 .donation-card p{ margin:12px 14px 16px; font-weight:600; font-size:15px; color:#111; line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+
+/* ── DailyQuoteCard glassmorphism style ───────────────── */
+.daily-quote-card {
+  background: radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.35) 100%)
+              ,linear-gradient(180deg, rgba(255,255,255,0.25), rgba(255,255,255,0.05));
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.daily-quote-card .dq-head {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+}
+
+.daily-quote-card .dq-quote {
+  margin-top: 4px;
+}
+
+.daily-quote-card .dq-text {
+  font-size: 14.5px;
+  line-height: 1.6;
+  display: block;
+}
+
+.daily-quote-card .dq-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12.5px;
+}
+
+/* ==== EMERGENCY BANNER ==== */
+.emergency-banner {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 32px;
+  border-radius: 20px;
+  padding: 28px 24px;
+  color: #fff;
+  display: grid;
+  grid-template-columns: 1.6fr .4fr;
+  gap: 16px;
+  box-shadow: 0 8px 28px rgba(255, 77, 79, .25);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(255, 77, 79, .65) 0%, rgba(255, 77, 79, .35) 35%, rgba(0,0,0,.25) 100%),
+    linear-gradient(135deg, #ff7875 0%, #ff4d4f 30%, #d9363e 100%);
+}
+
+.emergency-banner .emg-bg {
+  position: absolute;
+  inset: -30%;
+  background:
+    radial-gradient(40% 40% at 20% 10%, rgba(255,255,255,.25), transparent 70%),
+    radial-gradient(50% 50% at 110% -10%, rgba(255,255,255,.12), transparent 80%);
+  animation: emg-shine 7s linear infinite;
+  pointer-events: none;
+}
+@keyframes emg-shine { 0%{transform: rotate(0deg);} 100%{transform: rotate(360deg);} }
+
+.emg-left { position: relative; z-index: 1; }
+.emg-badge {
+  display:flex; align-items:center; gap:10px;
+  font-weight:700; letter-spacing:.2px;
+  opacity:.95;
+}
+.emg-title { margin:10px 0 6px; font-size:28px; font-weight:800; letter-spacing:-.3px; }
+.emg-desc  { margin:0 0 10px; font-size:16px; opacity:.95; }
+.emg-update{ margin:0 0 14px; font-size:13px; opacity:.9; }
+
+.emg-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+.emg-right {
+  display:flex; align-items:center; justify-content:center;
+  position: relative; z-index: 1;
+}
+.emg-pulse {
+  width: 96px; height: 96px; border-radius: 999px;
+  border: 4px solid #fff;
+  position: relative;
+  animation: emg-pulse 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 8px rgba(255,255,255,.15), 0 0 0 16px rgba(255,255,255,.07);
+}
+@keyframes emg-pulse {
+  0%   { transform: scale(0.96); opacity: .9; }
+  70%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(0.96); opacity: .9; }
+}
+
+@media (max-width: 768px) {
+  .emergency-banner {
+    grid-template-columns: 1fr;
+    padding: 22px 18px;
+  }
+  .emg-title { font-size: 22px; }
+  .emg-desc  { font-size: 15px; }
+}

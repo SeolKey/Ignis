@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import "../../styles/donation/DonationList.css";
 import fallback from '../../assets/testImage.png';
+import "../../styles/Banner.css";
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -130,18 +132,18 @@ export default function DonationList() {
             {adBanners.map((b, i) => (
               <div key={i}>
                 <div
-                  className="ad-slide"
-                  style={{ backgroundImage: `url(${b.img})` }}
+                  className="ad-slide ad-donation"
+
                   onClick={() => b.href && navigate(b.href)}
                   role="button"
                 >
                   <div className="ad-overlay">
-                    <div className="ad-badge">AD</div>
                     <div className="ad-text">
                       <h3 className="ad-title">{b.title}</h3>
                       <p className="ad-desc">{b.desc}</p>
                     </div>
                   </div>
+
                 </div>
               </div>
             ))}
@@ -154,7 +156,7 @@ export default function DonationList() {
           <Paragraph className="donation-sub">따뜻한 마음을 함께 나누어주세요 💙</Paragraph>
         </div>
 
-        
+
         <div className="donation-controls">
           <Space>
             <Segmented
@@ -206,7 +208,7 @@ export default function DonationList() {
                       {org && <Tag color="blue" className="donation-org-tag">{org}</Tag>}
                       <p className="ignis-title">{item.title}</p>
 
-                        <Progress percent={percent} size="small" status="active" />
+                      <Progress percent={percent} size="small" status="active" />
                     </div>
                   </div>
                 );

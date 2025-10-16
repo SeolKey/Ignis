@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import '../../styles/home/Home.css';
 import testImage from '../../assets/testImage.png';
 import HomeGridSection from './HomeGridSection';
+import DailyQuoteCard from './DailyQuoteCard';
 import { Card, Segmented, Space, message } from 'antd';
 import { HeartTwoTone, SmileTwoTone, GiftTwoTone } from "@ant-design/icons";
 
@@ -99,7 +100,7 @@ export default function Home() {
     const src = recTab === '전체'
       ? combinedRecommend
       : combinedRecommend.filter((x) => x.type === recTab);
-    return src.slice(0, 6);
+    return src.slice(0, 10);
   }, [combinedRecommend, recTab]);
 
   return (
@@ -183,6 +184,7 @@ export default function Home() {
                 />
               </Space>
             </Card>
+            <DailyQuoteCard />
           </div>
         </aside>
       </div>

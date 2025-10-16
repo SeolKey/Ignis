@@ -1,0 +1,104 @@
+/* =============== 공통 배너 베이스 =============== */
+.ad-slide {
+  position: relative;
+  height: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+
+  /* 페이지별 컬러 변수 (없으면 기본값 사용) */
+  --c1: var(--banner-grad-start, #f3f6ff);
+  --c2: var(--banner-grad-mid,   #e8f6f1);
+  --c3: var(--banner-grad-end,   #f9efe7);
+
+  /* 멀티 레이어 그라디언트 */
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(255,255,255,.25), transparent 55%),
+    radial-gradient(120% 120% at 100% 100%, rgba(255,255,255,.2), transparent 50%),
+    linear-gradient(135deg, var(--c1) 0%, var(--c2) 45%, var(--c3) 100%);
+  filter: saturate(1.03);
+}
+
+/* 은은한 노이즈 패턴 */
+.ad-slide::before {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(rgba(255,255,255,.12) 1px, transparent 1.2px),
+    radial-gradient(rgba(0,0,0,.03) 1px, transparent 1.2px);
+  background-size: 22px 22px, 28px 28px;
+  background-position: 0 0, 10px 10px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* 소프트한 움직임(감속 모션) */
+.ad-slide::after {
+  content: "";
+  position: absolute; inset: -20%;
+  background: conic-gradient(from 0deg,
+    transparent 0 25%,
+    rgba(255,255,255,.18) 25% 35%,
+    transparent 35% 60%,
+    rgba(255,255,255,.10) 60% 70%,
+    transparent 70% 100%);
+  filter: blur(24px);
+  animation: shimmer 14s ease-in-out infinite alternate;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+@keyframes shimmer {
+  0%   { transform: translate3d(-4%, -2%, 0) rotate(0.5deg); opacity: .55; }
+  100% { transform: translate3d( 4%,  2%, 0) rotate(-0.5deg); opacity: .85; }
+}
+
+/* 접근성: 모션 최소화 */
+@media (prefers-reduced-motion: reduce) {
+  .ad-slide::after { animation: none; opacity: .7; }
+}
+
+/* 글래스 오버레이(텍스트 가독성) */
+.ad-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  padding: 28px;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.06) 55%, rgba(255,255,255,0) 100%);
+  backdrop-filter: blur(4px);
+}
+
+.ad-text  { color: #1f2333; max-width: 640px; }
+.ad-title { margin: 0 0 8px; font-size: 28px; font-weight: 800; letter-spacing: -0.2px; }
+.ad-desc  { margin: 0; opacity: .9; font-weight: 500; line-height: 1.45; }
+
+/* 다크 모드 대비 자동 보정(선택) */
+@media (prefers-color-scheme: dark) {
+  .ad-text  { color: #ffffff; }
+  .ad-overlay {
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.12) 55%, rgba(0,0,0,0) 100%);
+    backdrop-filter: blur(6px);
+  }
+}
+
+/* =============== 페이지별 팔레트 =============== */
+/* Donation: 베이지 ↔ 하늘 */
+.ad-donation {
+  --banner-grad-start: #f8ede3;
+  --banner-grad-mid:   #e7f1ff;
+  --banner-grad-end:   #f6f6ff;
+}
+
+/* Funding: 코발트 ↔ 라일락 */
+.ad-funding {
+  --banner-grad-start: #d7e8ff;
+  --banner-grad-mid:   #e6dbff;
+  --banner-grad-end:   #f7f0ff;
+}
+
+/* Volunteer: 민트 ↔ 라임 */
+.ad-vol {
+  --banner-grad-start: #d8fff2;
+  --banner-grad-mid:   #e7ffe3;
+  --banner-grad-end:   #f5fff7;
+}
