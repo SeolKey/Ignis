@@ -29,11 +29,13 @@ public class FundingRestController {
             @RequestParam("title") String title,
             @RequestParam("description") String description,
             @RequestParam("maxPrice") Integer maxPrice,
-            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "mainImage", required = false) MultipartFile mainImage,
+            @RequestParam(value = "subImage", required = false) MultipartFile subImage,
             HttpSession session) {
 
         Map<String, Object> result = new HashMap<>();
         Long userId = (Long) session.getAttribute("userId");
+
         if (userId == null) {
             result.put("code", 401);
             result.put("error_message", "로그인이 필요합니다.");
@@ -49,15 +51,19 @@ public class FundingRestController {
         funding.setStatus("PENDING");
 
         try {
-            fundingBO.insertFunding(funding, file);
+            // ✅ 수정된 BO 호출 (mainImage + subImage 함께 전달)
+            fundingBO.insertFunding(funding, mainImage, subImage);
+
             result.put("result", "success");
         } catch (Exception e) {
             e.printStackTrace();
             result.put("result", "fail");
+            result.put("error_message", e.getMessage());
         }
 
         return result;
     }
+
 
     @GetMapping("/{fundingId}/like/state")
     public ResponseEntity<?> likeState(@PathVariable Long fundingId, HttpSession session) {

@@ -35,6 +35,16 @@
             height: 100px;
         }
 
+        .preview {
+            margin-top: 10px;
+        }
+
+        .preview img {
+            max-width: 100%;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
         .btn-submit {
             margin-top: 20px;
             padding: 10px 20px;
@@ -71,14 +81,44 @@
         <label for="maxPrice">목표 금액</label>
         <input type="number" id="maxPrice" name="maxPrice" required>
 
-        <label for="file">대표 이미지</label>
-        <input type="file" id="file" name="file" accept="image/*">
+        <label for="mainImage">대표 이미지</label>
+        <input type="file" id="mainImage" name="mainImage" accept="image/*">
+        <div id="mainPreview" class="preview"></div>
+
+        <label for="subImage">서브 이미지 (선택)</label>
+        <input type="file" id="subImage" name="subImage" accept="image/*">
+        <div id="subPreview" class="preview"></div>
 
         <button type="submit" class="btn-submit">작성하기</button>
     </form>
 </div>
 
 <script>
+    // ✅ 미리보기 기능
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        preview.innerHTML = "";
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                preview.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.getElementById("mainImage").addEventListener("change", (e) => {
+        previewImage(e.target, "mainPreview");
+    });
+
+    document.getElementById("subImage").addEventListener("change", (e) => {
+        previewImage(e.target, "subPreview");
+    });
+
+    // ✅ 폼 전송
     const form = document.getElementById("fundingForm");
     form.addEventListener("submit", function (e) {
         e.preventDefault();
@@ -88,18 +128,19 @@
         fetch("/funding/create", {
             method: "POST",
             body: formData
-        }).then(res => res.json())
-          .then(data => {
-              if (data.code === 1 || data.result === "success") {
-                  alert("펀딩 등록 성공!");
-                  window.location.href = "/funding/funding-list-view";
-              } else {
-                  alert("등록 실패: " + (data.errorMessage || "서버 오류"));
-              }
-          })
-          .catch(err => {
-              alert("서버 오류 발생: " + err);
-          });
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === 1 || data.result === "success") {
+                    alert("펀딩 등록 성공!");
+                    window.location.href = "/funding/funding-list-view";
+                } else {
+                    alert("등록 실패: " + (data.errorMessage || "서버 오류"));
+                }
+            })
+            .catch(err => {
+                alert("서버 오류 발생: " + err);
+            });
     });
 </script>
 

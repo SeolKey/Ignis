@@ -4,29 +4,30 @@
 
 <mapper namespace="com.Ignis.home.funding.mapper.FundingMapper">
 
-    <!-- 전체 승인된 펀딩 목록 -->
+    <!-- ✅ 승인된 펀딩 목록 -->
     <select id="selectFundingList" resultType="com.Ignis.home.funding.domain.Funding">
         SELECT
-        funding_id AS fundingId,
-        user_id AS userId,
-        title,
-        description,
-        max_price AS maxPrice,
-        current_price AS currentPrice,
-        image_path AS imagePath,
-        status,
-        reject_reason AS rejectReason,
-        created_at AS createdAt,
-        updated_at AS updatedAt,
-        view_count AS viewCount,
-        is_emergency AS emergency,   <!-- ✅ 컬럼명 매핑 수정 -->
-        like_count AS likeCount
+            funding_id AS fundingId,
+            user_id AS userId,
+            title,
+            description,
+            max_price AS maxPrice,
+            current_price AS currentPrice,
+            image_path AS imagePath,
+            sub_image_path AS subImagePath,
+            status,
+            reject_reason AS rejectReason,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency,
+            like_count AS likeCount
         FROM funding
         WHERE status = 'APPROVED'
         ORDER BY created_at DESC
     </select>
 
-    <!-- 단건 상세 -->
+    <!-- ✅ 단건 상세 -->
     <select id="selectFundingById" resultType="com.Ignis.home.funding.domain.Funding">
         SELECT
             funding_id AS fundingId,
@@ -36,6 +37,7 @@
             max_price AS maxPrice,
             current_price AS currentPrice,
             image_path AS imagePath,
+            sub_image_path AS subImagePath,
             status,
             reject_reason AS rejectReason,
             created_at AS createdAt,
@@ -47,7 +49,7 @@
         WHERE funding_id = #{fundingId}
     </select>
 
-    <!-- 등록 -->
+    <!-- ✅ 등록 -->
     <insert id="insertFunding" parameterType="com.Ignis.home.funding.domain.Funding">
         INSERT INTO funding (
             user_id,
@@ -56,6 +58,7 @@
             max_price,
             current_price,
             image_path,
+            sub_image_path,
             status,
             reject_reason,
             created_at,
@@ -70,6 +73,7 @@
                      #{maxPrice},
                      #{currentPrice},
                      #{imagePath},
+                     #{subImagePath},
                      #{status},
                      #{rejectReason},
                      NOW(),
@@ -80,7 +84,7 @@
                  )
     </insert>
 
-    <!-- PENDING 목록 -->
+    <!-- ✅ PENDING 목록 -->
     <select id="selectPendingFundingList" resultType="com.Ignis.home.funding.domain.Funding">
         SELECT
             funding_id AS fundingId,
@@ -90,6 +94,7 @@
             max_price AS maxPrice,
             current_price AS currentPrice,
             image_path AS imagePath,
+            sub_image_path AS subImagePath,
             status,
             reject_reason AS rejectReason,
             created_at AS createdAt,
@@ -102,7 +107,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <!-- 상태 업데이트 -->
+    <!-- ✅ 상태 업데이트 -->
     <update id="updateFundingStatus">
         UPDATE funding
         SET status = #{status},
@@ -111,7 +116,7 @@
         WHERE funding_id = #{fundingId}
     </update>
 
-    <!-- 긴급 토글 -->
+    <!-- ✅ 긴급 상태 업데이트 -->
     <update id="updateFundingEmergencyStatus">
         UPDATE funding
         SET is_emergency = #{emergency},
@@ -119,22 +124,23 @@
         WHERE funding_id = #{fundingId}
     </update>
 
-
+    <!-- ✅ 조회수 기준 인기 펀딩 -->
     <select id="selectMostViewedFundingList" resultType="com.Ignis.home.funding.domain.Funding">
         SELECT
-            funding_id    AS fundingId,
-            user_id       AS userId,
+            funding_id AS fundingId,
+            user_id AS userId,
             title,
             description,
-            max_price     AS maxPrice,
+            max_price AS maxPrice,
             current_price AS currentPrice,
-            image_path    AS imagePath,
+            image_path AS imagePath,
+            sub_image_path AS subImagePath,
             status,
             reject_reason AS rejectReason,
-            created_at    AS createdAt,
-            updated_at    AS updatedAt,
-            view_count    AS viewCount,
-            is_emergency  AS emergency,
+            created_at AS createdAt,
+            updated_at AS updatedAt,
+            view_count AS viewCount,
+            is_emergency AS emergency,
             like_count AS likeCount
         FROM funding
         WHERE status = 'APPROVED'
@@ -142,13 +148,16 @@
             LIMIT #{limit}
     </select>
 
+    <!-- ✅ 긴급 펀딩 1건 -->
     <select id="selectEmergencyFunding" resultType="com.Ignis.home.funding.domain.Funding">
-        SELECT * FROM funding
+        SELECT *
+        FROM funding
         WHERE is_emergency = 1
         ORDER BY created_at DESC
             LIMIT 1
     </select>
 
+    <!-- ✅ 긴급 상태 + 제목 업데이트 -->
     <update id="updateFundingEmergencyStatusAndTitle">
         UPDATE funding
         SET is_emergency = #{emergency},
@@ -157,50 +166,59 @@
         WHERE funding_id = #{fundingId}
     </update>
 
+    <!-- ✅ 조회수 증가 -->
     <update id="incrementViewCount">
         UPDATE funding
         SET view_count = view_count + 1
         WHERE funding_id = #{fundingId}
     </update>
 
+    <!-- ✅ 좋아요 수 증가 -->
     <update id="incrementLikeCount">
-        UPDATE donation
+        UPDATE funding
         SET like_count = like_count + 1,
             updated_at = NOW()
-        WHERE donation_id = #{donationId}
+        WHERE funding_id = #{fundingId}
     </update>
 
+    <!-- ✅ 좋아요 수 감소 -->
     <update id="decrementLikeCount">
-        UPDATE donation
+        UPDATE funding
         SET like_count = CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END,
             updated_at = NOW()
-        WHERE donation_id = #{donationId}
+        WHERE funding_id = #{fundingId}
     </update>
 
+    <!-- ✅ 좋아요 개수 조회 -->
     <select id="selectLikeCount" resultType="int">
-        SELECT like_count FROM donation WHERE donation_id = #{donationId}
+        SELECT like_count FROM funding WHERE funding_id = #{fundingId}
     </select>
 
+    <!-- ✅ 좋아요 존재 여부 -->
     <select id="likeExists" resultType="int">
         SELECT COUNT(*)
-        FROM donation_like
-        WHERE donation_id = #{donationId}
+        FROM funding_like
+        WHERE funding_id = #{fundingId}
           AND user_id = #{userId}
             LIMIT 1
     </select>
 
+    <!-- ✅ 좋아요 추가 -->
     <insert id="insertLike">
-        INSERT INTO donation_like (donation_id, user_id, created_at)
-        VALUES (#{donationId}, #{userId}, NOW())
+        INSERT INTO funding_like (funding_id, user_id, created_at)
+        VALUES (#{fundingId}, #{userId}, NOW())
     </insert>
 
+    <!-- ✅ 좋아요 삭제 -->
     <delete id="deleteLike">
-        DELETE FROM donation_like
-        WHERE donation_id = #{donationId}
+        DELETE FROM funding_like
+        WHERE funding_id = #{fundingId}
           AND user_id = #{userId}
     </delete>
 
-    <select id="countLikesByDonation" resultType="int">
-        SELECT COUNT(*) FROM donation_like WHERE donation_id = #{donationId}
+    <!-- ✅ 좋아요 총합 -->
+    <select id="countLikesByFunding" resultType="int">
+        SELECT COUNT(*) FROM funding_like WHERE funding_id = #{fundingId}
     </select>
+
 </mapper>

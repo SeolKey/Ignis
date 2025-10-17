@@ -6,7 +6,6 @@ import java.util.Map;
 
 import com.Ignis.common.enums.Status;
 import com.Ignis.common.upload.UploadCategory;
-import com.Ignis.home.donation.domain.Donation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,14 +26,45 @@ public class FundingBO {
     @Autowired
     private FileManagerService fileManagerService;
 
+    /** 펀딩 목록 */
     public List<Funding> getFundingList() {
         return fundingMapper.selectFundingList();
     }
 
+    /** 단일 펀딩 조회 */
     public Funding getFundingById(Long fundingId) {
         return fundingMapper.selectFundingById(fundingId);
     }
 
+    /** ✅ 수정된 insertFunding (대표 + 서브 이미지 처리) */
+    public void insertFunding(Funding funding, MultipartFile mainImage, MultipartFile subImage) {
+        try {
+            // 대표 이미지 저장 (필수)
+            String mainImageUrl = null;
+            if (mainImage != null && !mainImage.isEmpty()) {
+                mainImageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, mainImage);
+                funding.setImagePath(mainImageUrl);
+            } else {
+                funding.setImagePath(null);
+            }
+
+            // 서브 이미지 저장 (선택)
+            String subImageUrl = null;
+            if (subImage != null && !subImage.isEmpty()) {
+                subImageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, subImage);
+                // Funding 엔티티에 subImagePath 컬럼이 존재해야 함
+                funding.setSubImagePath(subImageUrl);
+            }
+
+            // DB 저장
+            fundingMapper.insertFunding(funding);
+
+        } catch (IOException e) {
+            throw new RuntimeException("파일 저장 실패", e);
+        }
+    }
+
+    /** 기존 insertFunding(React 용 등)과 충돌 피하기 위해 오버로딩 버전 유지 */
     public void insertFunding(Funding funding, MultipartFile file) {
         String imageUrl = null;
         try {
@@ -42,7 +72,7 @@ public class FundingBO {
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
         }
-        funding.setImagePath(imageUrl); // DB에는 URL 문자열 저장
+        funding.setImagePath(imageUrl);
         fundingMapper.insertFunding(funding);
     }
 
@@ -57,8 +87,9 @@ public class FundingBO {
     public void updateFundingStatus(Long fundingId, Status status, String rejectReason) {
         fundingMapper.updateFundingStatus(fundingId, status.name(), rejectReason);
     }
-    
-    public void deleteFunding (int fundingId){fundingMapper.deleteFunding(fundingId);
+
+    public void deleteFunding(int fundingId) {
+        fundingMapper.deleteFunding(fundingId);
     }
 
     public void increaseViewCount(Long fundingId) {
@@ -89,11 +120,11 @@ public class FundingBO {
         );
     }
 
-
     public Funding getEmergencyFunding() {
         return fundingMapper.selectEmergencyFunding();
     }
 
+    // ===== 좋아요 관련 =====
     public boolean isLiked(Long userId, Long fundingId) {
         if (userId == null) return false;
         return fundingMapper.likeExists(fundingId, userId) > 0;

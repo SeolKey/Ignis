@@ -15,6 +15,7 @@ public class Funding {
     private Integer maxPrice;
     private Integer currentPrice;
     private String imagePath;
+    private String subImagePath;
     private String status;         // PENDING / APPROVED / REJECTED
     private String rejectReason;
     private LocalDateTime createdAt;
