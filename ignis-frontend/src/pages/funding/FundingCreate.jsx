@@ -1,3 +1,4 @@
+// src/pages/FundingCreate.jsx
 import React, { useMemo, useState } from "react";
 import {
   Form,
@@ -32,10 +33,9 @@ const FundingCreate = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
-  // 대표 이미지(단일)
+  // 대표 이미지(필수), 상세 내용 이미지(선택 → subImage로 전송)
   const [file, setFile] = useState(null);
-  // 상세 이미지(다중)
-  const [detailFiles, setDetailFiles] = useState([]);
+  const [detailImage, setDetailImage] = useState(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -46,17 +46,9 @@ const FundingCreate = () => {
     setFile(f);
   };
 
-  const handleDetailChange = ({ fileList }) => {
-    // 이미지 파일만, 최대 10장 권장
-    const sanitized = (fileList || [])
-      .slice(0, 10)
-      .filter((f) => {
-        const ok = (f.type || "").startsWith("image/");
-        if (!ok) message.warning("이미지 파일만 업로드할 수 있습니다.");
-        return ok;
-      })
-      .map((f) => f.originFileObj || f);
-    setDetailFiles(sanitized);
+  const handleDetailImageChange = (info) => {
+    const f = info?.fileList?.[0]?.originFileObj ?? null;
+    setDetailImage(f);
   };
 
   const onFinish = async (values) => {
@@ -64,6 +56,7 @@ const FundingCreate = () => {
       message.error("대표 이미지를 첨부해 주십시오.");
       return;
     }
+    // 숫자만 전송
     const mp = String(values.maxPrice ?? "").replace(/[^0-9]/g, "");
     if (!mp) {
       message.error("목표 금액을 숫자로 입력해 주십시오.");
@@ -75,16 +68,13 @@ const FundingCreate = () => {
     formData.append("description", values.description ?? "");
     formData.append("maxPrice", mp);
     formData.append("accountNumber", values.accountNumber ?? "");
-    formData.append("file", file); // 대표 이미지
-
-    // 상세 이미지(여러 장) — Donation과 동일한 키로 전송
-    detailFiles.forEach((df, idx) => {
-      if (df) formData.append(`detailFiles[${idx}]`, df, df.name || `detail_${idx}.jpg`);
-    });
+    formData.append("file", file); // 대표 이미지 (필수)
+    // ✅ 상세 내용 이미지(선택) → 컨트롤러 @RequestParam("subImage") 로 받음
+    if (detailImage) formData.append("subImage", detailImage);
 
     try {
       setSubmitting(true);
-      const res = await fetch("/funding/create", {
+      const res = await fetch("/funding/react/create", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -94,7 +84,7 @@ const FundingCreate = () => {
       try {
         json = await res.json();
       } catch {
-        // JSON 없이 200 OK일 수 있음
+        // JSON 없이 200 OK일 수도 있음
       }
 
       if (res.status === 401) {
@@ -103,12 +93,22 @@ const FundingCreate = () => {
         return;
       }
 
-      if (res.ok && (json?.result === "success" || Object.keys(json).length === 0)) {
+      // ✅ 성공: 요청대로 '홈'으로 이동
+      if (res.ok && (json?.result === "success" || json?.result === "성공" || Object.keys(json).length === 0)) {
         message.success("펀딩 등록이 완료되었습니다! (관리자 승인 후 공개됩니다)");
-        navigate("/funding");
-      } else {
-        message.error(json?.error || `등록 실패 (HTTP ${res.status})`);
+        navigate("/"); // ← 홈 이동
+        return;
       }
+
+      // ✅ 서버 오류(500+)여도 홈으로 이동 (DB 반영 가능성 고려)
+      if (res.status >= 500) {
+        message.warning("등록 요청은 접수되었을 수 있어요. 홈에서 목록을 확인해 주세요.");
+        navigate("/"); // ← 홈 이동
+        return;
+      }
+
+      // 그 외 4xx
+      message.error(json?.error || `등록 실패 (HTTP ${res.status})`);
     } catch (err) {
       console.error("업로드 실패:", err);
       message.error("펀딩 등록 중 오류가 발생했습니다.");
@@ -218,28 +218,29 @@ const FundingCreate = () => {
               </Dragger>
             </Form.Item>
 
-            {/* 상세 이미지 (여러 장) */}
+            {/* 상세 내용 이미지 (선택) → subImage */}
             <Card
               className="funding-detail-card"
               title="상세 내용 이미지 (선택)"
-              extra={<Text type="secondary">권장 1200×800px · 최대 10장</Text>}
+              extra={<Text type="secondary">권장 1200×800px · 1장</Text>}
             >
-              <Form.Item name="detailFiles" tooltip="이미지 순서는 업로드 순서대로 저장됩니다.">
+              <Form.Item name="detailImage" tooltip="상세 설명에 사용할 보조 이미지를 1장 업로드하세요.">
                 <Dragger
-                  multiple
+                  multiple={false}
                   accept="image/*"
                   beforeUpload={() => false}
-                  onChange={handleDetailChange}
-                  listType="picture"
+                  onChange={handleDetailImageChange}
+                  maxCount={1}
+                  showUploadList={false}
                 >
                   <p className="ant-upload-drag-icon"><InboxOutlined /></p>
                   <p className="ant-upload-text">클릭하거나 이미지를 이곳에 드래그하여 업로드해 주십시오.</p>
-                  <p className="ant-upload-hint">최대 10장 · 이미지 파일만 가능</p>
+                  <p className="ant-upload-hint">최대 1장 · 이미지 파일만 가능</p>
+                  {detailImage?.name && (
+                    <p className="funding-upload-name">업로드된 파일: {detailImage.name}</p>
+                  )}
                 </Dragger>
               </Form.Item>
-              {detailFiles?.length > 0 && (
-                <Paragraph type="secondary">업로드된 파일: {detailFiles.length}개 (순서: 위 → 아래)</Paragraph>
-              )}
             </Card>
 
             {/* 동의영역 */}

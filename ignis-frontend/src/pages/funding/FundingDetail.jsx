@@ -20,7 +20,6 @@ import testImage from '../../assets/testImage.png';
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
-// 날짜 포맷 (yyyy.mm.dd)
 const fmtDate = (iso) => {
   if (!iso) return '';
   const d = new Date(iso);
@@ -42,10 +41,11 @@ export default function FundingDetail() {
 
   const [loading, setLoading] = useState(true);
   const [item, setItem] = useState(null);
+
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [relatedFundings, setRelatedFundings] = useState([]);
 
-  // 상세 불러오기
   useEffect(() => {
     let ignore = false;
     (async () => {
@@ -68,7 +68,6 @@ export default function FundingDetail() {
       }
     })();
 
-    // 함께 보는 펀딩 (관련 → 인기순 → 최신순 폴백)
     (async () => {
       try {
         const candidates = [
@@ -91,10 +90,14 @@ export default function FundingDetail() {
             );
             setRelatedFundings(sorted.slice(0, 6));
             return;
-          } catch { /* try next */ }
+          } catch {
+            //
+          }
         }
         setRelatedFundings([]);
-      } catch {/* ignore */}
+      } catch {
+        //
+      }
     })();
 
     return () => { ignore = true; };
@@ -102,7 +105,25 @@ export default function FundingDetail() {
 
   const contentId = item?.fundingId ?? item?.id ?? Number(id);
 
-  // 조회수 1회 증가 (쿨다운은 훅 내부)
+  // 좋아요 상태
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/funding/api/${id}/like/state`, { credentials: 'include' });
+        const out = await res.json().catch(() => ({}));
+        if (out?.result === 'success') {
+          setLiked(!!out.liked);
+          setLikeCount(Number(out.likeCount || 0));
+        } else if (typeof out?.likeCount !== 'undefined') {
+          setLiked(!!out.liked);
+          setLikeCount(Number(out.likeCount || 0));
+        }
+      } catch {
+        //
+      }
+    })();
+  }, [id]);
+
   useViewOnce({
     id,
     type: 'funding',
@@ -112,25 +133,22 @@ export default function FundingDetail() {
     },
   });
 
-  // 진행률
   const current = Number(item?.currentPrice || 0);
-  const target  = Number(item?.maxPrice || 0);
+  const target = Number(item?.maxPrice || 0);
   const progress = useMemo(
     () => (target ? Math.min(100, Math.floor((current * 100) / target)) : 0),
     [current, target]
   );
 
   const start = fmtDate(item?.createdAt);
-  const end   = item?.endAt ? fmtDate(item.endAt) : '';
+  const end = item?.endAt ? fmtDate(item.endAt) : '';
 
-  // D-day
   const dDay = (() => {
     if (!item?.endAt) return null;
     const rest = Math.ceil((new Date(item.endAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return rest >= 0 ? `D-${rest}` : '종료';
   })();
 
-  // Hero 이미지(여러 장이면 첫 장)
   const heroImage = useMemo(() => {
     const arr = Array.isArray(item?.images)
       ? item.images
@@ -141,6 +159,8 @@ export default function FundingDetail() {
     return toImageUrl(pick);
   }, [item]);
 
+  const subImage = useMemo(() => toImageUrl(item?.subImagePath), [item]);
+
   const share = async () => {
     try {
       if (navigator.share) {
@@ -149,10 +169,34 @@ export default function FundingDetail() {
         await navigator.clipboard.writeText(window.location.href);
         message.success('링크가 복사되었어요.');
       }
-    } catch { /* noop */ }
+    } catch {
+      //
+    }
   };
 
-  const toggleLike = () => setLiked((v) => !v);
+  const toggleLike = async () => {
+    try {
+      const res = await fetch(`/funding/api/${id}/like/toggle`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      const out = await res.json().catch(() => ({}));
+      if (out?.result === 'success') {
+        setLiked(!!out.liked);
+        setLikeCount(Number(out.likeCount || 0));
+      } else {
+        message.error(out?.error || '좋아요 처리에 실패했어요.');
+      }
+    } catch {
+      message.error('좋아요 처리 중 오류가 발생했어요.');
+    }
+  };
 
   const goPayment = () => {
     const amount = Number(item?.maxPrice || 0);
@@ -171,14 +215,9 @@ export default function FundingDetail() {
 
   return (
     <Layout>
-      {/* ───────── Hero (기부 상세 스타일과 동일) ───────── */}
       <section className="funding-hero">
         <div className="funding-hero-container">
-          <img
-            src={heroImage || testImage}
-            alt="hero"
-            onError={(e) => (e.currentTarget.src = testImage)}
-          />
+          <img src={heroImage || testImage} alt="hero" onError={(e) => (e.currentTarget.src = testImage)} />
           <div className="funding-hero-overlay" />
           <div className="funding-hero-inner">
             {dDay && <span className={`funding-dtag ${dDay === '종료' ? 'ended' : ''}`}>{dDay}</span>}
@@ -194,20 +233,34 @@ export default function FundingDetail() {
         </div>
       </section>
 
-      {/* ───────── 본문 (폭 Hero와 맞춤) ───────── */}
       <div className="funding-main-section">
         <Row gutter={[24, 24]}>
-          {/* 좌측: 내용 */}
           <Col xs={24} md={16}>
             <Tabs defaultActiveKey="detail" className="funding-custom-tabs">
               <TabPane tab="프로젝트 소개" key="detail">
+                {/* ✅ 서브 이미지 추가 부분 */}
+                {item?.subImagePath && (
+                  <div className="funding-subimage-wrap">
+                    <img
+                      src={subImage}
+                      alt="sub"
+                      className="funding-subimage"
+                      onError={(e) => (e.currentTarget.src = testImage)}
+                    />
+                    {item?.subImageDescription && (
+                      <Paragraph className="funding-subimage-desc">
+                        {item.subImageDescription}
+                      </Paragraph>
+                    )}
+                  </div>
+                )}
+
                 <Card className="funding-content-card" bordered={false}>
                   <Paragraph style={{ whiteSpace: 'pre-wrap' }}>
                     {item?.description || '프로젝트 설명이 등록되지 않았습니다.'}
                   </Paragraph>
                 </Card>
 
-                {/* 안내/주의 카드 */}
                 <Card className="funding-warning-card" bordered={false}>
                   <Title level={5} className="funding-warning-title">펀딩 전 꼭 확인해주세요</Title>
                   <ul className="funding-warning-list">
@@ -225,7 +278,6 @@ export default function FundingDetail() {
             </Tabs>
           </Col>
 
-          {/* 우측: 정보 위젯 + 함께 보는 펀딩 */}
           <Col xs={24} md={8}>
             <Card className="funding-info-card" bordered>
               <Title level={5}>{item?.title || '펀딩 상세'}</Title>
@@ -253,6 +305,12 @@ export default function FundingDetail() {
                     {Number(item?.viewCount ?? item?.views ?? 0).toLocaleString()}회 조회
                   </Text>
                 </div>
+                <div className="funding-metric">
+                  {liked ? <HeartFilled /> : <HeartOutlined />}
+                  <Text type="secondary" style={{ marginLeft: 6 }}>
+                    {likeCount.toLocaleString()}명이 응원했어요
+                  </Text>
+                </div>
               </div>
 
               <Progress percent={progress} showInfo={false} status="active" />
@@ -267,6 +325,7 @@ export default function FundingDetail() {
                       onClick={toggleLike}
                     >
                       {liked ? <HeartFilled /> : <HeartOutlined />}
+                      <span style={{ marginLeft: 6 }}>{likeCount.toLocaleString()}</span>
                     </button>
                   </Tooltip>
 
@@ -288,7 +347,6 @@ export default function FundingDetail() {
               </div>
             </Card>
 
-            {/* 함께 보는 펀딩 (2열) */}
             <FundingSideMiniGrid
               title="함께 보는"
               items={relatedFundings}

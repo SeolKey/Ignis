@@ -107,8 +107,7 @@ public class DonationRestController {
             return ResponseEntity.ok(Map.of(
                     "result", "success",
                     "liked", tr.liked,
-                    "likeCount", tr.likeCount
-            ));
+                    "likeCount", tr.likeCount));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -302,6 +301,53 @@ public class DonationRestController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("result", "fail", "error", e.getClass().getSimpleName() + ": " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/api/{donationId}/like/state")
+    public ResponseEntity<?> apiLikeState(@PathVariable Long donationId, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        boolean liked = false;
+        try {
+            if (userId != null) {
+                liked = donationBO.isLiked(userId, donationId);
+            }
+            int likeCount = donationBO.likeCount(donationId);
+            return ResponseEntity.ok(Map.of(
+                    "result", "success",
+                    "liked", liked,
+                    "likeCount", likeCount));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
+        }
+    }
+
+    /**
+     * 좋아요 토글 (API)
+     * - 미로그인: 401
+     * - 성공 시 현재 liked/likeCount 반환
+     */
+    @PostMapping("/api/{donationId}/like/toggle")
+    public ResponseEntity<?> apiToggleLike(@PathVariable Long donationId, HttpSession session,
+            HttpServletResponse resp) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+        }
+        try {
+            DonationBO.ToggleResult tr = donationBO.toggleLike(userId, donationId);
+            return ResponseEntity.ok(Map.of(
+                    "result", "success",
+                    "liked", tr.liked,
+                    "likeCount", tr.likeCount));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
         }
     }
 

@@ -32,7 +32,8 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.GET, "/api/home", "/").permitAll()
+                .requestMatchers(HttpMethod.GET, "/donation/**", "/volunteer/**", "/funding/**",
+            "/board/**", "/post/**", "/notice/**", "/search/**", "/mypage/**", "/admin/**").permitAll()
                 .requestMatchers(
                    "/api/user",
                     "/oauth2/**", "/login/**",
@@ -44,7 +45,8 @@ public class SecurityConfig {
                     "/api/**",
                     "/mypage/**",
                     "/volunteer/react/list", "/volunteer/react/detail/**" ,
-                    "/comment/list","/comment/create"
+                    "/comment/list","/comment/create",
+                    "/", "/index.html", "/react-app/**", "/assets/**", "/uploads/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

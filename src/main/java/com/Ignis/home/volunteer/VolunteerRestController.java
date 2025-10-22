@@ -270,4 +270,50 @@ public class VolunteerRestController {
         }
         return ResponseEntity.ok(v);
     }
+
+    @GetMapping("/api/{id}/like/state")
+public ResponseEntity<?> apiLikeState(@PathVariable("id") Long id, HttpSession session) {
+    Long userId = (Long) session.getAttribute("userId");
+    try {
+        boolean liked = false;
+        if (userId != null) {
+            liked = volunteerBO.isLiked(id, userId);
+        }
+        int likeCount = volunteerBO.likeCount(id);
+        return ResponseEntity.ok(Map.of(
+                "result", "success",
+                "liked", liked,
+                "likeCount", likeCount
+        ));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("result", "fail", "error", e.getMessage()));
+    }
+}
+
+/** 봉사 좋아요 토글 (API)
+ *  - 로그인 필요(미로그인: 401)
+ *  - 성공 시 liked/likeCount 반환
+ */
+@PostMapping("/api/{id}/like/toggle")
+public ResponseEntity<?> apiToggleLike(@PathVariable("id") Long id, HttpSession session) {
+    Long userId = (Long) session.getAttribute("userId");
+    if (userId == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+    }
+    try {
+        VolunteerBO.ToggleResult tr = volunteerBO.toggleLike(id, userId);
+        return ResponseEntity.ok(Map.of(
+                "result", "success",
+                "liked", tr.liked,
+                "likeCount", tr.likeCount
+        ));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("result", "fail", "error", e.getMessage()));
+    }
+}
 }

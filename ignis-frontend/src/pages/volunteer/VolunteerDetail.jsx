@@ -1,4 +1,3 @@
-// src/pages/volunteer/VolunteerDetail.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
@@ -10,6 +9,8 @@ import {
   ShareAltOutlined,
   TeamOutlined,
   EyeOutlined,
+  HeartOutlined,
+  HeartFilled,
 } from '@ant-design/icons';
 import Layout from '../../components/Layout';
 import '../../styles/volunteer/VolunteerDetail.css';
@@ -20,11 +21,54 @@ import VolunteerSideMiniGrid from './VolunteerSideMiniGrid.jsx';
 
 const { Title, Text, Paragraph } = Typography;
 
+
+// 🔐 마스킹 유틸
+const maskName = (name) => {
+  if (!name) return '';
+  const s = String(name).trim();
+  // 공백 포함(영문 이름 등) 처리: 각 토큰별로 마스킹
+  return s.split(/\s+/).map(tok => {
+    if (tok.length <= 1) return '*';
+    if (tok.length === 2) return tok[0] + '*';
+    return tok[0] + '*'.repeat(tok.length - 2) + tok[tok.length - 1];
+  }).join(' ');
+};
+
+const maskPhone = (phone) => {
+  if (!phone) return '';
+  const digits = String(phone).replace(/\D/g, '');
+  // 3-4-4 패턴 우선 (010 등)
+  if (digits.length >= 10) {
+    const head = digits.slice(0, 3);
+    const tail = digits.slice(-4);
+    return `${head}-****-${tail}`;
+  }
+  // 그 외: 앞 2/뒤 2만 남기고 가운데 마스킹
+  const head = digits.slice(0, 2);
+  const tail = digits.slice(-2);
+  const midLen = Math.max(1, digits.length - head.length - tail.length);
+  return `${head}${'*'.repeat(midLen)}${tail}`;
+};
+
+const maskEmail = (email) => {
+  if (!email) return '';
+  const s = String(email).trim();
+  const at = s.indexOf('@');
+  if (at <= 0) return s.replace(/.(?=..)/g, '*'); // 구조 불명: 대충 마스킹
+  const local = s.slice(0, at);
+  const domain = s.slice(at + 1);
+  const keep = Math.min(2, local.length); // 트렌드: 로컬 앞 2글자만 살리고 나머지 *
+  const maskedLocal = local.slice(0, keep) + '*'.repeat(Math.max(1, local.length - keep));
+  return `${maskedLocal}@${domain}`;
+};
+
+
 const participantCols = [
-  { title: '이름', dataIndex: 'name', key: 'name', width: '30%' },
-  { title: '전화번호', dataIndex: 'phone', key: 'phone', width: '30%' },
-  { title: '이메일', dataIndex: 'email', key: 'email', width: '40%' },
+  { title: '이름', dataIndex: 'name', key: 'name', width: '30%', render: (v) => maskName(v) },
+  { title: '전화번호', dataIndex: 'phone', key: 'phone', width: '30%', render: (v) => maskPhone(v) },
+  { title: '이메일', dataIndex: 'email', key: 'email', width: '40%', render: (v) => maskEmail(v) },
 ];
+
 
 const fmtDateTime = (v) => {
   if (!v) return '';
@@ -55,6 +99,10 @@ export default function VolunteerDetail() {
   const [loading, setLoading] = useState(true);
   const [vol, setVol] = useState(null);
   const [joined, setJoined] = useState(false);
+
+  // ✅ 좋아요 상태
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   // 참여자 모달
   const [openParticipants, setOpenParticipants] = useState(false);
@@ -91,7 +139,7 @@ export default function VolunteerDetail() {
       }
     })();
 
-    // 함께 보는 봉사 로드 (관련 → 인기순 → 최근순 폴백)
+    // 함께 보는 봉사 로드
     (async () => {
       try {
         const candidates = [
@@ -109,17 +157,16 @@ export default function VolunteerDetail() {
               : (Array.isArray(data?.items)
                   ? data.items
                   : (Array.isArray(data?.volunteerList) ? data.volunteerList : []));
-            // 인기순 정렬 보정
             const sorted = [...arr].sort(
               (a, b) => Number(b.viewCount ?? b.views ?? 0) - Number(a.viewCount ?? a.views ?? 0)
             );
-            if (!ignore) setRelatedVols(sorted.slice(0, 6));
+            setRelatedVols(sorted.slice(0, 6));
             return;
           } catch {
             // 다음 후보 시도
           }
         }
-        if (!ignore) setRelatedVols([]);
+        setRelatedVols([]);
       } catch {
         // 조용히 폴백 무시
       }
@@ -128,11 +175,31 @@ export default function VolunteerDetail() {
     return () => { ignore = true; };
   }, [id]);
 
+  // ✅ 좋아요 초기 상태 로드 (로그인 상관없이 호출)
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/volunteer/api/${id}/like/state`, { credentials: 'include' });
+        const out = await res.json().catch(() => ({}));
+        if (out?.result === 'success') {
+          setLiked(!!out.liked);
+          setLikeCount(Number(out.likeCount || 0));
+        } else if (typeof out?.likeCount !== 'undefined') {
+          // 혹시 기존 엔드포인트 포맷일 때도 대응
+          setLiked(!!out.liked);
+          setLikeCount(Number(out.likeCount || 0));
+        }
+      } catch {
+        // 조용히 무시
+      }
+    })();
+  }, [id]);
+
   // 조회수 1회 증가
   useViewOnce({
     id,
     type: 'volunteer',
-    endpoints: [`/volunteer/api/${id}/view`, `/volunteer/${id}/view`], // 프로젝트 엔드포인트 상황에 맞춰 1개만 살아도 작동
+    endpoints: [`/volunteer/api/${id}/view`, `/volunteer/${id}/view`],
     onUpdated: (views) => setVol((p) => (p ? { ...p, viewCount: views, views } : p)),
   });
 
@@ -183,6 +250,31 @@ export default function VolunteerDetail() {
       message.success(joined ? '봉사 참여가 취소되었습니다.' : '봉사에 참여했습니다.');
     } catch {
       message.error('처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // ✅ 좋아요 토글
+  const toggleLike = async () => {
+    try {
+      const res = await fetch(`/volunteer/api/${id}/like/toggle`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      const out = await res.json().catch(() => ({}));
+      if (out?.result === 'success') {
+        setLiked(!!out.liked);
+        setLikeCount(Number(out.likeCount || 0));
+      } else {
+        message.error(out?.error || '좋아요 처리에 실패했어요.');
+      }
+    } catch {
+      message.error('좋아요 처리 중 오류가 발생했어요.');
     }
   };
 
@@ -256,7 +348,7 @@ export default function VolunteerDetail() {
         </div>
       </section>
 
-      {/* ───────── 본문 (기부 상세와 동일 폭) ───────── */}
+      {/* ───────── 본문 ───────── */}
       <div className="volunteer-main-section">
         <Row gutter={[24, 24]}>
           {/* 좌측: 내용 */}
@@ -284,7 +376,7 @@ export default function VolunteerDetail() {
                         </Paragraph>
                       </Card>
 
-                      {/* 주의사항 카드 (기부 스타일 차용) */}
+                      {/* 주의사항 카드 */}
                       <Card className="volunteer-warning-card" variant="bordered">
                         <Title level={5} className="volunteer-warning-title">참여 전 꼭 확인해주세요</Title>
                         <ul className="volunteer-warning-list">
@@ -344,6 +436,14 @@ export default function VolunteerDetail() {
                     {Number(vol?.viewCount ?? vol?.views ?? 0).toLocaleString()}회 조회
                   </Text>
                 </div>
+
+                {/* ✅ 좋아요 수 */}
+                <div className="volunteer-metric">
+                  {liked ? <HeartFilled /> : <HeartOutlined />}
+                  <Text type="secondary" style={{ marginLeft: 6 }}>
+                    {likeCount.toLocaleString()}명이 응원했어요
+                  </Text>
+                </div>
               </div>
 
               <Progress percent={progress} showInfo={false} status="active" />
@@ -351,6 +451,17 @@ export default function VolunteerDetail() {
               {/* 액션 영역 */}
               <div className="action-row">
                 <div className="icon-group">
+                  {/* ✅ 좋아요 버튼 */}
+                  <button
+                    type="button"
+                    className={`icon-btn like ${liked ? 'active' : ''}`}
+                    aria-label={liked ? '좋아요 취소' : '좋아요'}
+                    onClick={toggleLike}
+                  >
+                    {liked ? <HeartFilled /> : <HeartOutlined />}
+                    <span style={{ marginLeft: 6 }}>{likeCount.toLocaleString()}</span>
+                  </button>
+
                   <button
                     type="button"
                     className="icon-btn"

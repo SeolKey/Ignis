@@ -1,0 +1,161 @@
+/* 레이아웃 */
+.search-layout {
+  background: #f7f8fa;
+  min-height: 100vh;
+}
+
+.search-content {
+  max-width: 1200px;
+  margin: 24px auto 32px;
+  padding: 0 16px;
+}
+
+/* 상단 히어로 카드 */
+.hero-card {
+  border-radius: 16px !important;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.05);
+  padding: 16px;
+}
+
+/* 타입 Chip들 (CheckableTag) */
+.type-chips .ant-tag {
+  user-select: none;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-weight: 600;
+  border: 1px solid #eee;
+  margin-right: 8px;
+}
+
+.type-chips .ant-tag-checkable:not(.ant-tag-checkable-checked):hover {
+  background: #fafafa;
+}
+
+.type-chips .ant-tag-checkable-checked {
+  background: #1677ff;
+  color: #fff;
+  border-color: #1677ff;
+}
+
+/* 결과 영역 — 결과 유무와 상관없이 충분한 높이 확보 */
+.result-section {
+  margin-top: 16px;
+  min-height: 560px;           /* ✅ 빈 상태도 공간이 좁아지지 않게 고정 */
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-box {
+  text-align: center;
+  padding: 96px 0;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-summary {
+  margin-bottom: 12px;
+}
+
+.result-card {
+  border-radius: 14px !important;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.result-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.thumb {
+  width: 130px;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #f1f3f5;
+  flex-shrink: 0;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb-empty {
+  width: 100%;
+  height: 100%;
+  color: #999;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.type-badge {
+  text-transform: uppercase;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.title {
+  margin-top: 6px;
+  margin-bottom: 4px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title a { color: inherit; }
+
+.snippet {
+  color: #666;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.meta {
+  margin-top: 6px;
+  color: #999;
+  font-size: 12px;
+}
+
+/* 페이지네이션 */
+.pager {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+}
+
+/* empty: 결과 없어도 동일한 여백/높이를 유지 */
+.empty-card {
+  border-radius: 14px !important;
+  margin-top: 12px;
+}
+
+.empty-card.fill {
+  flex: 1;                         /* ✅ 남는 공간을 꽉 채워서 '있을 때와 같은' 깊이 유지 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+/* 하단 안내 */
+.tip {
+  margin-top: 24px;
+  color: #9aa0a6;
+  font-size: 12px;
+}
+

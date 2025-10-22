@@ -235,3 +235,33 @@
 /* 세부 마감 */
 .ant-progress-inner { border-radius: 999px !important; }
 .ant-progress-bg { border-radius: 999px !important; }
+
+/* ────────────────────────────── 서브 이미지 영역 ────────────────────────────── */
+.funding-subimage-wrap {
+  width: 100%;
+  text-align: center;
+  margin: 20px 0 30px;
+}
+
+.funding-subimage {
+  width: 100%;
+  max-width: 750px;
+  border-radius: 10px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.funding-subimage-desc {
+  margin-top: 12px !important;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .funding-subimage { max-width: 100%; border-radius: 8px; }
+  .funding-subimage-desc { font-size: 13px; }
+}

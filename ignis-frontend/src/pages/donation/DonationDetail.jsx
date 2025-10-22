@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Row, Col, Card, Typography, Progress, Button, Tabs, Divider, Tooltip, message
+  Row, Col, Card, Typography, Progress, Button, Tabs, Divider, message
 } from 'antd';
 import {
   CalendarOutlined,
@@ -34,6 +34,7 @@ export default function DonationDetail() {
 
   const [donation, setDonation] = useState(null);
   const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   // 사이드 추천 데이터
   const [relatedDonations, setRelatedDonations] = useState([]);
@@ -55,6 +56,23 @@ export default function DonationDetail() {
         setDonation(data);
       } catch {
         message.error('기부 상세 정보를 불러오지 못했어요.');
+      }
+    })();
+  }, [id]);
+
+  // ✅ 좋아요 초기 상태 로드
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/donation/api/${id}/like/state`, { credentials: 'include' });
+        // state는 비로그인도 200
+        const out = await res.json().catch(() => ({}));
+        if (out?.result === 'success') {
+          setLiked(!!out.liked);
+          setLikeCount(Number(out.likeCount || 0));
+        }
+      } catch {
+        // 조용히 무시
       }
     })();
   }, [id]);
@@ -122,7 +140,30 @@ export default function DonationDetail() {
     }
   };
 
-  const toggleLike = () => setLiked((v) => !v);
+  // ✅ 좋아요 토글 (서버 연동)
+  const toggleLike = async () => {
+    try {
+      const res = await fetch(`/donation/api/${id}/like/toggle`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.status === 401) {
+        message.warning('로그인 후 이용 가능합니다.');
+        navigate('/login');
+        return;
+      }
+      const out = await res.json().catch(() => ({}));
+      if (out?.result === 'success') {
+        setLiked(!!out.liked);
+        setLikeCount(Number(out.likeCount || 0));
+      } else {
+        message.error(out?.error || '좋아요 처리에 실패했어요.');
+      }
+    } catch {
+      message.error('좋아요 처리 중 오류가 발생했어요.');
+    }
+  };
 
   const handleParticipate = async () => {
     try {
@@ -186,7 +227,7 @@ export default function DonationDetail() {
                   <Paragraph>{donation?.description || '기부 설명이 등록되지 않았습니다.'}</Paragraph>
                 </Card>
 
-                {/* ✅ 주의사항 카드 여기 추가 */}
+                {/* ✅ 주의사항 카드 */}
                 <Card className="donation-warning-card" bordered={false}>
                   <Title level={5} className="donation-warning-title">기부 전 꼭 확인해주세요</Title>
                   <ul className="donation-warning-list">
@@ -218,8 +259,19 @@ export default function DonationDetail() {
                 <div className="donation-metric"><Text type="secondary">목표 금액</Text><Text strong>{target.toLocaleString()}원</Text></div>
                 <div className="donation-metric"><Text type="secondary">현재 금액</Text><Text strong>{current.toLocaleString()}원</Text></div>
                 <div className="donation-metric"><Text type="secondary">달성률</Text><Text strong className="donation-accent">{progress}%</Text></div>
-                <div className="donation-metric"><EyeOutlined /><Text type="secondary" style={{ marginLeft: 6 }}>
-                  {(Number(donation?.viewCount ?? donation?.views ?? 0)).toLocaleString()}회 조회</Text></div>
+                <div className="donation-metric">
+                  <EyeOutlined />
+                  <Text type="secondary" style={{ marginLeft: 6 }}>
+                    {(Number(donation?.viewCount ?? donation?.views ?? 0)).toLocaleString()}회 조회
+                  </Text>
+                </div>
+                {/* ✅ 좋아요 수 표시 */}
+                <div className="donation-metric">
+                  {liked ? <HeartFilled /> : <HeartOutlined />}
+                  <Text type="secondary" style={{ marginLeft: 6 }}>
+                    {likeCount.toLocaleString()}명이 응원했어요
+                  </Text>
+                </div>
               </div>
               <Progress percent={progress} showInfo={false} status="active" />
 
@@ -232,6 +284,7 @@ export default function DonationDetail() {
                     onClick={toggleLike}
                   >
                     {liked ? <HeartFilled /> : <HeartOutlined />}
+                    <span style={{ marginLeft: 6 }}>{likeCount.toLocaleString()}</span>
                   </button>
 
                   <button
@@ -264,8 +317,6 @@ export default function DonationDetail() {
               onMore={() => navigate('/donation')}
               onClickItem={(did) => goDonation(did)}
             />
-
-
           </Col>
         </Row>
       </div>

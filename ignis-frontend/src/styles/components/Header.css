@@ -129,3 +129,50 @@
   .primary-nav { display: none; } /* 필요 시 Drawer로 대체 */
   .search-input.trendy { width: 160px; }
 }
+
+
+/* 검색 영역 래퍼 */
+.header-search-shell {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-right: 8px;
+}
+
+/* 드롭다운 셀렉트: pill + 포커스 글로우 */
+.header-type-select.trendy .ant-select-selector {
+  border-radius: 999px !important;
+  padding: 0 12px !important;
+  border-color: #e5e7eb;
+  background: #fff;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.header-type-select.trendy.ant-select-focused .ant-select-selector,
+.header-type-select.trendy .ant-select-selector:focus {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+}
+
+/* 드롭다운 패널 */
+.header-type-dropdown .ant-select-item {
+  border-radius: 8px;
+}
+
+/* 검색 인풋: pill 형태 */
+.header-search-input.trendy .ant-input-affix-wrapper {
+  border-radius: 999px !important;
+  border-color: #e5e7eb;
+  background: #fff;
+  transition: box-shadow .2s ease, border-color .2s ease;
+}
+.header-search-input.trendy .ant-input-affix-wrapper:focus,
+.header-search-input.trendy .ant-input-affix-wrapper-focused {
+  border-color: #1677ff !important;
+  box-shadow: 0 0 0 4px rgba(22, 119, 255, 0.12);
+}
+
+/* 검색 버튼 라운딩 */
+.header-search-btn {
+  border-radius: 999px;
+  padding: 0 16px;
+}
