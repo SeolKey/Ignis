@@ -40,7 +40,7 @@ function typeToHref(type, id) {
   }
 }
 
-// URL 쿼리 ↔ 상태 (FULLTEXT 제거: q, types, pageUI, size만 유지)
+// URL 쿼리 ↔ 상태
 function useQueryState() {
   const [sp, setSp] = useSearchParams();
   const q = sp.get("q") ?? "";
@@ -66,7 +66,7 @@ function useQueryState() {
   return { q, types, pageUI, size, setMany };
 }
 
-// API 호출 (FULLTEXT 파라미터 삭제)
+// API 호출 
 async function fetchSearch({ q, types, page0, size, signal }) {
   const params = new URLSearchParams({
     q: q ?? "",
@@ -276,7 +276,7 @@ export default function SearchPage() {
               </div>
             </>
           ) : (
-            // ✅ 결과가 없어도 동일한 여백/높이를 유지하도록 empty 상태도 박스 채움
+        
             <Card className="empty-card fill">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -290,13 +290,6 @@ export default function SearchPage() {
               />
             </Card>
           )}
-        </div>
-
-        <div className="tip">
-          <Space>
-            <ExclamationCircleOutlined />
-            <span>페이지는 UI 기준 1부터 시작하고, 서버는 0부터 시작합니다.</span>
-          </Space>
         </div>
       </Content>
 
