@@ -4,6 +4,7 @@ import com.Ignis.common.FileManagerService;
 import com.Ignis.common.upload.UploadCategory;
 import com.Ignis.home.volunteer.bo.VolunteerBO;
 import com.Ignis.home.volunteer.domain.Volunteer;
+
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,9 +25,9 @@ public class VolunteerRestController {
     @Autowired
     private FileManagerService fileManagerService;
 
-    // ------------------------------
-    // 1) 생성 (기존 HTML/폼용) - userId 파라미터 직접 전달
-    // ------------------------------
+    // =========================================================
+    // 1) 생성 (기존 HTML/폼용)
+    // =========================================================
     @PostMapping("/create")
     public ResponseEntity<?> createVolunteer(
             @RequestParam("title") String title,
@@ -50,21 +51,21 @@ public class VolunteerRestController {
         return (rowCount > 0)
                 ? ResponseEntity.ok(Map.of("code", 1, "result", "성공"))
                 : ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("code", 500, "errorMessage", "DB 저장 실패"));
+                .body(Map.of("code", 500, "errorMessage", "DB 저장 실패"));
     }
 
-    // ------------------------------
+    // =========================================================
     // 2) 목록 (React용)
-    // ------------------------------
+    // =========================================================
     @GetMapping("/react/list")
     public Map<String, Object> apiVolunteerList() {
         List<Volunteer> list = volunteerBO.getVolunteerList();
         return Map.of("volunteerList", list != null ? list : Collections.emptyList());
     }
 
-    // ------------------------------
+    // =========================================================
     // 3) 상세 (React용)
-    // ------------------------------
+    // =========================================================
     @GetMapping("/react/detail/{id}")
     public ResponseEntity<?> apiVolunteerDetail(@PathVariable("id") Long id) {
         Volunteer v = volunteerBO.getVolunteerById(id);
@@ -75,11 +76,12 @@ public class VolunteerRestController {
         return ResponseEntity.ok(Map.of("result", "성공", "data", v));
     }
 
-    // ------------------------------
+    // =========================================================
     // 4) 생성 (React용 멀티파트/폼)
-    // ------------------------------
-    @PostMapping(value = "/react/create", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE,
-            MediaType.MULTIPART_FORM_DATA_VALUE })
+    // =========================================================
+    @PostMapping(
+            value = "/react/create",
+            consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<?> apiVolunteerCreate(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
@@ -109,8 +111,7 @@ public class VolunteerRestController {
                 if (file != null && !file.isEmpty()) {
                     imageUrl = fileManagerService.saveFile(UploadCategory.VOLUNTEER, file);
                 } else {
-                    // DB가 NOT NULL이면 기본 이미지로 방어
-                    imageUrl = "/uploads/common/default.png";
+                    imageUrl = "/uploads/common/default.png"; // 기본 이미지 방어
                 }
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -127,26 +128,24 @@ public class VolunteerRestController {
             v.setEndTime(endTime);
             v.setMaxParticipants(maxParticipants);
             v.setCurrentPeople(currentPeople != null ? currentPeople : 0);
-            v.setStatus("PENDING"); // 승인 플로우가 있다면 이후에 바꾸기
+            v.setStatus("PENDING");
             v.setCreatedAt(LocalDateTime.now());
             v.setUpdatedAt(LocalDateTime.now());
 
-            // ✅ 실제 insert 수행 (PK 세팅됨)
             Long newId = volunteerBO.createVolunteerFromReact(v);
 
             Map<String, Object> body = new HashMap<>();
             body.put("result", "성공");
             body.put("id", newId);
+
             return ResponseEntity.ok(body);
 
         } catch (org.springframework.dao.DataIntegrityViolationException die) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("result", "실패", "error",
-                            "데이터 제약 위반: " + die.getMostSpecificCause().getMessage()));
+                    .body(Map.of("result", "실패", "error", "데이터 제약 위반: " + die.getMostSpecificCause().getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("result", "실패", "error",
-                            e.getMessage() != null ? e.getMessage() : "SERVER_ERROR"));
+                    .body(Map.of("result", "실패", "error", e.getMessage() != null ? e.getMessage() : "SERVER_ERROR"));
         }
     }
 
@@ -196,6 +195,9 @@ public class VolunteerRestController {
         return Map.of("joined", joined);
     }
 
+    // =========================================================
+    // 6) 좋아요 상태 / 토글
+    // =========================================================
     @GetMapping("/{id}/like/state")
     public ResponseEntity<?> likeState(@PathVariable("id") Long id, HttpSession session) {
         Long userId = (Long) session.getAttribute("userId");
@@ -215,27 +217,22 @@ public class VolunteerRestController {
         return ResponseEntity.ok(Map.of("result", "success", "liked", tr.liked, "likeCount", tr.likeCount));
     }
 
-
-    // ------------------------------
-    // 내부 유틸
-    // ------------------------------
-    private boolean isBlank(String s) {
-        return s == null || s.trim().isEmpty();
-    }
-
-    // ✅ 참여 인원 목록 (작성자·관리자만)
+    // =========================================================
+    // 7) 참여 인원 목록 (작성자·관리자만)
+    // =========================================================
     @GetMapping("/{id}/participants")
     public ResponseEntity<?> participants(@PathVariable("id") Long id, HttpSession session) {
         Long me = (Long) session.getAttribute("userId");
         String role = (String) session.getAttribute("role");
-
         Volunteer v = volunteerBO.getVolunteerById(id);
+
         if (v == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "NOT_FOUND"));
         }
 
         boolean isOwner = me != null && me.equals(v.getUserId());
         boolean isAdmin = "ADMIN".equalsIgnoreCase(role);
+
         if (!(isOwner || isAdmin)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "FORBIDDEN"));
         }
@@ -243,25 +240,25 @@ public class VolunteerRestController {
         return ResponseEntity.ok(volunteerBO.getParticipantList(id));
     }
 
+    // =========================================================
+    // 8) 조회수 증가 API
+    // =========================================================
     @PostMapping("/api/{id}/view")
     public ResponseEntity<?> increaseView(@PathVariable("id") Long volunteerId) {
         try {
             volunteerBO.increaseViewCount(volunteerId);
-
-            // 증가 후 최신 조회수까지 내려주면 프론트가 즉시 갱신 가능
-            Volunteer v = volunteerBO.getVolunteerById(volunteerId); // 기존에 상세 조회가 있다면 재사용
+            Volunteer v = volunteerBO.getVolunteerById(volunteerId);
             Integer count = (v != null ? v.getViewCount() : null);
-
-            return ResponseEntity.ok(Map.of(
-                    "result", "success",
-                    "viewCount", count));
+            return ResponseEntity.ok(Map.of("result", "success", "viewCount", count));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("result", "fail", "error", e.getMessage()));
         }
     }
 
-    /** (선택) 상세 조회는 증가 없이 데이터만 */
+    // =========================================================
+    // 9) 상세 조회 (조회수 증가 없음)
+    // =========================================================
     @GetMapping("/api/{id}")
     public ResponseEntity<?> getVolunteer(@PathVariable("id") Long volunteerId) {
         Volunteer v = volunteerBO.getVolunteerById(volunteerId);
@@ -271,49 +268,44 @@ public class VolunteerRestController {
         return ResponseEntity.ok(v);
     }
 
+    // =========================================================
+    // 10) 좋아요 상태 및 토글 (API 전용)
+    // =========================================================
     @GetMapping("/api/{id}/like/state")
-public ResponseEntity<?> apiLikeState(@PathVariable("id") Long id, HttpSession session) {
-    Long userId = (Long) session.getAttribute("userId");
-    try {
-        boolean liked = false;
-        if (userId != null) {
-            liked = volunteerBO.isLiked(id, userId);
+    public ResponseEntity<?> apiLikeState(@PathVariable("id") Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        try {
+            boolean liked = (userId != null) && volunteerBO.isLiked(id, userId);
+            int likeCount = volunteerBO.likeCount(id);
+            return ResponseEntity.ok(Map.of("result", "success", "liked", liked, "likeCount", likeCount));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
         }
-        int likeCount = volunteerBO.likeCount(id);
-        return ResponseEntity.ok(Map.of(
-                "result", "success",
-                "liked", liked,
-                "likeCount", likeCount
-        ));
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("result", "fail", "error", e.getMessage()));
     }
-}
 
-/** 봉사 좋아요 토글 (API)
- *  - 로그인 필요(미로그인: 401)
- *  - 성공 시 liked/likeCount 반환
- */
-@PostMapping("/api/{id}/like/toggle")
-public ResponseEntity<?> apiToggleLike(@PathVariable("id") Long id, HttpSession session) {
-    Long userId = (Long) session.getAttribute("userId");
-    if (userId == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+    @PostMapping("/api/{id}/like/toggle")
+    public ResponseEntity<?> apiToggleLike(@PathVariable("id") Long id, HttpSession session) {
+        Long userId = (Long) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("result", "fail", "error", "로그인이 필요합니다."));
+        }
+        try {
+            VolunteerBO.ToggleResult tr = volunteerBO.toggleLike(id, userId);
+            return ResponseEntity.ok(Map.of("result", "success", "liked", tr.liked, "likeCount", tr.likeCount));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
+        }
     }
-    try {
-        VolunteerBO.ToggleResult tr = volunteerBO.toggleLike(id, userId);
-        return ResponseEntity.ok(Map.of(
-                "result", "success",
-                "liked", tr.liked,
-                "likeCount", tr.likeCount
-        ));
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("result", "fail", "error", e.getMessage()));
+
+    // =========================================================
+    // 내부 유틸
+    // =========================================================
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
-}
 }

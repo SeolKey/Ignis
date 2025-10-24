@@ -3,20 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>기부글 목록 (관리자용)</title>
-
-    <!-- ✅ Bootstrap -->
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-            crossorigin="anonymous">
-
-    <!-- ✅ 공통 스타일 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          crossorigin="anonymous">
     <th:block th:replace="~{fragments/headerStyle :: headerStyle}" />
 </head>
 
 <body>
-<!-- ✅ 공통 헤더 -->
 <div th:replace="~{fragments/header :: commonHeader}"></div>
 
 <main class="container mt-5">
@@ -35,25 +28,20 @@
                 <th>상태</th>
                 <th>조회수</th>
                 <th>작성일</th>
-                <th>긴급 여부</th> <!-- ✅ 새로 추가 -->
                 <th>관리</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="donation : ${donationList}">
+            <!-- ✅ 상태가 PENDING인 기부글만 출력 -->
+            <tr th:each="donation : ${donationList}" th:if="${donation.status == 'PENDING'}">
                 <td th:text="${donation.donationId}">1</td>
-
                 <td>
                     <a th:href="@{'/admin/donation-detail-view/' + ${donation.donationId}}"
                        th:text="${donation.title}"
-                       class="text-decoration-none fw-semibold text-primary">
-                        샘플 제목
-                    </a>
+                       class="text-decoration-none fw-semibold text-primary"></a>
                 </td>
-
                 <td th:text="${donation.userId}">1</td>
 
-                <!-- ✅ 상태 뱃지 -->
                 <td>
                     <span th:switch="${donation.status}">
                         <span th:case="'APPROVED'" class="badge bg-success" th:text="${donation.status}"></span>
@@ -63,62 +51,68 @@
                 </td>
 
                 <td th:text="${donation.viewCount}">0</td>
-                <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}">2025-05-19</td>
+                <td th:text="${#temporals.format(donation.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
 
-                <!-- ✅ 긴급 여부 표시 -->
+                <!-- ✅ 상태 변경 -->
                 <td>
-                    <span th:if="${donation.isEmergency == 1}" class="badge bg-danger">긴급</span>
-                    <span th:if="${donation.isEmergency == 0}" class="badge bg-secondary">일반</span>
-                </td>
+                    <select th:id="'status-' + ${donation.donationId}"
+                            class="form-select form-select-sm w-auto d-inline mb-1"
+                            th:value="${donation.status}">
+                        <option value="PENDING" th:selected="${donation.status eq 'PENDING'}">보류</option>
+                        <option value="APPROVED" th:selected="${donation.status eq 'APPROVED'}">승인</option>
+                        <option value="REJECTED" th:selected="${donation.status eq 'REJECTED'}">거절</option>
+                    </select>
 
-                <!-- ✅ 관리 버튼 영역 -->
-                <td>
-                    <!-- 상태 변경 폼 -->
-                    <form th:action="@{'/admin/donation-status-update'}" method="post" class="d-inline">
-                        <input type="hidden" name="donationId" th:value="${donation.donationId}" />
-                        <select name="status" class="form-select form-select-sm d-inline w-auto">
-                            <option value="PENDING" th:selected="${donation.status eq 'PENDING'}">보류</option>
-                            <option value="APPROVED" th:selected="${donation.status eq 'APPROVED'}">승인</option>
-                            <option value="REJECTED" th:selected="${donation.status eq 'REJECTED'}">거절</option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-outline-primary ms-1">변경</button>
-                    </form>
-
-                    <!-- 삭제 버튼 -->
-                    <form th:action="@{'/admin/donation-delete/' + ${donation.donationId}}"
-                          method="post"
-                          class="d-inline"
-                          onsubmit="return confirm('정말 삭제하시겠습니까?');">
-                        <input type="hidden" name="_method" value="delete" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger ms-1">삭제</button>
-                    </form>
-
-                    <!-- ✅ 긴급 설정/해제 버튼 -->
-                    <form th:action="@{'/admin/donation-toggle-emergency/' + ${donation.donationId}}"
-                          method="post"
-                          class="d-inline">
-                        <input type="hidden" name="isEmergency"
-                               th:value="${donation.isEmergency == 1 ? 0 : 1}" />
-                        <button type="submit"
-                                th:text="${donation.isEmergency == 1 ? '긴급 해제' : '긴급 설정'}"
-                                th:classappend="${donation.isEmergency == 1 ? 'btn btn-sm btn-outline-warning ms-1' : 'btn btn-sm btn-outline-danger ms-1'}">
-                            긴급 설정
-                        </button>
-                    </form>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary"
+                            th:attr="data-id=${donation.donationId}"
+                            onclick="changeDonationStatus(this)">변경</button>
                 </td>
             </tr>
 
-            <tr th:if="${#lists.isEmpty(donationList)}">
-                <td colspan="8" class="text-muted py-4">등록된 기부글이 없습니다.</td>
+            <!-- ✅ 보류 중인 기부글이 없을 경우 -->
+            <tr th:if="${#lists.isEmpty(donationList) or #lists.isEmpty(donationList.?[status == 'PENDING'])}">
+                <td colspan="7" class="text-muted py-4">보류 중인 기부글이 없습니다.</td>
             </tr>
             </tbody>
         </table>
     </div>
 </main>
 
-<!-- ✅ Bootstrap JS -->
+<!-- ✅ JS -->
+<script>
+    function changeDonationStatus(button) {
+        const id = button.getAttribute('data-id');
+        const select = document.getElementById('status-' + id);
+
+        if (!select) {
+            alert('상태 선택 요소를 찾을 수 없습니다.');
+            return;
+        }
+
+        const status = select.value;
+
+        if (!confirm('정말로 상태를 변경하시겠습니까?')) return;
+
+        const params = new URLSearchParams();
+        params.append('donationId', id);
+        params.append('status', status);
+
+        fetch('/admin/donation-status-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: params.toString()
+        })
+            .then(res => res.text())
+            .then(() => {
+                alert('상태가 성공적으로 변경되었습니다.');
+                location.reload();
+            })
+            .catch(() => alert('오류가 발생했습니다. 다시 시도해주세요.'));
+    }
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 </body>
 </html>

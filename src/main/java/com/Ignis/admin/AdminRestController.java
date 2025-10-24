@@ -1,27 +1,13 @@
 package com.Ignis.admin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Optional;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Collections;
-
+import java.util.*;
 import com.Ignis.common.enums.Status;
 import com.Ignis.home.donation.bo.DonationBO;
 import com.Ignis.home.funding.bo.FundingBO;
 import com.Ignis.home.volunteer.bo.VolunteerBO;
 import com.Ignis.post.bo.PostBO;
-
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
@@ -33,14 +19,14 @@ public class AdminRestController {
     private final FundingBO fundingBO;
     private final VolunteerBO volunteerBO;
 
+    // 게시글 삭제
     @DeleteMapping("/delete-post/{id}")
     public Map<String, Object> deletePost(@PathVariable int id) {
-        Map<String, Object> result = new HashMap<>();
-        postBO.deletePostById(id);  // BO에서 삭제 로직 실행
-        result.put("result", "삭제 완료");
-        return result;
+        postBO.deletePostById(id);
+        return Map.of("result", "삭제 완료");
     }
 
+    // 기부 상태 변경
     @PostMapping("/donation-status-update")
     public String updateDonationStatus(@RequestParam("donationId") Long donationId,
                                        @RequestParam("status") Status status) {
@@ -48,14 +34,7 @@ public class AdminRestController {
         return "상태 변경 완료";
     }
 
-    @DeleteMapping("/donation-delete/{id}")
-    public Map<String, Object> deleteDonation(@PathVariable("id") int donationId) {
-        Map<String, Object> result = new HashMap<>();
-        donationBO.deletedonation(donationId);
-        result.put("result", "삭제 성공");
-        return result;
-    }
-
+    // 펀딩 상태 변경
     @PostMapping("/funding-status-update")
     public String updateFundingStatus(@RequestParam("fundingId") Long fundingId,
                                       @RequestParam("status") Status status,
@@ -64,6 +43,16 @@ public class AdminRestController {
         return "상태 변경 완료";
     }
 
+    // ✅ 봉사 상태 변경 (추가)
+    @PostMapping("/volunteer-status-update")
+    public String updateVolunteerStatus(@RequestParam("volunteerId") Long volunteerId,
+                                        @RequestParam("status") Status status,
+                                        @RequestParam(value = "rejectReason", required = false) String rejectReason) {
+        volunteerBO.updateVolunteerStatus(volunteerId, status.name(), rejectReason);
+        return "상태 변경 완료";
+    }
+
+    // 긴급 토글
     @PostMapping("/donation-toggle-emergency/{donationId}")
     public String toggleDonationEmergency(@PathVariable Long donationId,
                                           @RequestParam("emergency") boolean isEmergency) {
@@ -85,25 +74,19 @@ public class AdminRestController {
         return "긴급 상태 변경 완료";
     }
 
-    // ===========================================================
-    // ✅ React + home.html 공용 긴급배너 API (엔티티 임포트 없이 동작)
-    // 최종 주소: /admin/api/emergency/check
-    // ===========================================================
+    // ✅ 긴급 배너 확인 (기존 그대로)
     @GetMapping("/api/emergency/check")
     public Map<String, Object> checkEmergency() {
         Map<String, Object> result = new LinkedHashMap<>();
         try {
-            // BO의 기존 리스트 메서드 사용 (시그니처는 프로젝트에 맞게 이미 존재한다고 가정)
             List<?> donationList  = toList(donationBO.getDonationList());
             List<?> fundingList   = toList(fundingBO.getFundingList());
             List<?> volunteerList = toList(volunteerBO.getVolunteerList());
 
-            // is_emergency == 1 필터 + updated_at/created_at 내림차순 정렬 후 1건 선택
             Optional<?> emgDonation  = pickLatestEmergency(donationList,  "getIsEmergency", "isEmergency", "getUpdatedAt", "getCreatedAt");
             Optional<?> emgFunding   = pickLatestEmergency(fundingList,   "getIsEmergency", "isEmergency", "getUpdatedAt", "getCreatedAt");
             Optional<?> emgVolunteer = pickLatestEmergency(volunteerList, "getIsEmergency", "isEmergency", "getUpdatedAt", "getCreatedAt");
 
-            // 우선순위: Donation → Funding → Volunteer
             if (emgDonation.isPresent()) {
                 Object d = emgDonation.get();
                 result.put("isActive", true);
@@ -144,7 +127,6 @@ public class AdminRestController {
                 return result;
             }
 
-            // 긴급 항목 없음
             result.put("isActive", false);
             result.put("type", "none");
         } catch (Exception e) {
@@ -156,7 +138,6 @@ public class AdminRestController {
     }
 
     // ---------------------- Helper ----------------------
-
     @SuppressWarnings("unchecked")
     private List<?> toList(Object maybeList) {
         if (maybeList instanceof List) return (List<?>) maybeList;
@@ -197,7 +178,7 @@ public class AdminRestController {
         if (a == null && b == null) return 0;
         if (a == null) return 1;
         if (b == null) return -1;
-        return -a.compareTo(b); // 내림차순
+        return -a.compareTo(b);
     }
 
     private Comparable<?> asComparable(Object o) {

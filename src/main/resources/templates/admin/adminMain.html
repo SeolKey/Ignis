@@ -22,7 +22,9 @@
 <main class="container text-center mt-5">
     <h1 class="fw-bold mb-4">관리자 대시보드</h1>
 
-    <div class="row justify-content-center g-3">
+    <!-- ✅ 회원 / 게시글 관리 -->
+    <h4 class="text-primary mb-3">👥 사용자 및 게시글 관리</h4>
+    <div class="row justify-content-center g-3 mb-4">
         <div class="col-md-3">
             <button class="btn btn-primary w-100"
                     onclick="location.href='/admin/user-list-view'">
@@ -32,27 +34,41 @@
         <div class="col-md-3">
             <button class="btn btn-secondary w-100"
                     onclick="location.href='/admin/post-list-view'">
-                게시글 목록 보기
+                게시글 승인 필요 목록 보기
             </button>
         </div>
+    </div>
+
+    <!-- ✅ 기부 / 펀딩 / 봉사 관리 -->
+    <h4 class="text-success mb-3">💚 기부 · 펀딩 · 봉사 관리</h4>
+    <div class="row justify-content-center g-3 mb-4">
         <div class="col-md-3">
             <button class="btn btn-success w-100"
                     onclick="location.href='/admin/donation-list-view'">
-                기부 목록 보기
+                기부 승인 필요 목록 보기
             </button>
         </div>
         <div class="col-md-3">
             <button class="btn btn-warning w-100"
                     onclick="location.href='/admin/funding-list-view'">
-                펀딩 목록 보기
+                펀딩 승인 필요 목록 보기
             </button>
         </div>
-
-        <!-- ✅ 추가: 긴급 관리 버튼 -->
         <div class="col-md-3">
+            <button class="btn btn-info w-100 text-white"
+                    onclick="location.href='/admin/volunteer-list-view'">
+                봉사 승인 필요 목록 보기
+            </button>
+        </div>
+    </div>
+
+    <!-- ✅ 긴급 관리 -->
+    <h4 class="text-danger mb-3">🔥 긴급 관리</h4>
+    <div class="row justify-content-center g-3">
+        <div class="col-md-4">
             <button class="btn btn-danger w-100"
                     onclick="location.href='/admin/emergency-manage'">
-                🔥 긴급 관리 (기부 / 펀딩 / 봉사)
+                긴급 관리 (기부 / 펀딩 / 봉사)
             </button>
         </div>
     </div>
@@ -61,7 +77,7 @@
 
     <div class="text-muted">
         <p>관리자 권한으로 시스템 전반을 관리할 수 있습니다.</p>
-        <p>필요 시 사용자, 게시글, 기부·펀딩 항목을 검토하거나 <strong>긴급 관리</strong> 기능을 활용하세요.</p>
+        <p>사용자, 게시글, 기부·펀딩·봉사 항목을 검토하거나 <strong>긴급 관리</strong> 기능을 활용하세요.</p>
     </div>
 </main>
 
