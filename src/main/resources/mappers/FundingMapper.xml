@@ -221,4 +221,20 @@
         SELECT COUNT(*) FROM funding_like WHERE funding_id = #{fundingId}
     </select>
 
+    <!-- ✅ 현재 금액 업데이트 -->
+    <update id="updateCurrentPrice" parameterType="map">
+        UPDATE funding
+        SET current_price = current_price + #{amount},
+            updated_at = NOW()
+        WHERE funding_id = #{fundingId};
+    </update>
+
+    <select id="selectRecentFundingList" resultType="com.Ignis.home.funding.domain.Funding">
+        SELECT *
+        FROM funding
+        WHERE status = 'APPROVED'
+        ORDER BY created_at DESC
+            LIMIT #{limit}
+    </select>
+
 </mapper>

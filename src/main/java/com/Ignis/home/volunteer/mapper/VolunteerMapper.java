@@ -47,4 +47,13 @@ public interface VolunteerMapper {
     int insertLike(@Param("volunteerId") Long volunteerId, @Param("userId") Long userId);
     int deleteLike(@Param("volunteerId") Long volunteerId, @Param("userId") Long userId);
 
+    // ============================================================
+    // ✅ 관리자 기능 추가
+    // ============================================================
+
+    // 전체 봉사글 조회 (승인/거절/보류 관계없이)
+    List<Volunteer> selectAllVolunteersForAdmin();
+
+    // 봉사글 상태 변경 (APPROVED / REJECTED / PENDING)
+    int updateVolunteerStatus(Map<String, Object> params);
 }

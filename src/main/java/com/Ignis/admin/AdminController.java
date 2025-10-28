@@ -5,6 +5,7 @@ import java.util.List;
 import com.Ignis.home.funding.bo.FundingBO;
 import com.Ignis.home.funding.domain.Funding;
 import com.Ignis.home.volunteer.bo.VolunteerBO;
+import com.Ignis.home.volunteer.domain.Volunteer;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,10 +34,10 @@ public class AdminController {
 
     @GetMapping("/main")
     public String adminMainPage() {
-        return "admin/adminMain";  // 파일명에 맞게 수정!
+        return "admin/adminMain";
     }
 
-    // 회원 리스트 보기
+    // 회원 리스트
     @GetMapping("/user-list-view")
     public String userListView(Model model) {
         List<UserEntity> userList = userRepository.findAll();
@@ -44,7 +45,7 @@ public class AdminController {
         return "admin/userList";
     }
 
-    // 게시글 리스트 보기
+    // 게시글 리스트
     @GetMapping("/post-list-view")
     public String postListView(Model model) {
         List<Post> postList = postBO.getPostList();
@@ -52,7 +53,7 @@ public class AdminController {
         return "admin/postList";
     }
 
-    // 게시글 상세 보기
+    // 게시글 상세
     @GetMapping("/post-detail-view/{id}")
     public String postDetailView(@PathVariable int id, Model model) {
         Post post = postBO.getPostById(id);
@@ -60,6 +61,7 @@ public class AdminController {
         return "admin/postDetail";
     }
 
+    // 기부 목록
     @GetMapping("/donation-list-view")
     public String donationListView(Model model) {
         List<Donation> donationList = donationBO.getPendingDonationList();
@@ -67,6 +69,7 @@ public class AdminController {
         return "admin/adminDonationList";
     }
 
+    // 기부 상세
     @GetMapping("/donation-detail-view/{id}")
     public String donationDetailView(@PathVariable("id") Long id, Model model) {
         Donation donation = donationBO.getDonationById(id);
@@ -74,6 +77,7 @@ public class AdminController {
         return "admin/adminDonationDetail";
     }
 
+    // 펀딩 목록
     @GetMapping("/funding-list-view")
     public String fundingListView(Model model) {
         List<Funding> fundingList = fundingBO.getPendingFundingList();
@@ -81,6 +85,7 @@ public class AdminController {
         return "admin/adminFundingList";
     }
 
+    // 펀딩 상세
     @GetMapping("/funding-detail-view/{id}")
     public String fundingDetailView(@PathVariable("id") Long id, Model model) {
         Funding funding = fundingBO.getFundingById(id);
@@ -88,6 +93,23 @@ public class AdminController {
         return "admin/adminFundingDetail";
     }
 
+    // ✅ 봉사 목록 (관리자용)
+    @GetMapping("/volunteer-list-view")
+    public String volunteerListView(Model model) {
+        List<Volunteer> volunteerList = volunteerBO.getAllVolunteersForAdmin();
+        model.addAttribute("volunteerList", volunteerList);
+        return "admin/adminVolunteerList";
+    }
+
+    // ✅ 봉사 상세 (관리자용)
+    @GetMapping("/volunteer-detail-view/{id}")
+    public String volunteerDetailView(@PathVariable("id") Long id, Model model) {
+        Volunteer volunteer = volunteerBO.getVolunteerById(id);
+        model.addAttribute("volunteer", volunteer);
+        return "admin/adminVolunteerDetail";
+    }
+
+    // 긴급 관리 통합
     @GetMapping("/emergency-manage")
     public String emergencyManage(Model model) {
         model.addAttribute("approvedDonations", donationBO.getDonationList());

@@ -118,7 +118,7 @@
             updated_at        AS updatedAt,
             view_count        AS viewCount,
             is_emergency      AS emergency,
-            like_count AS likeCount
+            like_count        AS likeCount
         FROM volunteer
         WHERE status = 'APPROVED'
         ORDER BY created_at DESC
@@ -155,7 +155,7 @@
             updated_at        AS updatedAt,
             view_count        AS viewCount,
             is_emergency      AS emergency,
-            like_count AS likeCount
+            like_count        AS likeCount
         FROM volunteer
         WHERE status = 'APPROVED'
         ORDER BY view_count DESC, created_at DESC
@@ -201,54 +201,92 @@
         ORDER BY created_at DESC
             LIMIT 1
     </select>
+
+    <!-- 좋아요 관련 -->
     <update id="incrementLikeCount">
-    <![CDATA[
+        <![CDATA[
         UPDATE volunteer
         SET like_count = like_count + 1,
             updated_at = NOW()
         WHERE volunteer_id = #{volunteerId}
         ]]>
-  </update>
+    </update>
 
     <update id="decrementLikeCount">
-    <![CDATA[
+        <![CDATA[
         UPDATE volunteer
         SET like_count = CASE WHEN like_count > 0 THEN like_count - 1 ELSE 0 END,
             updated_at = NOW()
         WHERE volunteer_id = #{volunteerId}
         ]]>
-  </update>
+    </update>
 
     <select id="selectLikeCount" resultType="int">
-    <![CDATA[
+        <![CDATA[
         SELECT like_count FROM volunteer WHERE volunteer_id = #{volunteerId}
         ]]>
-  </select>
+    </select>
 
     <select id="likeExists" resultType="int">
-    <![CDATA[
+        <![CDATA[
         SELECT COUNT(*)
         FROM volunteer_like
         WHERE volunteer_id = #{volunteerId}
           AND user_id = #{userId}
             LIMIT 1
         ]]>
-  </select>
+    </select>
 
     <insert id="insertLike">
-    <![CDATA[
+        <![CDATA[
         INSERT INTO volunteer_like (volunteer_id, user_id, created_at)
         VALUES (#{volunteerId}, #{userId}, NOW())
         ]]>
-  </insert>
+    </insert>
 
     <delete id="deleteLike">
-    <![CDATA[
+        <![CDATA[
         DELETE FROM volunteer_like
         WHERE volunteer_id = #{volunteerId}
           AND user_id = #{userId}
         ]]>
-  </delete>
+    </delete>
 
+    <!-- ✅ [관리자용] 전체 봉사글 목록 조회 -->
+    <select id="selectAllVolunteersForAdmin" resultType="com.Ignis.home.volunteer.domain.Volunteer">
+        <![CDATA[
+        SELECT
+            volunteer_id      AS volunteerId,
+            user_id           AS userId,
+            title,
+            description,
+            location,
+            image_path        AS imagePath,
+            start_time        AS startTime,
+            end_time          AS endTime,
+            max_participants  AS maxParticipants,
+            status,
+            reject_reason     AS rejectReason,
+            current_people    AS currentPeople,
+            created_at        AS createdAt,
+            updated_at        AS updatedAt,
+            view_count        AS viewCount,
+            is_emergency      AS emergency,
+            like_count        AS likeCount
+        FROM volunteer
+        ORDER BY created_at DESC
+        ]]>
+    </select>
+
+    <!-- ✅ [관리자용] 봉사글 상태 변경 -->
+    <update id="updateVolunteerStatus" parameterType="map">
+        <![CDATA[
+        UPDATE volunteer
+        SET status = #{status},
+            reject_reason = #{rejectReason},
+            updated_at = NOW()
+        WHERE volunteer_id = #{volunteerId}
+        ]]>
+    </update>
 
 </mapper>
