@@ -17,7 +17,8 @@ export default function LoginPage() {
       const form = new URLSearchParams();
       form.append("userLoginId", values.username);
       form.append("password", values.password);
-      form.append("rememberMe", values.remember || false);
+      // 위젯과 동일하게 문자열로 통일
+      form.append("rememberMe", values.remember ? "true" : "false");
 
       const res = await fetch("/user/do-login", {
         method: "POST",
@@ -26,21 +27,25 @@ export default function LoginPage() {
         credentials: "include",
       });
 
-      const data = await res.json();
-      if (data.result === "성공") {
+      const data = await res.json().catch(() => ({}));
+      if (data?.result === "성공") {
         const meRes = await fetch("/user/me", { credentials: "include" });
         if (!meRes.ok) {
-          message.error("세션 확인 실패. CORS/쿠키 설정을 확인하세요.");
+          message.error("세션 확인 실패. CORS/쿠키 설정을 확인해줘.");
           setLoading(false);
           return;
         }
         const me = await meRes.json();
+        // 필요하면 로컬스토리지 유지
         localStorage.setItem("userId", me.userId ?? data.userId);
         localStorage.setItem("username", me.userName ?? data.username);
+
+        // 헤더 등 전역 인증 상태 갱신 알림 (위젯과 동일)
+        window.dispatchEvent(new Event("auth:changed"));
         message.success("환영합니다 👋");
-        navigate("/");
+        navigate("/", { replace: true });
       } else {
-        message.error(data.error_message ?? "로그인에 실패했습니다");
+        message.error(data?.error_message ?? "로그인에 실패했습니다");
       }
     } catch (err) {
       console.error("로그인 오류:", err);
@@ -50,11 +55,11 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:80/oauth2/authorization/google";
-  };
-  const handleKakaoLogin = () => {
-    window.location.href = "http://localhost:80/oauth2/authorization/kakao";
+  // ✅ 위젯과 동일한 방식: 상대 경로로 처리 (도메인/포트 하드코딩 X)
+  const goOauth = (provider) => {
+    // 만약 백엔드가 /react-app 같은 서브패스에 프런트가 있어도,
+    // OAuth 엔드포인트는 보통 서버 루트 기준이라 절대경로 사용.
+    window.location.href = `/oauth2/authorization/${provider}`;
   };
 
   return (
@@ -108,10 +113,10 @@ export default function LoginPage() {
           <Divider plain>또는</Divider>
 
           <Flex vertical gap={8}>
-            <Button size="large" block icon={<GoogleOutlined />} onClick={handleGoogleLogin}>
+            <Button size="large" block icon={<GoogleOutlined />} onClick={() => goOauth("google")}>
               Google로 계속하기
             </Button>
-            <Button size="large" block className="kakao" onClick={handleKakaoLogin}>
+            <Button size="large" block className="kakao" onClick={() => goOauth("kakao")}>
               <span className="kakao-dot" /> Kakao로 계속하기
             </Button>
           </Flex>
@@ -127,4 +132,3 @@ export default function LoginPage() {
     </Layout>
   );
 }
-
