@@ -1,133 +1,47 @@
-import React, { useState } from "react";
-import { Form, Input, Button, Checkbox, Typography, Card, Divider, Flex, message } from "antd";
-import { Link, useNavigate } from "react-router-dom";
-import { UserOutlined, LockOutlined, GoogleOutlined } from "@ant-design/icons";
+import React, { useEffect, useState, useCallback } from "react";
 import Layout from "../components/Layout";
-import "../styles/LoginPage.css";
-
-const { Title, Text } = Typography;
+import LoginWidget from "./home/LoginWidget"; // 홈에서 쓰던 그 위젯 그대로
+import "../styles/home/Home.CSS"; // ✅ 페이지 CSS 대신 위젯 CSS를 사용
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [me, setMe] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const onFinish = async (values) => {
+  const fetchMe = useCallback(async () => {
     try {
       setLoading(true);
-      const form = new URLSearchParams();
-      form.append("userLoginId", values.username);
-      form.append("password", values.password);
-      // 위젯과 동일하게 문자열로 통일
-      form.append("rememberMe", values.remember ? "true" : "false");
-
-      const res = await fetch("/user/do-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: form.toString(),
-        credentials: "include",
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (data?.result === "성공") {
-        const meRes = await fetch("/user/me", { credentials: "include" });
-        if (!meRes.ok) {
-          message.error("세션 확인 실패. CORS/쿠키 설정을 확인해줘.");
-          setLoading(false);
-          return;
-        }
-        const me = await meRes.json();
-        // 필요하면 로컬스토리지 유지
-        localStorage.setItem("userId", me.userId ?? data.userId);
-        localStorage.setItem("username", me.userName ?? data.username);
-
-        // 헤더 등 전역 인증 상태 갱신 알림 (위젯과 동일)
-        window.dispatchEvent(new Event("auth:changed"));
-        message.success("환영합니다 👋");
-        navigate("/", { replace: true });
-      } else {
-        message.error(data?.error_message ?? "로그인에 실패했습니다");
+      const res = await fetch("/user/me", { credentials: "include" });
+      if (!res.ok) {
+        setMe(null);
+        return;
       }
-    } catch (err) {
-      console.error("로그인 오류:", err);
-      message.error("네트워크 오류가 발생했습니다.");
+      const json = await res.json().catch(() => null);
+      setMe(json || null);
+    } catch {
+      setMe(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // ✅ 위젯과 동일한 방식: 상대 경로로 처리 (도메인/포트 하드코딩 X)
-  const goOauth = (provider) => {
-    // 만약 백엔드가 /react-app 같은 서브패스에 프런트가 있어도,
-    // OAuth 엔드포인트는 보통 서버 루트 기준이라 절대경로 사용.
-    window.location.href = `/oauth2/authorization/${provider}`;
-  };
+  useEffect(() => {
+    // 최초 유저 정보 로드
+    fetchMe();
+    // 다른 곳(위젯/콜백)에서 로그인 상태가 바뀌면 갱신
+    const onAuthChanged = () => fetchMe();
+    window.addEventListener("auth:changed", onAuthChanged);
+    return () => window.removeEventListener("auth:changed", onAuthChanged);
+  }, [fetchMe]);
 
   return (
     <Layout>
+      {/* 필요하면 기존 페이지 배경/히어로 섹션 유지 가능 */}
       <div className="login-page">
         <div className="login-hero" />
-        <Card className="login-card" bordered={false}>
-          <Flex vertical gap={4} align="center" style={{ marginBottom: 16 }}>
-            <Title level={3} style={{ margin: 0 }}>로그인</Title>
-            <Text type="secondary">계정 정보를 입력해 주세요</Text>
-          </Flex>
-
-          <Form
-            layout="vertical"
-            name="login-form"
-            onFinish={onFinish}
-            requiredMark={false}
-            className="login-form"
-          >
-            <Form.Item
-              label="아이디"
-              name="username"
-              rules={[
-                { required: true, message: "아이디를 입력해 주세요." },
-                { min: 3, message: "아이디는 3자 이상" },
-              ]}
-            >
-              <Input size="large" placeholder="아이디" prefix={<UserOutlined />} allowClear />
-            </Form.Item>
-
-            <Form.Item
-              label="비밀번호"
-              name="password"
-              rules={[{ required: true, message: "비밀번호를 입력해 주세요." }]}
-            >
-              <Input.Password size="large" placeholder="비밀번호" prefix={<LockOutlined />} />
-            </Form.Item>
-
-            <Flex justify="space-between" align="center" style={{ marginBottom: 8 }}>
-              <Form.Item name="remember" valuePropName="checked" noStyle>
-                <Checkbox>아이디 저장</Checkbox>
-              </Form.Item>
-              <Link to="/find-password" className="link subtle">비밀번호 찾기</Link>
-            </Flex>
-
-            <Button type="primary" htmlType="submit" size="large" block loading={loading}>
-              로그인
-            </Button>
-          </Form>
-
-          <Divider plain>또는</Divider>
-
-          <Flex vertical gap={8}>
-            <Button size="large" block icon={<GoogleOutlined />} onClick={() => goOauth("google")}>
-              Google로 계속하기
-            </Button>
-            <Button size="large" block className="kakao" onClick={() => goOauth("kakao")}>
-              <span className="kakao-dot" /> Kakao로 계속하기
-            </Button>
-          </Flex>
-
-          <Divider style={{ margin: 16 }} />
-
-          <div className="signup-line">
-            <Text type="secondary">아직 회원이 아니신가요?</Text>
-            <Link to="/signup" className="link">회원가입</Link>
-          </div>
-        </Card>
+        {/* ✅ 위젯을 그대로 삽입 (폼+소셜 버튼+로그인 상태 UI 모두 포함) */}
+        <div className="login-card-wrap" style={{ maxWidth: 480, margin: "40px auto", padding: "0 16px" }}>
+          <LoginWidget me={me} onUserChange={setMe} loading={loading} />
+        </div>
       </div>
     </Layout>
   );
