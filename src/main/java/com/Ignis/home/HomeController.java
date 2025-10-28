@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -24,32 +23,15 @@ public class HomeController {
 
     @Autowired
     private DonationBO donationBO;
-
     @Autowired
     private VolunteerBO volunteerBO;
-
     @Autowired
     private FundingBO fundingBO;
 
-    /** 기존 Thymeleaf 홈 페이지 (서버 렌더링) */
+    /** ✅ 루트는 React 빌드 진입점으로만 포워드 (서버 렌더링 금지) */
     @GetMapping("/")
-    public String showHomePage(Model model, HttpSession session) {
-        int limit = 4;
-        List<Donation> donationList = donationBO.getMostViewedDonationList(limit);
-        List<Volunteer> volunteerList = volunteerBO.getMostViewedVolunteerList(limit);
-        List<Funding> fundingList = fundingBO.getMostViewedFundingList(limit);
-
-        // 기본 데이터
-        model.addAttribute("donationList", donationList);
-        model.addAttribute("volunteerList", volunteerList);
-        model.addAttribute("fundingList", fundingList);
-
-        // 세션 정보 전달 (헤더에서 사용 가능)
-        model.addAttribute("userName", session.getAttribute("userName"));
-        model.addAttribute("role", session.getAttribute("role"));
-        model.addAttribute("userId", session.getAttribute("userId"));
-
-        return "home/home";
+    public String root() {
+        return "forward:/index.html";
     }
 
     /** React용 JSON API (클라이언트에서 fetch('/api/home')) */
@@ -161,6 +143,4 @@ public class HomeController {
 
         return result;
     }
-
-
 }
