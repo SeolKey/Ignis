@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Menu, Input, Button, Space, Typography, Tag, Select, message } from "antd";
+import { Layout, Menu, Input, Button, Space, Typography, Select, message } from "antd";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { SearchOutlined, UserOutlined, LogoutOutlined, LoginOutlined, CrownOutlined, FunnelPlotOutlined } from "@ant-design/icons";
+import { SearchOutlined, UserOutlined, LogoutOutlined, LoginOutlined, FunnelPlotOutlined } from "@ant-design/icons";
 import IgnisLogo from "../assets/IgnisLogo.png";
 import "../styles/components/Header.css";
 
@@ -22,39 +22,25 @@ export default function Header() {
   const location = useLocation();
 
   const [username, setUsername] = useState(null);
-  const [role, setRole] = useState(null);
   const [searchValue, setSearchValue] = useState("");
-  const [searchType, setSearchType] = useState(""); // 단일 선택
+  const [searchType, setSearchType] = useState("");
 
   const selectedKey =
     location.pathname.startsWith("/donation") ? "donation" :
     location.pathname.startsWith("/volunteer") ? "volunteer" :
     location.pathname.startsWith("/funding") ? "funding" :
-    location.pathname.startsWith("/board") ? "board" :
-    location.pathname.startsWith("/admin") ? "admin" : "home";
+    location.pathname.startsWith("/board") ? "board" : "home";
 
   const loadMe = async () => {
     try {
       const res = await fetch("/user/me", { credentials: "include" });
-      if (!res.ok) {
-        setUsername(null); setRole(null); return;
-      }
+      if (!res.ok) return setUsername(null);
       const data = await res.json();
       const name = data?.userName ?? data?.username ?? null;
       const isAuthed = data?.authenticated ?? !!name;
       setUsername(isAuthed ? name : null);
-
-      let r = data?.role ?? data?.authorities ?? data?.roles ?? null;
-      if (Array.isArray(data?.authorities) && !data?.role) {
-        const adminLike = data.authorities.find((a) => String(a?.authority ?? a).toUpperCase().includes("ADMIN"));
-        r = adminLike ? "ADMIN" : "USER";
-      } else if (Array.isArray(data?.roles) && !data?.role) {
-        const adminLike = data.roles.find((v) => String(v).toUpperCase().includes("ADMIN"));
-        r = adminLike ? "ADMIN" : "USER";
-      }
-      setRole(r);
     } catch {
-      setUsername(null); setRole(null);
+      setUsername(null);
     }
   };
 
@@ -68,7 +54,7 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       await fetch("/logout", { method: "POST", credentials: "include" });
-      setUsername(null); setRole(null);
+      setUsername(null);
       window.dispatchEvent(new Event("auth:changed"));
       navigate("/login");
     } catch {
@@ -81,13 +67,9 @@ export default function Header() {
     if (!q) return message.info("검색어를 입력해 주세요.");
     const params = new URLSearchParams();
     params.set("q", q);
-    if (searchType) params.append("types", searchType); // fulltext 제거
+    if (searchType) params.append("types", searchType);
     navigate(`/search?${params.toString()}`);
   };
-
-  const isAdmin =
-    (typeof role === "string" && String(role).toUpperCase().includes("ADMIN")) ||
-    (Array.isArray(role) && role.some((r) => String(r).toUpperCase().includes("ADMIN")));
 
   return (
     <AntHeader className="ignis-header trendy">
@@ -105,15 +87,6 @@ export default function Header() {
             <Menu.Item key="board-free"><Link to="/board/free">후기 게시판</Link></Menu.Item>
             <Menu.Item key="board-notice"><Link to="/board/notice">공지사항</Link></Menu.Item>
           </Menu.SubMenu>
-          {isAdmin && (
-            <Menu.SubMenu key="admin" title={<span><CrownOutlined style={{ marginRight: 6 }} />관리자</span>}>
-              <Menu.Item key="admin-dashboard"><Link to="/admin">대시보드</Link></Menu.Item>
-              <Menu.Item key="admin-users"><Link to="/admin/users">회원 관리</Link></Menu.Item>
-              <Menu.Item key="admin-content"><Link to="/admin/content">콘텐츠 관리</Link></Menu.Item>
-              <Menu.Item key="admin-reports"><Link to="/admin/reports">신고/리뷰 관리</Link></Menu.Item>
-              <Menu.Item key="admin-emergency"><Link to="/admin/emergency">긴급 배너</Link></Menu.Item>
-            </Menu.SubMenu>
-          )}
         </Menu>
       </div>
 
@@ -157,13 +130,12 @@ export default function Header() {
               <UserOutlined style={{ marginRight: 6 }} />
               {username}님
             </Text>
-            {isAdmin && <Tag color="gold" icon={<CrownOutlined />}>ADMIN</Tag>}
             <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout} className="logout-btn">
               로그아웃
             </Button>
           </Space>
         ) : (
-          <Button type="text" icon={<LoginOutlined />} onClick={() => navigate("/login")} className="login-btn">
+          <Button type="text" icon={<LoginOutlined />} className="login-btn">
             로그인
           </Button>
         )}
