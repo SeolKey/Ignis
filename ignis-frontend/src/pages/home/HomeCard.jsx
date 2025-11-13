@@ -44,10 +44,10 @@ export default function HomeCard({ item, onClick, type }) {
     (isDonation
       ? '기부 프로젝트'
       : isVolunteer
-      ? '봉사 프로젝트'
-      : isFunding
-      ? '펀딩 프로젝트'
-      : 'IGNIS 프로젝트');
+        ? '봉사 프로젝트'
+        : isFunding
+          ? '펀딩 프로젝트'
+          : 'IGNIS 프로젝트');
 
   const image = toImageUrl(item.imagePath ?? item.thumbnailUrl ?? item.imageUrl);
 
@@ -76,24 +76,25 @@ export default function HomeCard({ item, onClick, type }) {
   }
 
   // 3) 펀딩: 현재/목표/달성률
+
   if (isFunding) {
     const current = Number(item.currentPrice ?? 0);
     const max = Number(item.maxPrice ?? 0);
 
     if (max > 0) {
       const rate = Math.min(100, Math.round((current / max) * 100));
-      const left = Math.max(0, 100 - rate);
-      subText = `현재 ${current.toLocaleString()}원 / 목표 ${max.toLocaleString()}원 · 달성률 ${rate}% · 목표까지 ${left}% 남음`;
+      subText = ` ${rate}% 달성`;
     } else if (current > 0) {
-      subText = `현재 ${current.toLocaleString()}원 참여`;
+      subText = ` 참여중`;
     }
   }
+
 
   const cardClass = isFunding
     ? 'funding-card'
     : isVolunteer
-    ? 'volunteer-card'
-    : 'donation-card';
+      ? 'volunteer-card'
+      : 'donation-card';
 
   return (
     <div

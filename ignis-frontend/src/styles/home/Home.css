@@ -322,3 +322,9 @@
   .emg-title { font-size: 22px; }
   .emg-desc  { font-size: 15px; }
 }
+
+.grid-sub {
+  font-weight: 600;
+  color: #1677ff; /* IGNIS 블루 */
+  font-size: 14px;
+}
