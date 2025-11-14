@@ -15,8 +15,34 @@ const SignupPage = () => {
   const [privacyModal, setPrivacyModal] = useState(false);
   const navigate = useNavigate();
 
+    const handleCheckUsername = async () => {
+        const username = form.getFieldValue("username");
 
-  // 이메일 인증 요청
+        if (!username) {
+            alert("아이디를 입력해주세요.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/user/check-login-id?loginId=${encodeURIComponent(username)}`, {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const data = await res.json();
+
+            if (data.available) {
+                alert("사용 가능한 아이디입니다.");
+            } else {
+                alert(data.message || "이미 사용 중인 아이디입니다.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("중복 확인 중 오류가 발생했습니다.");
+        }
+    };
+
+    // 이메일 인증 요청
   const handleSendEmailCode = async () => {
     const email = form.getFieldValue('email');
     if (!email) return alert('이메일을 입력해주세요.');
@@ -117,7 +143,7 @@ const SignupPage = () => {
             <Form.Item label="아이디" name="username" rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}>
               <div className="username-row">
                 <Input placeholder="영문, 숫자 5~20자" />
-                <Button>중복확인</Button>
+                  <Button onClick={handleCheckUsername}>중복확인</Button>
               </div>
             </Form.Item>
 

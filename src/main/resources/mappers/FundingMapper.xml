@@ -50,7 +50,10 @@
     </select>
 
     <!-- ✅ 등록 -->
-    <insert id="insertFunding" parameterType="com.Ignis.home.funding.domain.Funding">
+    <insert id="insertFunding"
+            parameterType="com.Ignis.home.funding.domain.Funding"
+            useGeneratedKeys="true"
+            keyProperty="fundingId">
         INSERT INTO funding (
             user_id,
             title,
@@ -83,6 +86,7 @@
                      0
                  )
     </insert>
+
 
     <!-- ✅ PENDING 목록 -->
     <select id="selectPendingFundingList" resultType="com.Ignis.home.funding.domain.Funding">

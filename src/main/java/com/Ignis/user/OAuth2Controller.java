@@ -83,10 +83,15 @@ public class OAuth2Controller {
 
                 session.setAttribute("userName", name);
                 session.setAttribute("userId", newUser.getUserId());
+                session.setAttribute("role", newUser.getRole());  // ⭐ 추가
+                session.setAttribute("userRole", newUser.getRole()); // ⭐ 추가
+
             } else {
-                // 🔹 기존 회원이면 로그인 세션 저장
+                // 🔹 기존 회원이면 로그인 처리
                 session.setAttribute("userName", exists.getName());
                 session.setAttribute("userId", exists.getUserId());
+                session.setAttribute("role", exists.getRole());      // ⭐ 추가
+                session.setAttribute("userRole", exists.getRole());  // ⭐ 추가
             }
 
             // 🔹 로그인 후 홈 또는 프론트로 이동

@@ -83,7 +83,7 @@ const DonationCreate = () => {
       if (res.ok) {
         try { await res.json(); } catch { /* noop: 일부 서버 JSON 미응답 대비 */ }
         message.success('기부 프로젝트 등록 완료! (관리자 승인 후 공개됩니다)');
-        navigate('/');
+        navigate('/donation-list');
         return;
       }
 

@@ -37,27 +37,26 @@ public class FundingBO {
     }
 
     /** ✅ 수정된 insertFunding (대표 + 서브 이미지 처리) */
-    public void insertFunding(Funding funding, MultipartFile mainImage, MultipartFile subImage) {
+    public Long insertFunding(Funding funding, MultipartFile mainImage, MultipartFile subImage) {
         try {
-            // 대표 이미지 저장 (필수)
+            // 대표 이미지 저장
             String mainImageUrl = null;
             if (mainImage != null && !mainImage.isEmpty()) {
                 mainImageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, mainImage);
                 funding.setImagePath(mainImageUrl);
-            } else {
-                funding.setImagePath(null);
             }
 
-            // 서브 이미지 저장 (선택)
+            // 서브 이미지 저장
             String subImageUrl = null;
             if (subImage != null && !subImage.isEmpty()) {
                 subImageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, subImage);
-                // Funding 엔티티에 subImagePath 컬럼이 존재해야 함
                 funding.setSubImagePath(subImageUrl);
             }
 
-            // DB 저장
+            // DB 저장 (insert 후 funding.getFundingId() 자동 세팅 가정)
             fundingMapper.insertFunding(funding);
+
+            return funding.getFundingId(); // ★ 여기 필수
 
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
@@ -65,16 +64,17 @@ public class FundingBO {
     }
 
     /** 기존 insertFunding(React 용 등)과 충돌 피하기 위해 오버로딩 버전 유지 */
-    public void insertFunding(Funding funding, MultipartFile file) {
-        String imageUrl = null;
+    public Long insertFunding(Funding funding, MultipartFile file) {
         try {
-            imageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, file);
+            String imageUrl = fileManagerService.saveFile(UploadCategory.FUNDING, file);
+            funding.setImagePath(imageUrl);
+            fundingMapper.insertFunding(funding);
+            return funding.getFundingId();  // ★ 필수
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
         }
-        funding.setImagePath(imageUrl);
-        fundingMapper.insertFunding(funding);
     }
+
 
     public List<Funding> getRecentFundingList(int limit) {
         return fundingMapper.selectRecentFundingList(limit);

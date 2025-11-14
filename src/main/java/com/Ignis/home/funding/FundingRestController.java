@@ -182,18 +182,14 @@ public class FundingRestController {
             @RequestParam String title,
             @RequestParam String description,
             @RequestParam("maxPrice") String maxPriceRaw,
-
-            // ⬇️ 네가 원래 쓰던 파라미터들, 있으면 그대로 유지
             @RequestParam(required = false) String accountNumber,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false, defaultValue = "false") boolean isEmergency,
-            @RequestParam(required = false) String endAt, // yyyy-MM-dd 또는 ISO
+            @RequestParam(required = false) String endAt,
             @RequestParam(required = false) Integer minPrice,
-            @RequestParam(required = false) String tags, // "a,b,c" 형태 등
-
-            @RequestParam("file") MultipartFile file, // 메인 이미지 (필수)
-            @RequestParam(value = "subImage", required = false) MultipartFile subImage, // 상세 이미지 (선택)
-
+            @RequestParam(required = false) String tags,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "subImage", required = false) MultipartFile subImage,
             HttpSession session) {
 
         Long userId = (Long) session.getAttribute("userId");
@@ -202,13 +198,11 @@ public class FundingRestController {
                     .body(Map.of("result", "fail", "error", "로그인 필요"));
         }
 
-        // 메인 이미지 필수 체크
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("result", "fail", "error", "이미지 파일을 첨부해주세요."));
         }
 
-        // 금액 정규화
         String norm = (maxPriceRaw == null ? "" : maxPriceRaw).replaceAll("[^0-9]", "");
         if (norm.isEmpty()) {
             return ResponseEntity.badRequest()
@@ -217,17 +211,14 @@ public class FundingRestController {
         int maxPrice = Integer.parseInt(norm);
 
         try {
-            // ✅ 기존 Funding 엔티티 채우기 (너가 쓰던 필드들을 그대로 세팅)
             Funding f = new Funding();
-            // userId 타입에 맞게
+
             try {
                 f.getClass().getMethod("setUserId", Long.class).invoke(f, userId);
             } catch (NoSuchMethodException ignore) {
-                // Integer 타입이면
                 try {
                     f.getClass().getMethod("setUserId", Integer.class).invoke(f, userId.intValue());
-                } catch (Exception ignore2) {
-                }
+                } catch (Exception ignore2) {}
             }
 
             f.setTitle(title == null ? "" : title);
@@ -236,90 +227,54 @@ public class FundingRestController {
             f.setCurrentPrice(0);
 
             if (accountNumber != null) {
-                try {
-                    f.getClass().getMethod("setAccountInfo", String.class).invoke(f, accountNumber);
-                } catch (NoSuchMethodException ignore) {
-                    /* setAccountInfo 없으면 무시 */ }
+                try { f.getClass().getMethod("setAccountInfo", String.class).invoke(f, accountNumber); }
+                catch (NoSuchMethodException ignore) {}
             }
             if (categoryId != null) {
-                try {
-                    f.getClass().getMethod("setCategoryId", Long.class).invoke(f, categoryId);
-                } catch (NoSuchMethodException ignore) {
-                }
+                try { f.getClass().getMethod("setCategoryId", Long.class).invoke(f, categoryId); }
+                catch (NoSuchMethodException ignore) {}
             }
-            try {
-                f.getClass().getMethod("setEmergency", Boolean.TYPE).invoke(f, isEmergency);
-            } catch (NoSuchMethodException ignore) {
-            }
+            try { f.getClass().getMethod("setEmergency", Boolean.TYPE).invoke(f, isEmergency); }
+            catch (NoSuchMethodException ignore) {}
 
             if (endAt != null && !endAt.isBlank()) {
-                try {
-                    f.getClass().getMethod("setEndAt", String.class).invoke(f, endAt);
-                } catch (NoSuchMethodException ignore) {
-                }
+                try { f.getClass().getMethod("setEndAt", String.class).invoke(f, endAt); }
+                catch (NoSuchMethodException ignore) {}
             }
             if (minPrice != null) {
-                try {
-                    f.getClass().getMethod("setMinPrice", Integer.TYPE).invoke(f, minPrice);
-                } catch (NoSuchMethodException ignore) {
-                }
+                try { f.getClass().getMethod("setMinPrice", Integer.TYPE).invoke(f, minPrice); }
+                catch (NoSuchMethodException ignore) {}
             }
             if (tags != null) {
-                try {
-                    f.getClass().getMethod("setTags", String.class).invoke(f, tags);
-                } catch (NoSuchMethodException ignore) {
-                }
+                try { f.getClass().getMethod("setTags", String.class).invoke(f, tags); }
+                catch (NoSuchMethodException ignore) {}
             }
 
-            // 기본 상태/이미지 경로 초기화(필드 없으면 무시)
             try {
                 if (f.getClass().getMethod("getStatus").invoke(f) == null)
                     f.getClass().getMethod("setStatus", String.class).invoke(f, "PENDING");
-            } catch (NoSuchMethodException ignore) {
-            }
+            } catch (NoSuchMethodException ignore) {}
             try {
                 if (f.getClass().getMethod("getImagePath").invoke(f) == null)
                     f.getClass().getMethod("setImagePath", String.class).invoke(f, "");
-            } catch (NoSuchMethodException ignore) {
-            }
+            } catch (NoSuchMethodException ignore) {}
             try {
                 f.getClass().getMethod("setSubImagePath", String.class).invoke(f, "");
-            } catch (NoSuchMethodException ignore) {
-            }
+            } catch (NoSuchMethodException ignore) {}
 
-            // ✅ BO 호출: 기존 흐름 유지 + subImage만 선택 처리
-            // ① 오버로드가 있다면: fundingBO.insertFunding(f, file, subImage);
-            // ② 없다면 아래처럼 2단계로 처리 (기존 메서드 안 건드림)
-            Long fundingId;
-            try {
-                // insertFunding(Funding, MultipartFile, MultipartFile) 시그니처가 있다면
-                fundingId = (Long) fundingBO.getClass()
-                        .getMethod("insertFunding", Funding.class, MultipartFile.class, MultipartFile.class)
-                        .invoke(fundingBO, f, file, subImage);
-            } catch (NoSuchMethodException e) {
-                // 기존 메서드 → 상세 이미지는 선택적으로 따로 저장
-                fundingId = (Long) fundingBO.getClass()
-                        .getMethod("insertFunding", Funding.class, MultipartFile.class)
-                        .invoke(fundingBO, f, file);
-                if (subImage != null && !subImage.isEmpty()) {
-                    // saveDetailImage(Long, MultipartFile) 같은 헬퍼가 있다면 호출
-                    try {
-                        fundingBO.getClass()
-                                .getMethod("saveDetailImage", Long.class, MultipartFile.class)
-                                .invoke(fundingBO, fundingId, subImage);
-                    } catch (NoSuchMethodException ignore) {
-                        // 없다면 BO에 간단한 저장 메서드 하나 추가 권장
-                    }
-                }
-            }
+            // 🔥 여기만 수정한 부분
+            Long fundingId = fundingBO.insertFunding(f, file, subImage);
+            // (주의: BO의 insertFunding이 Long을 반환하도록 수정해야 함)
 
             return ResponseEntity.ok(Map.of("result", "success", "fundingId", fundingId));
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("result", "fail", "error", e.getClass().getSimpleName() + ": " + e.getMessage()));
+                    .body(Map.of("result", "fail", "error", e.getMessage()));
         }
     }
+
 
     // 조회수 증가 API
     @PostMapping("/api/{id}/view")

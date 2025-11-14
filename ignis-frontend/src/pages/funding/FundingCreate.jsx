@@ -96,7 +96,7 @@ const FundingCreate = () => {
       // ✅ 성공: 요청대로 '홈'으로 이동
       if (res.ok && (json?.result === "success" || json?.result === "성공" || Object.keys(json).length === 0)) {
         message.success("펀딩 등록이 완료되었습니다! (관리자 승인 후 공개됩니다)");
-        navigate("/"); // ← 홈 이동
+        navigate("/funding"); // ← 홈 이동
         return;
       }
 
