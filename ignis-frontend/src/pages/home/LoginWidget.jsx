@@ -17,10 +17,15 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
     return name[0]?.toUpperCase() || 'U';
   }, [me?.userName]);
 
-  const goOauth = (provider) => {
-    const url = `/oauth2/authorization/${provider}`; // 프로젝트 설정에 맞게 조정
-    window.location.href = url;
-  };
+    const goOauth = (provider) => {
+        // ⚠️ window.location.origin 사용 제거
+        // const origin = window.location.origin;
+        // ✅ 상대 경로를 사용하여 Spring Security가 Base URL(https://www.igniskr.com)을 인식하도록 함
+        const url = `/oauth2/authorization/${provider}`;
+
+        window.location.href = url;
+    };
+
 
   // 로딩 중: 스켈레톤
   if (meLoading) {
