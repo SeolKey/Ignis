@@ -6,9 +6,10 @@ import Home from './pages/home/Home';
 import MyPage from './pages/mypage/MyPage';
 import EmergencyHub from './pages/emergency/EmergencyHub';
 import SearchPage from "./pages/search/SearchPage.jsx";
+import FindPasswordPage from './pages/FindPasswordPage';
 
 /* ========== 인증 ========== */
-import LoginPage from './pages/LoginPage';
+
 import SignupPage from './pages/SignupPage';
 
 /* ========== 기부( Donation ) ========== */
@@ -55,7 +56,7 @@ function App() {
       <Route path="/search" element={<SearchPage />} />
 
       {/* ===== 인증 ===== */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/find-password" element={<FindPasswordPage />} />
       <Route path="/signup" element={<SignupPage />} />
 
       {/* ===== 기부( Donation ) ===== */}

@@ -5,6 +5,10 @@ import {
 import { UserOutlined, LockOutlined, SmileOutlined, GoogleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
+// ✅ 백엔드 고정 주소 (스프링이 80포트면 이대로 사용)
+const API_BASE_URL = "http://localhost:5173";
+console.log('LoginWidget API_BASE_URL =', API_BASE_URL);
+
 export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -17,15 +21,11 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
     return name[0]?.toUpperCase() || 'U';
   }, [me?.userName]);
 
-    const goOauth = (provider) => {
-        // ⚠️ window.location.origin 사용 제거
-        // const origin = window.location.origin;
-        // ✅ 상대 경로를 사용하여 Spring Security가 Base URL(https://www.igniskr.com)을 인식하도록 함
-        const url = `/oauth2/authorization/${provider}`;
-
-        window.location.href = url;
-    };
-
+  const goOauth = (provider) => {
+    // OAuth도 백엔드 도메인으로 직접 보냄
+    const url = `${API_BASE_URL}/oauth2/authorization/${provider}`;
+    window.location.href = url;
+  };
 
   // 로딩 중: 스켈레톤
   if (meLoading) {
@@ -75,17 +75,24 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
             block
             onClick={async () => {
               try {
-                const ok1 = await fetch('/user/logout', { method: 'POST', credentials: 'include' })
+                const ok1 = await fetch(`${API_BASE_URL}/user/logout`, {
+                  method: 'POST',
+                  credentials: 'include',
+                })
                   .then(r => r.ok)
                   .catch(() => false);
+
                 if (!ok1) {
-                  await fetch('/logout', { method: 'POST', credentials: 'include' }).catch(() => { });
+                  await fetch(`${API_BASE_URL}/logout`, {
+                    method: 'POST',
+                    credentials: 'include',
+                  }).catch(() => { });
                 }
               } finally {
                 onUserChange?.(null);
-                window.dispatchEvent(new Event('auth:changed')); // ★ 헤더에 인증 변경 알림
+                window.dispatchEvent(new Event('auth:changed'));
                 message.success('로그아웃 되었습니다.');
-                navigate('/', { replace: true });               // ★ 홈으로 리다이렉트 (새로고침 원하면 window.location.reload();)
+                navigate('/', { replace: true });
               }
             }}
           >
@@ -108,7 +115,6 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
         </div>
       </div>
 
-      {/* ✅ 아이디/비번 폼 먼저 */}
       <Form
         layout="vertical"
         requiredMark={false}
@@ -119,8 +125,9 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
             form.append('userLoginId', values.username);
             form.append('password', values.password);
             form.append('rememberMe', values.remember ? 'true' : 'false');
+            console.log('LoginWidget fetch URL =', `${API_BASE_URL}/user/do-login`);
 
-            const res = await fetch('/user/do-login', {
+            const res = await fetch(`${API_BASE_URL}/user/do-login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
               body: form.toString(),
@@ -129,15 +136,15 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
 
             const data = await res.json().catch(() => ({}));
             if (data?.result === '성공') {
-              const meRes = await fetch('/user/me', { credentials: 'include' });
+              const meRes = await fetch(`${API_BASE_URL}/user/me`, {
+                credentials: 'include',
+              });
               const meJson = meRes.ok ? await meRes.json() : null;
               onUserChange?.(meJson || null);
 
-              // 🔔 헤더에 인증 상태 변경 알림 + 홈으로 이동
               window.dispatchEvent(new Event('auth:changed'));
               message.success('환영합니다 👋');
-              navigate('/', { replace: true });  // 새로고침 대신 라우트 리다이렉트
-              // 만약 강제 새로고침을 원하면: window.location.reload();
+              navigate('/', { replace: true });
             } else {
               message.error(data?.error_message ?? '아이디 또는 비밀번호를 확인해 주세요.');
             }
@@ -148,7 +155,6 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
           }
         }}
       >
-
 
         <Form.Item
           label="아이디"
@@ -207,7 +213,6 @@ export default function LoginWidget({ me, onUserChange, loading: meLoading }) {
 
       <Divider plain style={{ margin: '14px 0' }}>또는</Divider>
 
-      {/* ✅ 소셜 로그인 아래 */}
       <Space direction="vertical" style={{ width: '100%' }}>
         <Button
           block

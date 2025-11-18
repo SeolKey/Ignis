@@ -22,6 +22,7 @@ export default function Header() {
   const location = useLocation();
 
   const [username, setUsername] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);      // ✅ 관리자 여부
   const [searchValue, setSearchValue] = useState("");
   const [searchType, setSearchType] = useState("");
 
@@ -34,13 +35,30 @@ export default function Header() {
   const loadMe = async () => {
     try {
       const res = await fetch("/user/me", { credentials: "include" });
-      if (!res.ok) return setUsername(null);
+      if (!res.ok) {
+        setUsername(null);
+        setIsAdmin(false);
+        return;
+      }
       const data = await res.json();
       const name = data?.userName ?? data?.username ?? null;
       const isAuthed = data?.authenticated ?? !!name;
-      setUsername(isAuthed ? name : null);
+
+      if (!isAuthed) {
+        setUsername(null);
+        setIsAdmin(false);
+        return;
+      }
+
+      setUsername(name);
+
+      // ✅ role 기반 관리자 판별 (admin / ADMIN / ROLE_ADMIN 다 커버)
+      const role = (data?.role ?? "").toString().toLowerCase();
+      const admin = role === "admin" || role === "role_admin";
+      setIsAdmin(admin);
     } catch {
       setUsername(null);
+      setIsAdmin(false);
     }
   };
 
@@ -55,8 +73,9 @@ export default function Header() {
     try {
       await fetch("/logout", { method: "POST", credentials: "include" });
       setUsername(null);
+      setIsAdmin(false);                  // ✅ 로그아웃 시 관리자 플래그도 초기화
       window.dispatchEvent(new Event("auth:changed"));
-      navigate("/login");
+      navigate("/");
     } catch {
       message.error("로그아웃에 실패했습니다.");
     }
@@ -90,7 +109,7 @@ export default function Header() {
         </Menu>
       </div>
 
-      {/* 오른쪽: 카테고리 드롭다운 + 검색 */}
+      {/* 오른쪽: 카테고리 드롭다운 + 검색 + 관리자 버튼 */}
       <div className="right-wrap">
         <div className="header-search-shell">
           <Select
@@ -122,6 +141,21 @@ export default function Header() {
           <Button size="large" type="primary" onClick={handleSearch} className="header-search-btn">
             검색
           </Button>
+
+          {/* ✅ 관리자일 때만 검색 오른쪽에 표시 */}
+          {isAdmin && (
+            <Button
+              size="large"
+              type="default"
+              className="admin-btn"
+              style={{ marginLeft: 8 }}
+              onClick={() => {
+                window.location.href = "/admin/main";
+              }}
+            >
+              관리자 페이지
+            </Button>
+          )}
         </div>
 
         {username ? (
@@ -130,7 +164,12 @@ export default function Header() {
               <UserOutlined style={{ marginRight: 6 }} />
               {username}님
             </Text>
-            <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout} className="logout-btn">
+            <Button
+              type="text"
+              icon={<LogoutOutlined />}
+              onClick={handleLogout}
+              className="logout-btn"
+            >
               로그아웃
             </Button>
           </Space>

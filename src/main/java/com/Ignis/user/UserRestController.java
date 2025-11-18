@@ -83,7 +83,7 @@ public class UserRestController {
         Object rawId = session.getAttribute("userId");
         String loginId = (String) session.getAttribute("userLoginId");
         String name = (String) session.getAttribute("userName");
-        String role = (String) session.getAttribute("userRole"); // ✅ 추가
+        String role = (String) session.getAttribute("role"); // ✅ 추가
 
         Long userId = null;
         if (rawId instanceof Number) {

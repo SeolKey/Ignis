@@ -15,37 +15,96 @@ const SignupPage = () => {
   const [privacyModal, setPrivacyModal] = useState(false);
   const navigate = useNavigate();
 
-    const handleCheckUsername = async () => {
-        const username = form.getFieldValue("username");
+  // ✅ 아이디 입력 값 별도 관리
+  const [username, setUsername] = useState('');
 
-        if (!username) {
-            alert("아이디를 입력해주세요.");
-            return;
-        }
+  // ✅ 아이디 중복확인 메시지 상태
+  // status: 'idle' | 'checking' | 'available' | 'duplicate' | 'error' | 'invalid'
+  const [usernameCheck, setUsernameCheck] = useState({
+    status: 'idle',
+    message: '',
+  });
 
-        try {
-            const res = await fetch(`/user/check-login-id?loginId=${encodeURIComponent(username)}`, {
-                method: 'GET',
-                credentials: 'include'
-            });
+  // ✅ 아이디 입력 변경 시: 값 + 메시지 초기화
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    // 폼에도 값 동기화 (회원가입 submit에서 사용)
+    form.setFieldsValue({ username: value });
 
-            const data = await res.json();
+    setUsernameCheck({
+      status: 'idle',
+      message: '',
+    });
+  };
 
-            if (data.available) {
-                alert("사용 가능한 아이디입니다.");
-            } else {
-                alert(data.message || "이미 사용 중인 아이디입니다.");
-            }
-        } catch (err) {
-            console.error(err);
-            alert("중복 확인 중 오류가 발생했습니다.");
-        }
-    };
+  // ✅ 아이디 중복확인
+  const handleCheckUsername = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
 
-    // 이메일 인증 요청
+    console.log('중복확인 클릭, username(state) =', username);
+
+    if (!username) {
+      setUsernameCheck({
+        status: 'invalid',
+        message: '아이디를 입력해주세요.',
+      });
+      return;
+    }
+
+    try {
+      setUsernameCheck({
+        status: 'checking',
+        message: '아이디를 확인 중입니다...',
+      });
+
+      const res = await fetch(`/user/check-login-id?loginId=${encodeURIComponent(username)}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+
+      console.log('중복확인 status =', res.status);
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error('중복확인 실패 응답본문:', text);
+        setUsernameCheck({
+          status: 'error',
+          message: '중복 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        });
+        return;
+      }
+
+      const data = await res.json();
+      console.log('중복확인 응답 JSON =', data);
+
+      if (data.available) {
+        setUsernameCheck({
+          status: 'available',
+          message: '사용 가능한 아이디입니다.',
+        });
+      } else {
+        setUsernameCheck({
+          status: 'duplicate',
+          message: data.message || '이미 사용 중인 아이디입니다.',
+        });
+      }
+    } catch (err) {
+      console.error('중복확인 요청 에러:', err);
+      setUsernameCheck({
+        status: 'error',
+        message: '중복 확인 중 네트워크 오류가 발생했습니다.',
+      });
+    }
+  };
+
+  // 이메일 인증 요청
   const handleSendEmailCode = async () => {
     const email = form.getFieldValue('email');
-    if (!email) return alert('이메일을 입력해주세요.');
+    if (!email) {
+      alert('이메일을 입력해주세요.');
+      return;
+    }
     try {
       const res = await fetch('/user/email-auth/send', {
         method: 'POST',
@@ -68,7 +127,10 @@ const SignupPage = () => {
   const handleVerifyEmailCode = async () => {
     const email = form.getFieldValue('email');
     const code = form.getFieldValue('emailCode');
-    if (!code) return alert('인증코드를 입력해주세요.');
+    if (!code) {
+      alert('인증코드를 입력해주세요.');
+      return;
+    }
     try {
       const res = await fetch('/user/email-auth/verify', {
         method: 'POST',
@@ -92,9 +154,18 @@ const SignupPage = () => {
   const onFinish = async (values) => {
     const { username, password, confirm, name, phone, email, agreeTerms, agreePrivacy, agreeMarketing } = values;
 
-    if (!emailVerified) return alert('이메일 인증을 완료해주세요.');
-    if (password !== confirm) return alert('비밀번호가 일치하지 않습니다.');
-    if (!agreeTerms || !agreePrivacy) return alert('필수 약관에 동의해주세요.');
+    if (!emailVerified) {
+      alert('이메일 인증을 완료해주세요.');
+      return;
+    }
+    if (password !== confirm) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    if (!agreeTerms || !agreePrivacy) {
+      alert('필수 약관에 동의해주세요.');
+      return;
+    }
 
     try {
       const res = await fetch('/user/do-sign-up', {
@@ -121,8 +192,7 @@ const SignupPage = () => {
       if (data.result === '회원가입 성공') {
         alert('회원가입 성공!');
         navigate('/login', { replace: true }); // 뒤로가기 눌러도 제출 화면 안 돌아오게
-      }
-      else {
+      } else {
         alert(data.error_message || '회원가입 실패');
       }
     } catch (err) {
@@ -130,6 +200,10 @@ const SignupPage = () => {
       alert('네트워크 오류가 발생했습니다.');
     }
   };
+
+  // ✅ 아이디 중복 메시지 색 결정
+  const usernameMessageType =
+    usernameCheck.status === 'available' ? 'success' : 'danger';
 
   return (
     <Layout>
@@ -140,15 +214,46 @@ const SignupPage = () => {
 
           <Form layout="vertical" form={form} onFinish={onFinish} className="signup-form">
             {/* 아이디 */}
-            <Form.Item label="아이디" name="username" rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}>
-              <div className="username-row">
-                <Input placeholder="영문, 숫자 5~20자" />
-                  <Button onClick={handleCheckUsername}>중복확인</Button>
-              </div>
+            <Form.Item
+              label="아이디"
+              name="username"
+              rules={[{ required: true, message: '아이디를 입력해 주세요.' }]}
+            >
+              <>
+                <div className="username-row">
+                  <Input
+                    placeholder="영문, 숫자 5~20자"
+                    value={username}
+                    onChange={handleUsernameChange}
+                  />
+                  {/* ✅ submit 막기 위해 htmlType="button" 명시 */}
+                  <Button
+                    type="default"
+                    htmlType="button"
+                    onClick={handleCheckUsername}
+                  >
+                    중복확인
+                  </Button>
+                </div>
+
+                {/* ✅ 중복 여부 메시지 (빨강/초록) */}
+                {usernameCheck.message && (
+                  <Text
+                    type={usernameMessageType}
+                    style={{ marginTop: 4, display: 'block', fontSize: 12 }}
+                  >
+                    {usernameCheck.message}
+                  </Text>
+                )}
+              </>
             </Form.Item>
 
             {/* 비밀번호 */}
-            <Form.Item label="비밀번호" name="password" rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]}>
+            <Form.Item
+              label="비밀번호"
+              name="password"
+              rules={[{ required: true, message: '비밀번호를 입력해 주세요.' }]}
+            >
               <Input.Password placeholder="영문, 숫자, 특수문자 조합 8~20자" />
             </Form.Item>
 
@@ -171,17 +276,29 @@ const SignupPage = () => {
             </Form.Item>
 
             {/* 이름 */}
-            <Form.Item label="이름" name="name" rules={[{ required: true, message: '이름을 입력해 주세요.' }]}>
+            <Form.Item
+              label="이름"
+              name="name"
+              rules={[{ required: true, message: '이름을 입력해 주세요.' }]}
+            >
               <Input placeholder="이름을 입력하세요" />
             </Form.Item>
 
             {/* 전화번호 */}
-            <Form.Item label="전화번호" name="phone" rules={[{ required: true, message: '전화번호를 입력해 주세요.' }]}>
+            <Form.Item
+              label="전화번호"
+              name="phone"
+              rules={[{ required: true, message: '전화번호를 입력해 주세요.' }]}
+            >
               <Input placeholder="'-' 없이 숫자만 입력하세요" />
             </Form.Item>
 
             {/* 이메일 */}
-            <Form.Item label="이메일" name="email" rules={[{ required: true, type: 'email', message: '유효한 이메일 주소를 입력해 주세요.' }]}>
+            <Form.Item
+              label="이메일"
+              name="email"
+              rules={[{ required: true, type: 'email', message: '유효한 이메일 주소를 입력해 주세요.' }]}
+            >
               <Space.Compact style={{ width: '100%' }}>
                 <Input placeholder="example@email.com" />
                 <Button onClick={handleSendEmailCode}>인증요청</Button>
@@ -201,13 +318,23 @@ const SignupPage = () => {
             {/* 약관 동의 */}
             <Form.Item label="개인정보 및 약관 동의" style={{ marginTop: 24 }}>
               <Space direction="vertical">
-                <Form.Item name="agreeTerms" valuePropName="checked" noStyle rules={[{ required: true, message: '서비스 이용 약관에 동의해주세요.' }]}>
+                <Form.Item
+                  name="agreeTerms"
+                  valuePropName="checked"
+                  noStyle
+                  rules={[{ required: true, message: '서비스 이용 약관에 동의해주세요.' }]}
+                >
                   <Checkbox>
                     <a onClick={() => setTermsModal(true)}>서비스 이용 약관 동의</a> (필수)
                   </Checkbox>
                 </Form.Item>
 
-                <Form.Item name="agreePrivacy" valuePropName="checked" noStyle rules={[{ required: true, message: '개인정보 수집 및 이용에 동의해주세요.' }]}>
+                <Form.Item
+                  name="agreePrivacy"
+                  valuePropName="checked"
+                  noStyle
+                  rules={[{ required: true, message: '개인정보 수집 및 이용에 동의해주세요.' }]}
+                >
                   <Checkbox>
                     <a onClick={() => setPrivacyModal(true)}>개인정보 수집 및 이용 동의</a> (필수)
                   </Checkbox>
@@ -227,7 +354,6 @@ const SignupPage = () => {
             </Form.Item>
           </Form>
 
-          {/* 약관 모달 */}
           {/* 서비스 이용 약관 모달 */}
           <Modal
             title="서비스 이용 약관"
@@ -310,7 +436,6 @@ const SignupPage = () => {
               <p>회원은 위 내용을 충분히 숙지하고 개인정보 수집·이용에 동의합니다.</p>
             </div>
           </Modal>
-
 
           <div className="login-text">
             이미 계정이 있으신가요? <Link to="/login">로그인</Link>
